@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>石头剪刀布</title>
+</head>
+<body>
+    <h1>石头剪刀布</h1>
+    <button onclick="play('rock')">石头</button>
+    <button onclick="play('paper')">布</button>
+    <button onclick="play('scissors')">剪刀</button>
+    <p id="result"></p>
+    <script>
+        function play(playerChoice) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            const result = document.getElementById('result');
+            if (playerChoice === computerChoice) {
+                result.textContent = `平局！你们都选择了 ${playerChoice}`;
+            } else if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                result.textContent = `你赢了！你选择了 ${playerChoice}，电脑选择了 ${computerChoice}`;
+            } else {
+                result.textContent = `你输了！你选择了 ${playerChoice}，电脑选择了 ${computerChoice}`;
+            }
+        }
+    </script>
+</body>
+</html>
