@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI导航中心</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            color: #202124;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #1a73e8;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .nav-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #202124;
+            display: block;
+            font-size: 1.1rem;
+            padding: 12px;
+            border-left: 4px solid #1a73e8;
+        }
+
+        .nav-link:hover {
+            background-color: #f8f9fa;
+        }
+
+        .category {
+            margin-bottom: 30px;
+        }
+
+        .category h2 {
+            color: #1a73e8;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .nav-link {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI导航中心</h1>
+        
+        <!-- 文字大模型 -->
+        <div class="category">
+            <h2>文字大模型</h2>
+            <div class="nav-card">
+                <a href="https://openai.com/" class="nav-link">OpenAI - 提供强大的语言生成模型</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://yiyan.baidu.com/" class="nav-link">百度文心一言 - 支持多种语言任务</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://tongyi.aliyun.com/" class="nav-link">阿里云通义千问 - 支持多种语言任务</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://xinghuo.xfyun.cn/" class="nav-link">科大讯飞星火大模型 - 支持多种语言任务</a>
+            </div>
+        </div>
+
+        <!-- 文生图 -->
+        <div class="category">
+            <h2>文生图</h2>
+            <div class="nav-card">
+                <a href="https://midjourney.com/" class="nav-link">MidJourney - 基于Discord的AI文生图软件</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://stabilityai.com/" class="nav-link">Stable Diffusion - 开源的AI文生图模型</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://aigc.cn/vega-ai" class="nav-link">笔格AI - 提供AI文案和高质量图片生成</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://rightbrain.art/" class="nav-link">Vega AI - 免费的中文AI绘画工具</a>
+            </div>
+        </div>
+
+        <!-- 文生视频 -->
+        <div class="category">
+            <h2>文生视频</h2>
+            <div class="nav-card">
+                <a href="https://runwayml.com/" class="nav-link">Runway - 提供AI视频生成和编辑工具</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://www.flexclip.com/" class="nav-link">FlexClip - 提供AI文本转视频工具</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://www.doubao.com/" class="nav-link">腾讯元宝AI - 腾讯推出的AI视频生成平台</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://ai-bot.cn/ai-text-to-video-tools/" class="nav-link">即梦AI - 字节跳动推出的AI文生视频创作平台</a>
+            </div>
+        </div>
+
+        <!-- 文生音乐 -->
+        <div class="category">
+            <h2>文生音乐</h2>
+            <div class="nav-card">
+                <a href="https://suno.com/" class="nav-link">Suno AI - 革命性的人工智能音乐生成工具</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://www.udio.com/" class="nav-link">Udio - 通过文本提示生成高质量音乐作品</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://blog.csdn.net/iris2c/article/details/144300309" class="nav-link">InspireMusic - 开源音乐生成工具包</a>
+            </div>
+        </div>
+
+        <!-- 综合AI平台 -->
+        <div class="category">
+            <h2>综合AI平台</h2>
+            <div class="nav-card">
+                <a href="https://aiaiv.cn/" class="nav-link">AIAI.Tools - 智能化的AI工具导航站</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://aiaiv.cn/" class="nav-link">陌言AI工具集 - 收录了国内外数百个优质AI网站</a>
+            </div>
+            <div class="nav-card">
+                <a href="https://aiaiv.cn/" class="nav-link">鼎斯韦AI工具箱 - 提供基于大模型的智能助手</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
