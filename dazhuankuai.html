@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>打砖块游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>打砖块游戏</h1>
+    <canvas id="canvas" width="800" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let ball = { x: 400, y: 300, radius: 10, dx: 2, dy: -2 };
+        let paddle = { x: 350, y: 380, width: 100, height: 20, dx: 5 };
+        let bricks = [];
+        for (let i = 0; i < 5; i++) {
+            bricks[i] = [];
+            for (let j = 0; j < 8; j++) {
+                bricks[i][j] = { x: j * 100, y: i * 30, width: 90, height: 20 };
+            }
+        }
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#0095DD';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle() {
+            ctx.fillStyle = '#0095DD';
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+
+        function drawBricks() {
+            for (let i = 0; i < bricks.length; i++) {
+                for (let j = 0; j < bricks[i].length; j++) {
+                    if (bricks[i][j]) {
+                        ctx.fillStyle = '#0095DD';
+                        ctx.fillRect(bricks[i][j].x, bricks[i][j].y, bricks[i][j].width, bricks[i][j].height);
+                    }
+                }
+            }
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            drawPaddle();
+            drawBricks();
+
+            if (ball.y + ball.radius > canvas.height) {
+                ball.dy = -ball.dy;
+            }
+            if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+                ball.dx = -ball.dx;
+            }
+            if (ball.y - ball.radius < 0) {
+                ball.dy = -ball.dy;
+            }
+
+            if (ball.y + ball.radius > paddle.y && ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                ball.dy = -ball.dy;
+            }
+
+            for (let i = 0; i < bricks.length; i++) {
+                for (let j = 0; j < bricks[i].length; j++) {
+                    if (bricks[i][j]) {
+                        if (ball.y - ball.radius < bricks[i][j].y + bricks[i][j].height &&
+                            ball.y + ball.radius > bricks[i][j].y &&
+                            ball.x + ball.radius > bricks[i][j].x &&
+                            ball.x - ball.radius < bricks[i][j].x + bricks[i][j].width) {
+                            ball.dy = -ball.dy;
+                            bricks[i][j] = null;
+                        }
+                    }
+                }
+            }
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+            paddle.x += (ball.x - paddle.x - paddle.width / 2) * 0.1;
+
+            requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+</body>
+</html>
