@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>贪吃蛇游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>贪吃蛇游戏</h1>
+    <canvas id="canvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let snake = [{ x: 200, y: 200 }];
+        let food = { x: 300, y: 300 };
+        let dx = 10;
+        let dy = 0;
+        let score = 0;
+
+        function drawSnake() {
+            ctx.fillStyle = '#0095DD';
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillRect(snake[i].x, snake[i].y, 10, 10);
+            }
+        }
+
+        function drawFood() {
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(food.x, food.y, 10, 10);
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSnake();
+            drawFood();
+
+            let headX = snake[0].x + dx;
+            let headY = snake[0].y + dy;
+
+            if (headX < 0 || headX >= canvas.width || headY < 0 || headY >= canvas.height) {
+                alert('游戏结束！');
+                document.location.reload();
+            }
+
+            for (let i = 0; i < snake.length; i++) {
+                if (headX === snake[i].x && headY === snake[i].y) {
+                    alert('游戏结束！');
+                    document.location.reload();
+                }
+            }
+
+            snake.unshift({ x: headX, y: headY });
+
+            if (headX === food.x && headY === food.y) {
+                score += 10;
+                food = { x: Math.floor(Math.random() * 39) * 10, y: Math.floor(Math.random() * 39) * 10 };
+            } else {
+                snake.pop();
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && dx === 0) {
+                dx = -10;
+                dy = 0;
+            } else if (e.key === 'ArrowRight' && dx === 0) {
+                dx = 10;
+                dy = 0;
+            } else if (e.key === 'ArrowUp' && dy === 0) {
+                dx = 0;
+                dy = -10;
+            } else if (e.key === 'ArrowDown' && dy === 0) {
+                dx = 0;
+                dy = 10;
+            }
+        });
+
+        update();
+    </script>
+</body>
+</html>
