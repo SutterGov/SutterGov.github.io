@@ -1,501 +1,407 @@
-```jsx
-import { useState } from 'react';
+```html
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>微国家导航站</title>
+  <style>
+    /* Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-export default function App() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to bottom right, #1a202c, #2d3748);
+      color: #ffffff;
+      line-height: 1.6;
+    }
 
-  // Mock data from the Excel file (manually converted)
-  const websites = [
-    {
-      name: '萨特DISCORD邀请链接',
-      description: '优质品质，爱来自哈利费克',
-      url: 'https://discord.gg/hb3bjm6xBK',
-      category: '萨特相关',
-      pinned: true,
-    },
-    {
-      name: '萨特全球信息网',
-      description: '与怯懦相悖，复兴萨特的光辉',
-      url: 'https://sites.google.com/view/suttergov/%E9%A6%96%E9%A1%B5?authuser=0',
-      category: '萨特相关',
-      pinned: true,
-    },
-    {
-      name: '中文微国家维基',
-      description: '中文微国家维基DISCORD社区',
-      url: 'https://discord.gg/PBWAz6wVEq',
-      category: '微国家社区',
-      pinned: false,
-    },
-    {
-      name: '苏维埃社会主义共和国联邦',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/VxgEfsrv',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '赫維里森大公國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/fTvvp6qTpR',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '西瓜聯邦',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/trbQJeUUwC',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '微国家我的世界委员会',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/dQyf7J9xuN',
-      category: '微国家社区',
-      pinned: false,
-    },
-    {
-      name: '晨弦霧月共和國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/FUZT6c6Zcz',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '以和平為主的國家納雷茲',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/Wedtb5ht',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '卡布雷勒爾紅城',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/RZHNeFvfmM',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '荷月聯邦共和國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/qVe9Hkkqha',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '奥沃特国',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/7x85wZS35C',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '星際聯盟',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/TtYvqk7Qeg',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '诺暗比亚',
-      description: 'DISCORD链接',
-      url: 'https://discord.com/invite/b8gQwfb52A',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '斯维特拉克社会主义共和国',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/QhagK2XJVZ',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '赫里斯人民共和國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/NBmRPHPkvr',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '納爾斯聯邦',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/JHQPyRHea8',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '神聖天禮帝國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/RVcygBExCy',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '大郲帝国',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/5gT59K5qKJ',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '約克塞斯蘇維埃社會主義聯盟',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/bQsKAvZPZv',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '聖赫提斯王國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/C7cGBdT7Pd',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '华江斯坦',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/PHFHNEbykZ',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '紅石聯邦共和國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/WmxKyHePPg',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '卢米涅企业共和国',
-      description: 'DISCORD链接',
-      url: 'https://discord.com/invite/sQ4qSCTjAg',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '卢米涅企业共和国',
-      description: '国家官网',
-      url: 'https://sites.google.com/view/cclgov',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '微国家联盟',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/MZhUrR4nAN',
-      category: '微国家社区',
-      pinned: false,
-    },
-    {
-      name: '諾瓦雷克斯帝國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/zrxS7CXYwQ',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '薩爾多利亞共和國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/nrgfHgKJjr',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '蒙迪斯总管司',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/DZ7x7b5UB8',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '白森民主共和國',
-      description: '国家官网',
-      url: 'https://bit.ly/whithon',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '中華民主合眾國',
-      description: '国家官网',
-      url: 'https://sites.google.com/view/virtual-country/首頁',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '精民王国',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/V5FJhfyStg',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '瓦瑞希爾王國',
-      description: 'DISCORD链接',
-      url: 'https://discord.gg/jYscHXQFK9',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '貓貓尼西亞',
-      description: '国家官网',
-      url: 'https://gov.nekonesia.org/',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '平箱民主共和國',
-      description: '亚洲一个小岛国的国家；经济方面：也讓外資來我國投資；外交部分：有來我國我都歡迎來建交，有時我也會去造訪各國改進我國不之處~希望能和微國的各位共創雙贏的局面',
-      url: 'https://discord.gg/TJE9NS4qUU',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '芙洛華域王國',
-      description: '芙洛華域王國為一架空微國家，於二〇二四年七月中創立，為康索納西亞公約（康約）總召國及締約國。',
-      url: 'https://sites.google.com/view/faeroewarick',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '炎夏帝國',
-      description: '炎夏帝國源遠流長，擁有悠久的歷史文化。我們秉持著和平共處、共同發展的理念，尊重各國的主權和文化',
-      url: 'https://discord.gg/h6Rj7eHq',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '大虞帝國',
-      description: '大虞帝國為一行古制、古禮之開明專制國家。首都曾定於陳京，後遷都大虞南部，定為帝京。',
-      url: 'https://discord.gg/V3RpQwPcra',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '青天民主共和國',
-      description: '面積約400萬平方公里，一個從清朝發動獨立戰爭獨立出來的國家',
-      url: 'https://discord.gg/9z88AgBkaa',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '和科利亞王國; Hokorian State',
-      description: '和科利亞王國為與英國及香港接壤之君主立憲制國家，其本土範圍為前英國西約克郡，另有海外屬地瑞寧省與香港接壤。',
-      url: 'https://hokoriagov.net/',
-      category: '其他国家',
-      pinned: false,
-    },
-    {
-      name: '布埃納維斯塔聯邦共和國',
-      description: '人民主義制度',
-      url: 'https://discord.gg/tnbG9yuR6j',
-      category: '其他国家',
-      pinned: false,
-    },
-  ];
+    a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
 
-  // Get unique categories for filtering
-  const categories = ['all', ...Array.from(new Set(websites.map(site => site.category)))];
+    a:hover {
+      text-decoration: underline;
+    }
 
-  // Filter sites based on search term and active tab
-  const filteredWebsites = websites.filter(
-    (site) =>
-      (searchTerm === '' || 
-       site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       site.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (activeTab === 'all' || site.category === activeTab)
-  );
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 0 1rem;
+    }
 
-  const pinnedSites = filteredWebsites.filter((site) => site.pinned);
-  const regularSites = filteredWebsites.filter((site) => !site.pinned);
+    header {
+      text-align: center;
+      padding: 2rem 0;
+    }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-      {/* Header */}
-      <header className="py-8 text-center">
-        <h1 className="text-4xl font-bold mb-2">微国家导航站</h1>
-        <p className="text-gray-400">最后更新于2025年5月18日 | 萨特数位发展部维护</p>
-        <p className="text-sm text-yellow-400 mt-2 italic">
-          建设本网站只是为了方便导航，不代表萨特支持里面的内容。
-        </p>
-      </header>
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
 
-      {/* Search Bar */}
-      <div className="max-w-2xl mx-auto px-4 mb-8">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="搜索网站名称或描述..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-3 pl-10 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="absolute left-3 top-3.5 h-5 w-5 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
-      </div>
+    header p {
+      color: #a0aec0;
+      font-size: 1rem;
+    }
 
-      {/* Category Tabs */}
-      <div className="max-w-6xl mx-auto px-4 mb-8 overflow-x-auto">
-        <div className="flex space-x-2 pb-2">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveTab(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                activeTab === category
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
-            >
-              {category === 'all' ? '全部分类' : category}
-            </button>
-          ))}
-        </div>
-      </div>
+    .disclaimer {
+      font-style: italic;
+      color: #facc15;
+      font-size: 0.875rem;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
 
-      {/* Pinned Sites Section */}
-      {pinnedSites.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 mb-12">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 mr-2 text-yellow-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-              />
-            </svg>
-            置顶网站
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pinnedSites.map((site, index) => (
-              <div
-                key={index}
-                className="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border-l-4 border-yellow-500 transform hover:-translate-y-1 transition-transform"
-              >
-                <div className="p-5">
-                  <h3 className="text-xl font-semibold mb-2">{site.name}</h3>
-                  <p className="text-gray-400 mb-4 text-sm line-clamp-2">{site.description}</p>
-                  <a
-                    href={site.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    访问网站
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="ml-1 h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
 
-      {/* Regular Sites Section */}
-      {regularSites.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 mb-12">
-          <h2 className="text-2xl font-semibold mb-4">其他网站</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {regularSites.map((site, index) => (
-              <div
-                key={index}
-                className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1 transition-transform"
-              >
-                <div className="p-5">
-                  <h3 className="text-lg font-medium mb-1">{site.name}</h3>
-                  <p className="text-gray-400 mb-3 text-sm line-clamp-2">{site.description}</p>
-                  <a
-                    href={site.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors text-sm"
-                  >
-                    访问网站
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="ml-1 h-3 w-3"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+    .search-bar input[type="text"] {
+      width: 100%;
+      max-width: 600px;
+      padding: 0.75rem 2rem 0.75rem 1rem;
+      border-radius: 9999px;
+      border: none;
+      outline: none;
+      background-color: #2d3748;
+      color: white;
+    }
 
-      {/* Empty state */}
-      {filteredWebsites.length === 0 && (
-        <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="mx-auto h-16 w-16 text-gray-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-300">没有找到匹配的结果</h3>
-          <p className="mt-1 text-sm text-gray-500">请尝试调整搜索词或选择不同的分类。</p>
-        </div>
-      )}
+    .search-bar svg {
+      position: absolute;
+      left: 1rem;
+      top: 0.75rem;
+      fill: none;
+      stroke: #a0aec0;
+      stroke-width: 2;
+      width: 1.25rem;
+      height: 1.25rem;
+    }
 
-      {/* Footer */}
-      <footer className="py-6 text-center text-gray-500 border-t border-gray-700">
-        <p>© 2025 萨特数位发展部（互联网与信息化部）</p>
-        <p className="mt-1 text-sm">保留所有权利</p>
-      </footer>
+    .category-tabs {
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .category-tabs button {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      margin-right: 0.5rem;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .category-tabs button.active {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .category-tabs button:not(.active) {
+      background-color: #2d3748;
+      color: #a0aec0;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .section h2 svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      fill: #facc15;
+      stroke: none;
+      margin-right: 0.5rem;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: #2d3748;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      padding: 1.5rem;
+      transition: transform 0.2s ease-in-out;
+      border-left: 4px solid transparent;
+    }
+
+    .card.pinned {
+      border-left-color: #facc15;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.875rem;
+      color: #a0aec0;
+      margin-bottom: 1rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card a {
+      font-size: 0.875rem;
+      color: #4f46e5;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .card a svg {
+      width: 0.75rem;
+      height: 0.75rem;
+      stroke: #4f46e5;
+      stroke-width: 2;
+      margin-left: 0.25rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #a0aec0;
+    }
+
+    .empty-state svg {
+      width: 4rem;
+      height: 4rem;
+      fill: none;
+      stroke: #4a5568;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      border-top: 1px solid #4a5568;
+      color: #718096;
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 640px) {
+      .search-bar input[type="text"] {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>微国家导航站</h1>
+    <p>最后更新于2025年5月18日 | 萨特数位发展部维护</p>
+    <p class="disclaimer">建设本网站只是为了方便导航，不代表萨特支持里面的内容。</p>
+  </header>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="text" id="searchInput" placeholder="搜索网站名称或描述..." />
+  </div>
+
+  <!-- Category Tabs -->
+  <div class="container">
+    <div class="category-tabs" id="categoryTabs">
+      <button data-category="all" class="active">全部分类</button>
     </div>
-  );
-}
+
+    <!-- Pinned Section -->
+    <section class="section" id="pinnedSection">
+      <h2>
+        <svg viewBox="0 0 24 24"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+        置顶网站
+      </h2>
+      <div class="card-grid" id="pinnedGrid"></div>
+    </section>
+
+    <!-- Regular Sites Section -->
+    <section class="section" id="regularSection">
+      <h2>其他网站</h2>
+      <div class="card-grid" id="regularGrid"></div>
+    </section>
+
+    <!-- Empty State -->
+    <section class="empty-state" id="emptyState">
+      <svg viewBox="0 0 24 24"><path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <h3>没有找到匹配的结果</h3>
+      <p>请尝试调整搜索词或选择不同的分类。</p>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 萨特数位发展部（互联网与信息化部）</p>
+    <p>保留所有权利</p>
+  </footer>
+
+  <script>
+    // Mock Data
+    const websites = [
+      { name: "萨特DISCORD邀请链接", description: "优质品质，爱来自哈利费克", url: "https://discord.gg/hb3bjm6xBK", category: "萨特相关", pinned: true },
+      { name: "萨特全球信息网", description: "与怯懦相悖，复兴萨特的光辉", url: "https://sites.google.com/view/suttergov/%E9%A6%96%E9%A1%B5?authuser=0", category: "萨特相关", pinned: true },
+      { name: "中文微国家维基", description: "中文微国家维基DISCORD社区", url: "https://discord.gg/PBWAz6wVEq", category: "微国家社区", pinned: false },
+      { name: "苏维埃社会主义共和国联邦", description: "DISCORD链接", url: "https://discord.gg/VxgEfsrv", category: "其他国家", pinned: false },
+      { name: "赫維里森大公國", description: "DISCORD链接", url: "https://discord.gg/fTvvp6qTpR", category: "其他国家", pinned: false },
+      { name: "西瓜聯邦", description: "DISCORD链接", url: "https://discord.gg/trbQJeUUwC", category: "其他国家", pinned: false },
+      { name: "微国家我的世界委员会", description: "DISCORD链接", url: "https://discord.gg/dQyf7J9xuN", category: "微国家社区", pinned: false },
+      { name: "晨弦霧月共和國", description: "DISCORD链接", url: "https://discord.gg/FUZT6c6Zcz", category: "其他国家", pinned: false },
+      { name: "以和平為主的國家納雷茲", description: "DISCORD链接", url: "https://discord.gg/Wedtb5ht", category: "其他国家", pinned: false },
+      { name: "卡布雷勒爾紅城", description: "DISCORD链接", url: "https://discord.gg/RZHNeFvfmM", category: "其他国家", pinned: false },
+      { name: "荷月聯邦共和國", description: "DISCORD链接", url: "https://discord.gg/qVe9Hkkqha", category: "其他国家", pinned: false },
+      { name: "奥沃特国", description: "DISCORD链接", url: "https://discord.gg/7x85wZS35C", category: "其他国家", pinned: false },
+      { name: "星際聯盟", description: "DISCORD链接", url: "https://discord.gg/TtYvqk7Qeg", category: "其他国家", pinned: false },
+      { name: "诺暗比亚", description: "DISCORD链接", url: "https://discord.com/invite/b8gQwfb52A", category: "其他国家", pinned: false },
+      { name: "斯维特拉克社会主义共和国", description: "DISCORD链接", url: "https://discord.gg/QhagK2XJVZ", category: "其他国家", pinned: false },
+      { name: "赫里斯人民共和國", description: "DISCORD链接", url: "https://discord.gg/NBmRPHPkvr", category: "其他国家", pinned: false },
+      { name: "納爾斯聯邦", description: "DISCORD链接", url: "https://discord.gg/JHQPyRHea8", category: "其他国家", pinned: false },
+      { name: "神聖天禮帝國", description: "DISCORD链接", url: "https://discord.gg/RVcygBExCy", category: "其他国家", pinned: false },
+      { name: "大郲帝国", description: "DISCORD链接", url: "https://discord.gg/5gT59K5qKJ", category: "其他国家", pinned: false },
+      { name: "約克塞斯蘇維埃社會主義聯盟", description: "DISCORD链接", url: "https://discord.gg/bQsKAvZPZv", category: "其他国家", pinned: false },
+      { name: "聖赫提斯王國", description: "DISCORD链接", url: "https://discord.gg/C7cGBdT7Pd", category: "其他国家", pinned: false },
+      { name: "华江斯坦", description: "DISCORD链接", url: "https://discord.gg/PHFHNEbykZ", category: "其他国家", pinned: false },
+      { name: "紅石聯邦共和國", description: "DISCORD链接", url: "https://discord.gg/WmxKyHePPg", category: "其他国家", pinned: false },
+      { name: "卢米涅企业共和国", description: "DISCORD链接", url: "https://discord.com/invite/sQ4qSCTjAg", category: "其他国家", pinned: false },
+      { name: "卢米涅企业共和国", description: "国家官网", url: "https://sites.google.com/view/cclgov", category: "其他国家", pinned: false },
+      { name: "微国家联盟", description: "DISCORD链接", url: "https://discord.gg/MZhUrR4nAN", category: "微国家社区", pinned: false },
+      { name: "諾瓦雷克斯帝國", description: "DISCORD链接", url: "https://discord.gg/zrxS7CXYwQ", category: "其他国家", pinned: false },
+      { name: "薩爾多利亞共和國", description: "DISCORD链接", url: "https://discord.gg/nrgfHgKJjr", category: "其他国家", pinned: false },
+      { name: "蒙迪斯总管司", description: "DISCORD链接", url: "https://discord.gg/DZ7x7b5UB8", category: "其他国家", pinned: false },
+      { name: "白森民主共和國", description: "国家官网", url: "https://bit.ly/whithon", category: "其他国家", pinned: false },
+      { name: "中華民主合眾國", description: "国家官网", url: "https://sites.google.com/view/virtual-country/首頁", category: "其他国家", pinned: false },
+      { name: "精民王国", description: "DISCORD链接", url: "https://discord.gg/V5FJhfyStg", category: "其他国家", pinned: false },
+      { name: "瓦瑞希爾王國", description: "DISCORD链接", url: "https://discord.gg/jYscHXQFK9", category: "其他国家", pinned: false },
+      { name: "貓貓尼西亞", description: "国家官网", url: "https://gov.nekonesia.org/", category: "其他国家", pinned: false },
+      { name: "平箱民主共和國", description: "亚洲一个小岛国的国家；经济方面：也讓外資來我國投資；外交部分：有來我國我都歡迎來建交，有時我也會去造訪各國改進我國不之處~希望能和微國的各位共創雙贏的局面", url: "https://discord.gg/TJE9NS4qUU", category: "其他国家", pinned: false },
+      { name: "芙洛華域王國", description: "芙洛華域王國為一架空微國家，於二〇二四年七月中創立，為康索納西亞公約（康約）總召國及締約國。", url: "https://sites.google.com/view/faeroewarick", category: "其他国家", pinned: false },
+      { name: "炎夏帝國", description: "炎夏帝國源遠流長，擁有悠久的歷史文化。我們秉持著和平共處、共同發展的理念，尊重各國的主權和文化", url: "https://discord.gg/h6Rj7eHq", category: "其他国家", pinned: false },
+      { name: "大虞帝國", description: "大虞帝國為一行古制、古禮之開明專制國家。首都曾定於陳京，後遷都大虞南部，定為帝京。", url: "https://discord.gg/V3RpQwPcra", category: "其他国家", pinned: false },
+      { name: "青天民主共和國", description: "面積約400萬平方公里，一個從清朝發動獨立戰爭獨立出來的國家", url: "https://discord.gg/9z88AgBkaa", category: "其他国家", pinned: false },
+      { name: "和科利亞王國; Hokorian State", description: "和科利亞王國為與英國及香港接壤之君主立憲制國家，其本土範圍為前英國西約克郡，另有海外屬地瑞寧省與香港接壤。", url: "https://hokoriagov.net/", category: "其他国家", pinned: false },
+      { name: "布埃納維斯塔聯邦共和國", description: "人民主義制度", url: "https://discord.gg/tnbG9yuR6j", category: "其他国家", pinned: false }
+    ];
+
+    // Get unique categories
+    const categories = ['all', ...new Set(websites.map(site => site.category))];
+
+    // Render category tabs
+    const categoryTabs = document.getElementById('categoryTabs');
+    categories.forEach(category => {
+      const btn = document.createElement('button');
+      btn.textContent = category === 'all' ? '全部分类' : category;
+      btn.dataset.category = category;
+      if (category === 'all') btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderWebsites();
+      });
+      categoryTabs.appendChild(btn);
+    });
+
+    // Elements
+    const searchInput = document.getElementById('searchInput');
+    const pinnedGrid = document.getElementById('pinnedGrid');
+    const regularGrid = document.getElementById('regularGrid');
+    const emptyState = document.getElementById('emptyState');
+
+    function filterWebsites() {
+      const term = searchInput.value.trim().toLowerCase();
+      const activeCategory = document.querySelector('.category-tabs button.active').dataset.category;
+
+      return websites.filter(site => {
+        const matchesSearch = term === '' || 
+          site.name.toLowerCase().includes(term) ||
+          site.description.toLowerCase().includes(term);
+
+        const matchesCategory = activeCategory === 'all' || site.category === activeCategory;
+
+        return matchesSearch && matchesCategory;
+      });
+    }
+
+    function renderWebsites() {
+      const filtered = filterWebsites();
+
+      const pinned = filtered.filter(site => site.pinned);
+      const regular = filtered.filter(site => !site.pinned);
+
+      // Clear grids
+      pinnedGrid.innerHTML = '';
+      regularGrid.innerHTML = '';
+
+      // Render pinned sites
+      pinned.forEach(site => {
+        const card = createCard(site);
+        card.classList.add('pinned');
+        pinnedGrid.appendChild(card);
+      });
+
+      // Render regular sites
+      regular.forEach(site => {
+        const card = createCard(site);
+        regularGrid.appendChild(card);
+      });
+
+      // Toggle empty state
+      const hasResults = pinned.length > 0 || regular.length > 0;
+      emptyState.style.display = hasResults ? 'none' : 'block';
+    }
+
+    function createCard(site) {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      card.innerHTML = `
+        <h3>${site.name}</h3>
+        <p>${site.description}</p>
+        <a href="${site.url}" target="_blank" rel="noopener noreferrer">
+          访问网站
+          <svg viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      `;
+
+      return card;
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', renderWebsites);
+
+    // Initial render
+    renderWebsites();
+  </script>
+</body>
+</html>
 ```
