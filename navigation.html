@@ -59,6 +59,34 @@
       margin-top: 0.5rem;
     }
 
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin: 1rem 2rem;
+    }
+
+    .toolbar button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .toolbar button.dark {
+      background-color: #1a202c;
+      color: white;
+      border: 1px solid #a0aec0;
+    }
+
+    .toolbar button.light {
+      background-color: #edf2f7;
+      color: #1a202c;
+      border: none;
+    }
+
     .search-bar {
       display: flex;
       justify-content: center;
@@ -215,9 +243,56 @@
         max-width: 100%;
       }
     }
+
+    /* Light Mode Styles */
+    body.light {
+      background: linear-gradient(to bottom right, #edf2f7, #f7fafc);
+      color: #1a202c;
+    }
+
+    body.light a {
+      color: #4f46e5;
+    }
+
+    body.light .disclaimer {
+      color: #764ba2;
+    }
+
+    body.light .search-bar input[type="text"] {
+      background-color: #f7fafc;
+      color: #1a202c;
+    }
+
+    body.light .category-tabs button.active {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    body.light .category-tabs button:not(.active) {
+      background-color: #f7fafc;
+      color: #1a202c;
+    }
+
+    body.light .card {
+      background-color: #f7fafc;
+    }
+
+    body.light .empty-state {
+      color: #718096;
+    }
+
+    body.light footer {
+      color: #718096;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button id="toggleLang">简繁切换</button>
+    <button id="toggleTheme" class="dark">暗夜模式</button>
+  </div>
 
   <!-- Header -->
   <header>
@@ -310,7 +385,44 @@
       { name: "大虞帝國", description: "大虞帝國為一行古制、古禮之開明專制國家。首都曾定於陳京，後遷都大虞南部，定為帝京。", url: "https://discord.gg/V3RpQwPcra", category: "其他国家", pinned: false },
       { name: "青天民主共和國", description: "面積約400萬平方公里，一個從清朝發動獨立戰爭獨立出來的國家", url: "https://discord.gg/9z88AgBkaa", category: "其他国家", pinned: false },
       { name: "和科利亞王國; Hokorian State", description: "和科利亞王國為與英國及香港接壤之君主立憲制國家，其本土範圍為前英國西約克郡，另有海外屬地瑞寧省與香港接壤。", url: "https://hokoriagov.net/", category: "其他国家", pinned: false },
-      { name: "布埃納維斯塔聯邦共和國", description: "人民主義制度", url: "https://discord.gg/tnbG9yuR6j", category: "其他国家", pinned: false }
+      { name: "布埃納維斯塔聯邦共和國", description: "人民主義制度", url: "https://discord.gg/tnbG9yuR6j", category: "其他国家", pinned: false },
+      { name: "福爾民主共和國", description: "DISCORD链接", url: "https://discord.gg/YRuBUmzxvj", category: "其他国家", pinned: false },
+      { name: "培根民主共和國", description: "DISCORD链接", url: "https://discord.gg/F6fZFvCrSU", category: "其他国家", pinned: false },
+      { name: "沃斯托伐克社會主義共和國", description: "DISCORD链接", url: "https://discord.gg/8wTvMDNn9b", category: "其他国家", pinned: false },
+      { name: "紅石民國南諾斯維亞宣慰司", description: "DISCORD链接", url: "https://discord.gg/rKXyFFuvbM", category: "其他国家", pinned: false },
+      { name: "金姆維斯民主共和國", description: "我國創始人李政桐與SamHuang因受前黃石共和國總理金釜的託付，而成立並完成我國獨立事宜。 我國於建國初期並未造成任何衝突、爭議...等事件，而後李政桐與SamHuang前後分別擔任金姆維斯民主共和國副總理(前者)與金姆維斯民主共和國總理(後者)。", url: "https://sites.google.com/view/kim-weiss/首頁?authuser=0", category: "其他国家", pinned: false },
+      { name: "卡特蘭民主共和國", description: "DISCORD链接", url: "https://discord.gg/a8YCxFecEp", category: "其他国家", pinned: false },
+      { name: "格里弗蒂塔尼亞聯邦", description: "DISCORD链接", url: "https://sites.google.com/view/federationofgrifthania/首页", category: "其他国家", pinned: false },
+      { name: "馬格里亞伊斯蘭聯邦", description: "DISCORD链接", url: "https://discord.gg/hKEx83tPYU", category: "其他国家", pinned: false },
+      { name: "阿爾帕德獨立委員會", description: "DISCORD链接", url: "https://discord.gg/qJMcDjpaXE", category: "其他国家", pinned: false },
+      { name: "東砂民國", description: "DISCORD链接", url: "https://discord.gg/8P7qtapGqe", category: "其他国家", pinned: false },
+      { name: "賽里斯人民國", description: "DISCORD链接", url: "https://discord.gg/28VenpvNuj", category: "其他国家", pinned: false },
+      { name: "菲爾德蘭王國", description: "DISCORD链接", url: "https://sites.google.com/view/fildland/首頁?authuser=0", category: "其他国家", pinned: false },
+      { name: "克維爾帝國", description: "DISCORD链接", url: "https://www.facebook.com/share/RtgYitDy7AF7qCDM/?mibextid=wwXIfr", category: "其他国家", pinned: false },
+      { name: "菲比斯王國", description: "DISCORD链接", url: "https://discord.gg/8AmaVtNuNm", category: "其他国家", pinned: false },
+      { name: "萝卜国", description: "DISCORD链接", url: "https://discord.gg/HqSpq2SQeR", category: "其他国家", pinned: false },
+      { name: "天華人民共和國", description: "DISCORD链接", url: "https://discord.com/invite/fWy2B7wtBY", category: "其他国家", pinned: false },
+      { name: "列塔尼亞國國領及雞雞鳥國國領聯邦帝國", description: "DISCORD链接", url: "https://discord.gg/fCskGktyF6", category: "其他国家", pinned: false },
+      { name: "安特維蘭德王國", description: "DISCORD链接", url: "https://www.tiktok.com/@federation_of_antwerland?_t=8rC6kKwZBUS&_r=1", category: "其他国家", pinned: false },
+      { name: "塔爾塔洛斯聯合議會共和國聯邦", description: "DISCORD链接", url: "https://discord.gg/NuSUPqabHN", category: "其他国家", pinned: false },
+      { name: "华原民国", description: "DISCORD链接", url: "https://discord.gg/SxjvpNUAWF", category: "其他国家", pinned: false },
+      { name: "大郲華夏帝國", description: "DISCORD链接", url: "https://www.facebook.com/LaiXia.Empire?mibextid=ZbWKwL", category: "其他国家", pinned: false },
+      { name: "正介民國", description: "DISCORD链接", url: "https://sites.google.com/view/masasuke-democratic-republic/首頁?authuser=0", category: "其他国家", pinned: false },
+      { name: "卡波里斯坦共和國", description: "DISCORD链接", url: "https://sites.google.com/view/kaporistan-com/首頁", category: "其他国家", pinned: false },
+      { name: "盧爾提斯帝國", description: "DISCORD链接", url: "https://sites.google.com/view/parkrose01/首頁", category: "其他国家", pinned: false },
+      { name: "新鑽石城民主共和國", description: "DISCORD链接", url: "https://sites.google.com/view/new-diamond-city-officialj350/首頁", category: "其他国家", pinned: false },
+      { name: "拉納卡共和國", description: "DISCORD链接", url: "https://discord.com/invite/7nQhB4vqtf", category: "其他国家", pinned: false },
+      { name: "伊里亞德自由邦", description: "DISCORD链接", url: "https://www.facebook.com/profile.php?id=61560568666866&mibextid=LQQJ4d", category: "其他国家", pinned: false },
+      { name: "魯爾塞薩聯邦共和國", description: "DISCORD链接", url: "https://www.tiktok.com/@rulcersa.republic?_t=8n5Q6GT7osS&_r=1", category: "其他国家", pinned: false },
+      { name: "華辰沙光顧國", description: "DISCORD链接", url: "https://discord.com/invite/6N8MXeeHBB", category: "其他国家", pinned: false },
+      { name: "丹特聯邦共和國", description: "DISCORD链接", url: "https://discord.com/invite/pRyeZvUSSp", category: "其他国家", pinned: false },
+      { name: "彩維利亞", description: "DISCORD链接", url: "https://discord.gg/325yz5guEg", category: "其他国家", pinned: false },
+      { name: "拉比琳斯王國", description: "DISCORD链接", url: "https://sites.google.com/view/labyrinthgov/首頁", category: "其他国家", pinned: false },
+      { name: "盧米涅企業共和國", description: "DISCORD链接", url: "https://discord.gg/pMXHKNJxQB", category: "其他国家", pinned: false },
+      { name: "大和及艾爾聯合王國", description: "DISCORD链接", url: "https://www.tiktok.com/@holy.yamato.united?_t=8n37KvISPKs&_r=1", category: "其他国家", pinned: false },
+      { name: "紅花坂民主共和國", description: "DISCORD链接", url: "https://honghuabanminzhugongheguoguanwang.webnode.tw/", category: "其他国家", pinned: false },
+      { name: "諾瓦雷克斯帝國官网", description: "DISCORD链接", url: "https://sites.google.com/view/nova-mazu", category: "其他国家", pinned: false },
+      { name: "炎属华光王国", description: "DISCORD链接", url: "https://discord.gg/ADbKw35eaT", category: "其他国家", pinned: false }
     ];
 
     // Get unique categories
@@ -336,6 +448,12 @@
     const pinnedGrid = document.getElementById('pinnedGrid');
     const regularGrid = document.getElementById('regularGrid');
     const emptyState = document.getElementById('emptyState');
+
+    const toggleThemeBtn = document.getElementById('toggleTheme');
+    const toggleLangBtn = document.getElementById('toggleLang');
+
+    let isDarkMode = true;
+    let isTraditional = false;
 
     function filterWebsites() {
       const term = searchInput.value.trim().toLowerCase();
@@ -377,16 +495,19 @@
 
       // Toggle empty state
       const hasResults = pinned.length > 0 || regular.length > 0;
-      emptyState.style.display = hasResults ? 'none' : 'block';
+      emptyState.style.display = hasResults ? 'block' : 'none';
     }
 
     function createCard(site) {
       const card = document.createElement('div');
       card.className = 'card';
 
+      const name = isTraditional ? convertToTraditional(site.name) : site.name;
+      const description = isTraditional ? convertToTraditional(site.description) : site.description;
+
       card.innerHTML = `
-        <h3>${site.name}</h3>
-        <p>${site.description}</p>
+        <h3>${name}</h3>
+        <p>${description}</p>
         <a href="${site.url}" target="_blank" rel="noopener noreferrer">
           访问网站
           <svg viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
@@ -395,6 +516,129 @@
 
       return card;
     }
+
+    function convertToTraditional(text) {
+      // Simple Chinese to Traditional conversion (basic implementation)
+      const map = {
+        '优': '優',
+        '复': '複',
+        '兴': '興',
+        '创': '創',
+        '国': '國',
+        '联': '聯',
+        '体': '體',
+        '历': '歷',
+        '发': '發',
+        '展': '展',
+        '区': '區',
+        '际': '際',
+        '经': '經',
+        '济': '濟',
+        '社': '社',
+        '会': '會',
+        '文': '文',
+        '化': '化',
+        '传': '傳',
+        '统': '統',
+        '历': '曆',
+        '史': '史',
+        '文': '文',
+        '化': '化',
+        '理': '理',
+        '念': '念',
+        '尊': '尊',
+        '重': '重',
+        '权': '權',
+        '益': '益',
+        '革': '革',
+        '命': '命',
+        '资': '資',
+        '源': '源',
+        '市': '市',
+        '场': '場',
+        '开': '開',
+        '放': '放',
+        '引': '引',
+        '进': '進',
+        '投': '投',
+        '资': '資',
+        '建': '建',
+        '交': '交',
+        '往': '往',
+        '访': '訪',
+        '问': '問',
+        '领': '領',
+        '土': '土',
+        '海': '海',
+        '外': '外',
+        '属': '屬',
+        '地': '地',
+        '实': '實',
+        '施': '施',
+        '多': '多',
+        '元': '元',
+        '化': '化',
+        '策': '策',
+        '略': '略',
+        '推': '推',
+        '动': '動',
+        '双': '雙',
+        '赢': '贏',
+        '局': '局',
+        '面': '面',
+        '发': '發',
+        '展': '展',
+        '战': '戰',
+        '略': '略',
+        '支': '支',
+        '持': '持',
+        '协': '協',
+        '调': '調',
+        '发': '發',
+        '展': '展',
+        '促': '促',
+        '进': '進',
+        '友': '友',
+        '好': '好',
+        '合': '合',
+        '作': '作',
+        '关': '關',
+        '系': '係',
+        '增': '增',
+        '强': '強',
+        '互': '互',
+        '信': '信',
+        '互': '互',
+        '惠': '惠',
+        '共': '共',
+        '赢': '贏',
+        '合': '合',
+        '作': '作',
+        '伙': '夥',
+        '伴': '伴',
+        '关': '關',
+        '系': '係'
+      };
+
+      return text.replace(/[优复兴创国联体历发展区际经济社化文理念尊重权益革命资源市场开放引进投资建交往访问领土海外属地实施多元化策略推动双赢局面发展协调促进友好合作关系增强互信互惠共赢合作伙伴关系]/g, char => map[char] || char);
+    }
+
+    // Theme toggle
+    toggleThemeBtn.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('light', !isDarkMode);
+      document.body.classList.toggle('dark', isDarkMode);
+      toggleThemeBtn.textContent = isDarkMode ? '暗夜模式' : '白天模式';
+      toggleThemeBtn.classList.remove(isDarkMode ? 'light' : 'dark');
+      toggleThemeBtn.classList.add(isDarkMode ? 'dark' : 'light');
+    });
+
+    // Language toggle
+    toggleLangBtn.addEventListener('click', () => {
+      isTraditional = !isTraditional;
+      toggleLangBtn.textContent = isTraditional ? '简转繁' : '繁转简';
+      renderWebsites();
+    });
 
     // Event listeners
     searchInput.addEventListener('input', renderWebsites);
