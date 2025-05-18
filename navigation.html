@@ -3,261 +3,309 @@ import { useState } from 'react';
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
 
-  // Mock data from the Excel file
+  // Mock data from the Excel file (manually converted)
   const websites = [
     {
       name: '萨特DISCORD邀请链接',
       description: '优质品质，爱来自哈利费克',
       url: 'https://discord.gg/hb3bjm6xBK',
+      category: '萨特相关',
       pinned: true,
     },
     {
       name: '萨特全球信息网',
       description: '与怯懦相悖，复兴萨特的光辉',
       url: 'https://sites.google.com/view/suttergov/%E9%A6%96%E9%A1%B5?authuser=0',
+      category: '萨特相关',
       pinned: true,
     },
     {
       name: '中文微国家维基',
       description: '中文微国家维基DISCORD社区',
       url: 'https://discord.gg/PBWAz6wVEq',
+      category: '微国家社区',
       pinned: false,
     },
     {
       name: '苏维埃社会主义共和国联邦',
       description: 'DISCORD链接',
       url: 'https://discord.gg/VxgEfsrv',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '赫維里森大公國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/fTvvp6qTpR',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '西瓜聯邦',
       description: 'DISCORD链接',
       url: 'https://discord.gg/trbQJeUUwC',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '微国家我的世界委员会',
       description: 'DISCORD链接',
       url: 'https://discord.gg/dQyf7J9xuN',
+      category: '微国家社区',
       pinned: false,
     },
     {
       name: '晨弦霧月共和國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/FUZT6c6Zcz',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '以和平為主的國家納雷茲',
       description: 'DISCORD链接',
       url: 'https://discord.gg/Wedtb5ht',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '卡布雷勒爾紅城',
       description: 'DISCORD链接',
       url: 'https://discord.gg/RZHNeFvfmM',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '荷月聯邦共和國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/qVe9Hkkqha',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '奥沃特国',
       description: 'DISCORD链接',
       url: 'https://discord.gg/7x85wZS35C',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '星際聯盟',
       description: 'DISCORD链接',
       url: 'https://discord.gg/TtYvqk7Qeg',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '诺暗比亚',
       description: 'DISCORD链接',
       url: 'https://discord.com/invite/b8gQwfb52A',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '斯维特拉克社会主义共和国',
       description: 'DISCORD链接',
       url: 'https://discord.gg/QhagK2XJVZ',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '赫里斯人民共和國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/NBmRPHPkvr',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '納爾斯聯邦',
       description: 'DISCORD链接',
       url: 'https://discord.gg/JHQPyRHea8',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '神聖天禮帝國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/RVcygBExCy',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '大郲帝国',
       description: 'DISCORD链接',
       url: 'https://discord.gg/5gT59K5qKJ',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '約克塞斯蘇維埃社會主義聯盟',
       description: 'DISCORD链接',
       url: 'https://discord.gg/bQsKAvZPZv',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '聖赫提斯王國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/C7cGBdT7Pd',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '华江斯坦',
       description: 'DISCORD链接',
       url: 'https://discord.gg/PHFHNEbykZ',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '紅石聯邦共和國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/WmxKyHePPg',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '卢米涅企业共和国',
       description: 'DISCORD链接',
       url: 'https://discord.com/invite/sQ4qSCTjAg',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '卢米涅企业共和国',
       description: '国家官网',
       url: 'https://sites.google.com/view/cclgov',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '微国家联盟',
       description: 'DISCORD链接',
       url: 'https://discord.gg/MZhUrR4nAN',
+      category: '微国家社区',
       pinned: false,
     },
     {
       name: '諾瓦雷克斯帝國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/zrxS7CXYwQ',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '薩爾多利亞共和國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/nrgfHgKJjr',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '蒙迪斯总管司',
       description: 'DISCORD链接',
       url: 'https://discord.gg/DZ7x7b5UB8',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '白森民主共和國',
       description: '国家官网',
       url: 'https://bit.ly/whithon',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '中華民主合眾國',
       description: '国家官网',
       url: 'https://sites.google.com/view/virtual-country/首頁',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '精民王国',
       description: 'DISCORD链接',
       url: 'https://discord.gg/V5FJhfyStg',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '瓦瑞希爾王國',
       description: 'DISCORD链接',
       url: 'https://discord.gg/jYscHXQFK9',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '貓貓尼西亞',
       description: '国家官网',
       url: 'https://gov.nekonesia.org/',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '平箱民主共和國',
       description: '亚洲一个小岛国的国家；经济方面：也讓外資來我國投資；外交部分：有來我國我都歡迎來建交，有時我也會去造訪各國改進我國不之處~希望能和微國的各位共創雙贏的局面',
       url: 'https://discord.gg/TJE9NS4qUU',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '芙洛華域王國',
       description: '芙洛華域王國為一架空微國家，於二〇二四年七月中創立，為康索納西亞公約（康約）總召國及締約國。',
       url: 'https://sites.google.com/view/faeroewarick',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '炎夏帝國',
       description: '炎夏帝國源遠流長，擁有悠久的歷史文化。我們秉持著和平共處、共同發展的理念，尊重各國的主權和文化',
       url: 'https://discord.gg/h6Rj7eHq',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '大虞帝國',
       description: '大虞帝國為一行古制、古禮之開明專制國家。首都曾定於陳京，後遷都大虞南部，定為帝京。',
       url: 'https://discord.gg/V3RpQwPcra',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '青天民主共和國',
       description: '面積約400萬平方公里，一個從清朝發動獨立戰爭獨立出來的國家',
       url: 'https://discord.gg/9z88AgBkaa',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '和科利亞王國; Hokorian State',
       description: '和科利亞王國為與英國及香港接壤之君主立憲制國家，其本土範圍為前英國西約克郡，另有海外屬地瑞寧省與香港接壤。',
       url: 'https://hokoriagov.net/',
+      category: '其他国家',
       pinned: false,
     },
     {
       name: '布埃納維斯塔聯邦共和國',
       description: '人民主義制度',
       url: 'https://discord.gg/tnbG9yuR6j',
+      category: '其他国家',
       pinned: false,
     },
   ];
 
+  // Get unique categories for filtering
+  const categories = ['all', ...Array.from(new Set(websites.map(site => site.category)))];
+
+  // Filter sites based on search term and active tab
   const filteredWebsites = websites.filter(
     (site) =>
-      site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      site.description.toLowerCase().includes(searchTerm.toLowerCase())
+      (searchTerm === '' || 
+       site.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       site.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (activeTab === 'all' || site.category === activeTab)
   );
 
   const pinnedSites = filteredWebsites.filter((site) => site.pinned);
@@ -301,6 +349,25 @@ export default function App() {
         </div>
       </div>
 
+      {/* Category Tabs */}
+      <div className="max-w-6xl mx-auto px-4 mb-8 overflow-x-auto">
+        <div className="flex space-x-2 pb-2">
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveTab(category)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                activeTab === category
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              {category === 'all' ? '全部分类' : category}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Pinned Sites Section */}
       {pinnedSites.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 mb-12">
@@ -325,11 +392,11 @@ export default function App() {
             {pinnedSites.map((site, index) => (
               <div
                 key={index}
-                className="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border-l-4 border-yellow-500"
+                className="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 border-l-4 border-yellow-500 transform hover:-translate-y-1 transition-transform"
               >
                 <div className="p-5">
                   <h3 className="text-xl font-semibold mb-2">{site.name}</h3>
-                  <p className="text-gray-400 mb-4 text-sm">{site.description}</p>
+                  <p className="text-gray-400 mb-4 text-sm line-clamp-2">{site.description}</p>
                   <a
                     href={site.url}
                     target="_blank"
@@ -367,11 +434,11 @@ export default function App() {
             {regularSites.map((site, index) => (
               <div
                 key={index}
-                className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1"
+                className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1 transition-transform"
               >
                 <div className="p-5">
                   <h3 className="text-lg font-medium mb-1">{site.name}</h3>
-                  <p className="text-gray-400 mb-3 text-sm">{site.description}</p>
+                  <p className="text-gray-400 mb-3 text-sm line-clamp-2">{site.description}</p>
                   <a
                     href={site.url}
                     target="_blank"
@@ -399,6 +466,28 @@ export default function App() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Empty state */}
+      {filteredWebsites.length === 0 && (
+        <div className="max-w-6xl mx-auto px-4 py-16 text-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="mx-auto h-16 w-16 text-gray-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 className="mt-4 text-lg font-medium text-gray-300">没有找到匹配的结果</h3>
+          <p className="mt-1 text-sm text-gray-500">请尝试调整搜索词或选择不同的分类。</p>
+        </div>
       )}
 
       {/* Footer */}
