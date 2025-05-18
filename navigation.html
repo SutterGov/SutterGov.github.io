@@ -117,7 +117,7 @@
 
     .category-tabs {
       overflow-x: auto;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
       padding-bottom: 0.5rem;
     }
 
@@ -292,13 +292,33 @@
     .featured-section {
       margin-top: 2rem;
       margin-bottom: 3rem;
-      text-align: center;
     }
 
     .featured-section h2 {
       font-size: 1.5rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .featured-carousel {
+      display: flex;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 1rem;
+    }
+
+    .featured-carousel::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .featured-carousel::-webkit-scrollbar-track {
+      background: #4a5568;
+    }
+
+    .featured-carousel::-webkit-scrollbar-thumb {
+      background: #34d399;
+      border-radius: 4px;
     }
 
     .featured-card {
@@ -306,8 +326,14 @@
       color: #1a202c;
       border-radius: 0.75rem;
       padding: 1.5rem;
-      max-width: 600px;
-      margin: 0 auto;
+      min-width: 300px;
+      max-width: 400px;
+      flex-shrink: 0;
+      margin-right: 1rem;
+    }
+
+    .featured-card:last-child {
+      margin-right: 0;
     }
 
     .featured-card h3 {
@@ -344,23 +370,15 @@
   <header>
     <h1>微国家导航站</h1>
     <p>最后更新于2025年5月18日 | 萨特数位发展部维护</p>
-    <p class="disclaimer">建设本网站只是为了方便导航，不代表萨特支持里面的内容。</p>
-    <p class="disclaimer">新增、修改、下架、举报链接请前往萨特DISCORD频道反馈。</p>
+    <p class="disclaimer">建设本网站只是为了方便导航，不代表萨特支持里面的内容。新增、修改、下架、举报链接请前往萨特DISCORD频道反馈。</p>
   </header>
 
   <!-- Featured Section -->
   <div class="container featured-section light:hidden">
     <h2>本周特色国家</h2>
-    <div class="featured-card">
-      <h3>薩爾多利亞共和國</h3>
-      <p>让我们把114514文化发扬光大吧！</p>
-      <a href="https://discord.gg/nrgfHgKJjr" target="_blank">访问网站 →</a>
+    <div class="featured-carousel" id="featuredCarousel">
+      <!-- Cards will be inserted here dynamically -->
     </div>
-  <div class="featured-card">
-      <h3>高加西亚共和國</h3>
-      <p>祖国，革命，社会主义！</p>
-      <a href="https://discord.gg/aNyRpPUtQu" target="_blank">访问网站 →</a>
-    </div> 
   </div>
 
   <!-- Search Bar -->
@@ -434,7 +452,7 @@
       { name: "卢米涅企业共和国", description: "国家官网", url: "https://sites.google.com/view/cclgov", category: "其他国家", pinned: false },
       { name: "微国家联盟", description: "DISCORD链接", url: "https://discord.gg/MZhUrR4nAN", category: "微国家社区", pinned: false },
       { name: "諾瓦雷克斯帝國", description: "DISCORD链接", url: "https://discord.gg/zrxS7CXYwQ", category: "其他国家", pinned: false },
-      { name: "薩爾多利亞共和國", description: "DISCORD链接", url: "https://discord.gg/nrgfHgKJjr", category: "其他国家", pinned: false, featured: true },
+      { name: "薩爾多利亞共和國", description: "DISCORD链接", url: "https://discord.gg/nrgfHgKJjr", category: "其他国家", pinned: false },
       { name: "蒙迪斯总管司", description: "DISCORD链接", url: "https://discord.gg/DZ7x7b5UB8", category: "其他国家", pinned: false },
       { name: "白森民主共和國", description: "国家官网", url: "https://bit.ly/whithon", category: "其他国家", pinned: false },
       { name: "中華民主合眾國", description: "国家官网", url: "https://sites.google.com/view/virtual-country/首頁", category: "其他国家", pinned: false },
@@ -442,11 +460,11 @@
       { name: "瓦瑞希爾王國", description: "DISCORD链接", url: "https://discord.gg/jYscHXQFK9", category: "其他国家", pinned: false },
       { name: "貓貓尼西亞", description: "国家官网", url: "https://gov.nekonesia.org/", category: "其他国家", pinned: false },
       { name: "平箱民主共和國", description: "亚洲一个小岛国的国家；经济方面：也讓外資來我國投資；外交部分：有來我國我都歡迎來建交，有時我也會去造訪各國改進我國不之處~希望能和微國的各位共創雙贏的局面", url: "https://discord.gg/TJE9NS4qUU", category: "其他国家", pinned: false },
-      { name: "芙洛華域王國", description: "架空微國家，康索納西亞公約總召國", url: "https://sites.google.com/view/faeroewarick", category: "其他国家", pinned: false },
-      { name: "炎夏帝國", description: "秉持著和平共處、共同發展的理念", url: "https://discord.gg/h6Rj7eHq", category: "其他国家", pinned: false },
-      { name: "大虞帝國", description: "開明專制國家，首都定為帝京", url: "https://discord.gg/V3RpQwPcra", category: "其他国家", pinned: false },
-      { name: "青天民主共和國", description: "从清朝独立出来的国家", url: "https://discord.gg/9z88AgBkaa", category: "其他国家", pinned: false },
-      { name: "和科利亞王國; Hokorian State", description: "君主立憲制，與英國及香港接壤", url: "https://hokoriagov.net/", category: "其他国家", pinned: false },
+      { name: "芙洛華域王國", description: "芙洛華域王國為一架空微國家，於二〇二四年七月中創立，為康索納西亞公約（康約）總召國及締約國。", url: "https://sites.google.com/view/faeroewarick", category: "其他国家", pinned: false },
+      { name: "炎夏帝國", description: "炎夏帝國源遠流長，擁有悠久的歷史文化。我們秉持著和平共處、共同發展的理念，尊重各國的主權和文化", url: "https://discord.gg/h6Rj7eHq", category: "其他国家", pinned: false },
+      { name: "大虞帝國", description: "大虞帝國為一行古制、古禮之開明專制國家。首都曾定於陳京，後遷都大虞南部，定為帝京。", url: "https://discord.gg/V3RpQwPcra", category: "其他国家", pinned: false },
+      { name: "青天民主共和國", description: "面積約400萬平方公里，一個從清朝發動獨立戰爭獨立出來的國家", url: "https://discord.gg/9z88AgBkaa", category: "其他国家", pinned: false },
+      { name: "和科利亞王國; Hokorian State", description: "和科利亞王國為與英國及香港接壤之君主立憲制國家，其本土範圍為前英國西約克郡，另有海外屬地瑞寧省與香港接壤。", url: "https://hokoriagov.net/", category: "其他国家", pinned: false },
       { name: "布埃納維斯塔聯邦共和國", description: "人民主義制度", url: "https://discord.gg/tnbG9yuR6j", category: "其他国家", pinned: false },
       { name: "福爾民主共和國", description: "DISCORD链接", url: "https://discord.gg/YRuBUmzxvj", category: "其他国家", pinned: false },
       { name: "培根民主共和國", description: "DISCORD链接", url: "https://discord.gg/F6fZFvCrSU", category: "其他国家", pinned: false },
@@ -470,14 +488,14 @@
       { name: "华原民国", description: "位于印尼的微国家", url: "https://discord.gg/SxjvpNUAWF", category: "其他国家", pinned: false },
       { name: "大郲華夏帝國", description: "霸權之祖", url: "https://www.facebook.com/LaiXia.Empire?mibextid=ZbWKwL", category: "其他国家", pinned: false },
       { name: "正介民國", description: "位于东亚的微国家", url: "https://sites.google.com/view/masasuke-democratic-republic/首頁?authuser=0", category: "其他国家", pinned: false },
-      { name: "卡波里斯坦共和國", description: "澳门领土，民主社会主义", url: "https://sites.google.com/view/kaporistan-com/首頁", category: "其他国家", pinned: false },
+      { name: "卡波里斯坦共和国", description: "澳门领土，民主社会主义", url: "https://sites.google.com/view/kaporistan-com/首頁", category: "其他国家", pinned: false },
       { name: "盧爾提斯帝國", description: "君主立宪制，皇帝为元首", url: "https://sites.google.com/view/parkrose01/首頁", category: "其他国家", pinned: false },
       { name: "新鑽石城民主共和國", description: "国家官网", url: "https://sites.google.com/view/new-diamond-city-officialj350/首頁", category: "其他国家", pinned: false },
-      { name: "拉納卡共和國", description: "由DC至抖音的国家", url: "https://discord.com/invite/7nQhB4vqtf", category: "其他国家", pinned: false },
+      { name: "拉納卡共和國", description: "从DC到抖音的国家", url: "https://discord.gg/7nQhB4vqtf", category: "其他国家", pinned: false },
       { name: "伊里亞德自由邦", description: "大洋彼岸的微国家", url: "https://www.facebook.com/profile.php?id=61560568666866&mibextid=LQQJ4d", category: "其他国家", pinned: false },
       { name: "魯爾塞薩聯邦共和國", description: "高度包容和谐的社会目标", url: "https://www.tiktok.com/@rulcersa.republic?_t=8n5Q6GT7osS&_r=1", category: "其他国家", pinned: false },
-      { name: "華辰沙光顧國", description: "多元文化的国家", url: "https://discord.com/invite/6N8MXeeHBB", category: "其他国家", pinned: false },
-      { name: "丹特聯邦共和國", description: "少数不反对同性爱情的国家", url: "https://discord.com/invite/pRyeZvUSSp", category: "其他国家", pinned: false },
+      { name: "華辰沙光顧國", description: "多元文化的国家", url: "https://discord.gg/6N8MXeeHBB", category: "其他国家", pinned: false },
+      { name: "丹特聯邦共和國", description: "少数不反对同性爱情的国家", url: "https://discord.gg/pRyeZvUSSp", category: "其他国家", pinned: false },
       { name: "彩維利亞", description: "虚构国家", url: "https://discord.gg/325yz5guEg", category: "其他国家", pinned: false },
       { name: "拉比琳斯王國", description: "光与闇之迷路園", url: "https://sites.google.com/view/labyrinthgov/首頁", category: "其他国家", pinned: false },
       { name: "盧米涅企業共和國", description: "沐浴於三女神神聖光輝", url: "https://discord.gg/pMXHKNJxQB", category: "其他国家", pinned: false },
@@ -517,6 +535,7 @@
 
     const toggleThemeBtn = document.getElementById('toggleTheme');
     const toggleLangBtn = document.getElementById('toggleLang');
+    const featuredCarousel = document.getElementById('featuredCarousel');
 
     let isDarkMode = true;
     let isTraditional = false;
@@ -536,12 +555,36 @@
       });
     }
 
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function renderFeaturedSites() {
+      const shuffled = shuffle([...websites]);
+      const featured = shuffled.slice(0, 10); // Randomly pick 10 sites
+
+      featuredCarousel.innerHTML = '';
+      featured.forEach(site => {
+        const card = createCard(site);
+        card.className = 'featured-card';
+        card.innerHTML = `
+          <h3>${isTraditional ? convertToTraditional(site.name) : site.name}</h3>
+          <p>${isTraditional ? convertToTraditional(site.description) : site.description}</p>
+          <a href="${site.url}" target="_blank">访问网站 →</a>
+        `;
+        featuredCarousel.appendChild(card);
+      });
+    }
+
     function renderWebsites() {
       const filtered = filterWebsites();
 
       const pinned = filtered.filter(site => site.pinned);
-      const regular = filtered.filter(site => !site.pinned && !site.featured);
-      const featured = filtered.find(site => site.featured);
+      const regular = filtered.filter(site => !site.pinned);
 
       // Clear grids
       pinnedGrid.innerHTML = '';
@@ -577,7 +620,7 @@
         <p>${description}</p>
         <a href="${site.url}" target="_blank" rel="noopener noreferrer">
           访问网站
-          <svg viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         </a>
       `;
 
@@ -585,7 +628,6 @@
     }
 
     function convertToTraditional(text) {
-      // Simple Chinese to Traditional conversion (basic implementation)
       const map = {
         '优': '優',
         '复': '複',
@@ -681,7 +723,7 @@
         '系': '係'
       };
 
-      return text.replace(/[优复兴创国联体历发展区际经社会文化传统历史理念尊重权益革命资源市场开放引进投资建交往访问领土海外属地实施多元化策略推动双赢局面发展协调促进友好合作关系增强互信互惠共赢合作伙伴关系]/g, char => map[char] || char);
+      return text.replace(/[优复兴创国联体历发展区际经济社会文化传统理念尊重权益革命资源市场开放引进投资建交往访问领土海外属地实施多元化策略推动双赢局面发展协调促进友好合作关系增强互信互惠共赢合作伙伴关系]/g, char => map[char] || char);
     }
 
     // Theme toggle
@@ -698,12 +740,14 @@
       isTraditional = !isTraditional;
       toggleLangBtn.textContent = isTraditional ? '简转繁' : '繁转简';
       renderWebsites();
+      renderFeaturedSites();
     });
 
     // Event listeners
     searchInput.addEventListener('input', renderWebsites);
 
     // Initial render
+    renderFeaturedSites();
     renderWebsites();
   </script>
 </body>
