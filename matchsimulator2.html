@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>足球比赛模拟器</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f3f4f6;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(to right, #2563eb, #3730a3);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .card {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      flex: 1;
+      min-width: 300px;
+    }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      width: 100%;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-size: 1rem;
+    }
+    button:disabled {
+      background-color: #93c5fd;
+      cursor: not-allowed;
+    }
+    .match-result {
+      text-align: center;
+    }
+    .match-result h3 {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+    }
+    .events-list {
+      list-style: none;
+      padding-left: 0;
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      background-color: #fafafa;
+      padding: 1rem;
+    }
+    .event-item {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.5rem;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease;
+    }
+    .event-item:hover {
+      transform: scale(1.01);
+    }
+    .event-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 1rem;
+      font-size: 1.2rem;
+    }
+    .icon-goal {
+      background-color: #facc15;
+      color: white;
+    }
+    .icon-yellow {
+      background-color: #fcd34d;
+      color: white;
+    }
+    .icon-red {
+      background-color: #ef4444;
+      color: white;
+    }
+    .event-minute {
+      font-weight: bold;
+      width: 40px;
+      text-align: right;
+      margin-right: 1rem;
+      color: #6b7280;
+    }
+    .event-desc {
+      flex: 1;
+      font-weight: 500;
+    }
+    .stats {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #ffffff;
+      border-radius: 0.75rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .stat-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .stat-label {
+      width: 160px;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+    .bar-container {
+      position: relative;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      overflow: hidden;
+      flex: 1;
+      margin: 0 1rem;
+    }
+    .bar-home,
+    .bar-away {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-radius: 9999px;
+    }
+    .bar-home {
+      left: 0;
+      background-color: #3b82f6;
+    }
+    .bar-away {
+      right: 0;
+      background-color: #ef4444;
+    }
+    .stat-value {
+      font-weight: bold;
+      font-size: 1rem;
+      min-width: 60px;
+      text-align: center;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      background-color: #1f2937;
+      color: white;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>足球比赛模拟器</h1>
+  <p>萨特2016-2025©版权所有</p>
+</header>
+
+<main>
+  <!-- 左侧：输入球队 -->
+  <div class="card">
+    <h2>输入球队信息</h2>
+
+    <label for="homeTeam">主场球队名称</label>
+    <input type="text" id="homeTeam" placeholder="例如：我操" />
+
+    <label for="homeRating">主场球队能力值</label>
+    <input type="number" id="homeRating" min="1" max="100" placeholder="1~100" />
+
+    <label for="awayTeam">客场球队名称</label>
+    <input type="text" id="awayTeam" placeholder="例如：尼玛" />
+
+    <label for="awayRating">客场球队能力值</label>
+    <input type="number" id="awayRating" min="1" max="100" placeholder="1~100" />
+
+    <button id="simulateBtn" disabled>开始模拟比赛</button>
+
+    <h3 style="margin-top: 2rem;">关于</h3>
+    <p>我也不知道该说啥，就给大家点个赞得了</p>
+  </div>
+
+  <!-- 右侧：比赛结果展示 -->
+  <div class="card" id="resultCard">
+    <div class="match-result" id="matchSummary">
+      <h3>等待比赛开始</h3>
+      <p>请输入主队和客队信息后点击“开始模拟比赛”按钮</p>
+    </div>
+
+    <div id="matchEvents">
+      <h3>比赛过程</h3>
+      <ul class="events-list" id="eventsList"></ul>
+    </div>
+
+    <div id="matchStats" class="stats">
+      <h3 class="text-xl font-bold mb-6 text-center">比赛技术统计</h3>
+
+      <div class="stat-row">
+        <span class="stat-label">控球率</span>
+        <div class="bar-container">
+          <div id="possessionBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="possessionBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="possessionText" class="stat-value">50% - 50%</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">期望进球 (xG)</span>
+        <div class="bar-container">
+          <div id="expectedGoalsBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="expectedGoalsBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="expectedGoals" class="stat-value">1.2 - 1.0</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">射门次数</span>
+        <div class="bar-container">
+          <div id="shotsBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="shotsBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="shots" class="stat-value">12 - 9</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">角球次数</span>
+        <div class="bar-container">
+          <div id="cornersBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="cornersBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="corners" class="stat-value">5 - 3</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">犯规次数</span>
+        <div class="bar-container">
+          <div id="foulsBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="foulsBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="fouls" class="stat-value">10 - 12</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">地面对抗成功率</span>
+        <div class="bar-container">
+          <div id="groundDuelBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="groundDuelBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="groundDuel" class="stat-value">55% - 45%</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">空中对抗成功率</span>
+        <div class="bar-container">
+          <div id="aerialDuelBarHome" class="bar-home" style="width: 50%;"></div>
+          <div id="aerialDuelBarAway" class="bar-away" style="width: 50%;"></div>
+        </div>
+        <span id="aerialDuel" class="stat-value">52% - 48%</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">黄牌数量</span>
+        <div class="bar-container">
+          <div id="yellowCardsBarHome" class="bar-home" style="width: 40%;"></div>
+          <div id="yellowCardsBarAway" class="bar-away" style="width: 60%;"></div>
+        </div>
+        <span id="yellowCards" class="stat-value">2 - 3</span>
+      </div>
+
+      <div class="stat-row">
+        <span class="stat-label">红牌数量</span>
+        <div class="bar-container">
+          <div id="redCardsBarHome" class="bar-home" style="width: 0%;"></div>
+          <div id="redCardsBarAway" class="bar-away" style="width: 100%;"></div>
+        </div>
+        <span id="redCards" class="stat-value">0 - 1</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2025 足球比赛模拟器 | 2016-2025萨特© </p>
+  <p>未经允许盗用必究</p>
+</footer>
+
+<script>
+  const homeTeamInput = document.getElementById('homeTeam');
+  const homeRatingInput = document.getElementById('homeRating');
+  const awayTeamInput = document.getElementById('awayTeam');
+  const awayRatingInput = document.getElementById('awayRating');
+  const simulateBtn = document.getElementById('simulateBtn');
+
+  const matchSummary = document.getElementById('matchSummary');
+  const eventsList = document.getElementById('eventsList');
+
+  // 技术统计 DOM 元素
+  const possessionText = document.getElementById('possessionText');
+  const expectedGoals = document.getElementById('expectedGoals');
+  const shots = document.getElementById('shots');
+  const corners = document.getElementById('corners');
+  const fouls = document.getElementById('fouls');
+  const groundDuel = document.getElementById('groundDuel');
+  const aerialDuel = document.getElementById('aerialDuel');
+  const yellowCards = document.getElementById('yellowCards');
+  const redCards = document.getElementById('redCards');
+
+  function setBar(id, valHome, valAway) {
+    const total = valHome + valAway;
+    const percentHome = total === 0 ? 50 : (valHome / total) * 100;
+    const percentAway = total === 0 ? 50 : (valAway / total) * 100;
+
+    document.getElementById(`${id}Home`).style.width = `${percentHome}%`;
+    document.getElementById(`${id}Away`).style.width = `${percentAway}%`;
+  }
+
+  [homeTeamInput, homeRatingInput, awayTeamInput, awayRatingInput].forEach(input => {
+    input.addEventListener('input', () => {
+      const valid =
+        homeTeamInput.value.trim() !== '' &&
+        awayTeamInput.value.trim() !== '' &&
+        !isNaN(homeRatingInput.value) && homeRatingInput.value >= 1 &&
+        !isNaN(awayRatingInput.value) && awayRatingInput.value >= 1;
+      simulateBtn.disabled = !valid;
+    });
+  });
+
+  function generateMatchEvents(home, away, result) {
+    const players = ['前锋', '中场', '后卫', '守门员'];
+    const eventTypes = [
+      { type: 'goal', icon: '⚽' },
+      { type: 'yellow', icon: '🟨' },
+      { type: 'red', icon: '🟥' }
+    ];
+
+    const events = [];
+    let time = 0;
+    let homeGoals = 0, awayGoals = 0;
+
+    while (homeGoals < result.homeGoals || awayGoals < result.awayGoals) {
+      if (time >= 90) break;
+      const team = Math.random() > 0.5 ? home : away;
+      const player = players[Math.floor(Math.random() * players.length)];
+      const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+
+      // 确保事件均匀分布在四个阶段
+      if (events.length === 0) {
+        time = Math.floor(Math.random() * 20) + 1; // 开局（1-20分钟）
+      } else if (events.length === 1) {
+        time = Math.floor(Math.random() * 25) + 21; // 中盘（21-45分钟）
+      } else if (events.length === 2) {
+        time = Math.floor(Math.random() * 20) + 46; // 后盘（46-65分钟）
+      } else {
+        time = Math.floor(Math.random() * 25) + 66; // 结束（66-90分钟）
+      }
+
+      if (eventType.type === 'goal') {
+        if ((team === home && homeGoals < result.homeGoals) ||
+            (team === away && awayGoals < result.awayGoals)) {
+          if (team === home) homeGoals++;
+          else awayGoals++;
+          events.push({ minute: time, icon: eventType.icon, description: `${team}球员${player}破门得分！`, type: 'goal' });
+        }
+      } else if (eventType.type === 'yellow') {
+        events.push({ minute: time, icon: eventType.icon, description: `${team}吃到黄牌。`, type: 'yellow' });
+      } else if (eventType.type === 'red') {
+        events.push({ minute: time, icon: eventType.icon, description: `${team}球员被红牌罚下。`, type: 'red' });
+      }
+    }
+
+    return events.sort((a, b) => a.minute - b.minute);
+  }
+
+  function generateMatchStats(homeRating, awayRating) {
+    const possessionHome = Math.max(35, Math.min(65, 50 + (homeRating - awayRating) * 0.3));
+    const xGHome = parseFloat((1.5 + (homeRating - awayRating) * 0.05).toFixed(2));
+    const xGAway = parseFloat((1.5 + (awayRating - homeRating) * 0.05).toFixed(2));
+
+    const shotsHome = Math.floor(xGHome * 4 + Math.random() * 5);
+    const shotsAway = Math.floor(xGAway * 4 + Math.random() * 5);
+
+    const cornersHome = Math.floor(Math.random() * 8) + 3;
+    const cornersAway = Math.floor(Math.random() * 8) + 3;
+
+    const foulsHome = Math.floor(Math.random() * 8) + 8;
+    const foulsAway = Math.floor(Math.random() * 8) + 8;
+
+    const groundDuelHome = Math.floor(50 + (homeRating - awayRating) * 0.5 + Math.random() * 10);
+    const aerialDuelHome = Math.floor(50 + (homeRating - awayRating) * 0.3 + Math.random() * 8);
+
+    const yellowCardsHome = Math.floor(Math.random() * 4);
+    const yellowCardsAway = Math.floor(Math.random() * 4);
+    const redCardsHome = Math.random() > 0.999 ? 1 : 0; // 大幅度降低红牌概率
+    const redCardsAway = Math.random() > 0.999 ? 1 : 0;
+
+    return {
+      possession: [Math.round(possessionHome), Math.round(100 - possessionHome)],
+      expectedGoals: [xGHome, xGAway],
+      shots: [shotsHome, shotsAway],
+      corners: [cornersHome, cornersAway],
+      fouls: [foulsHome, foulsAway],
+      groundDuel: [groundDuelHome, 100 - groundDuelHome],
+      aerialDuel: [aerialDuelHome, 100 - aerialDuelHome],
+      yellowCards: [yellowCardsHome, yellowCardsAway],
+      redCards: [redCardsHome, redCardsAway]
+    };
+  }
+
+  function simulateMatch() {
+    const home = homeTeamInput.value.trim();
+    const away = awayTeamInput.value.trim();
+
+    const homeRating = parseInt(homeRatingInput.value);
+    const awayRating = parseInt(awayRatingInput.value);
+
+    if (!home || !away || home === away) {
+      alert("请输入不同的主队和客队");
+      return;
+    }
+
+    // 模拟比赛结果
+    const ratingDiff = homeRating - awayRating;
+    let result;
+
+    if (ratingDiff >= 50) {
+      result = { homeGoals: 3, awayGoals: 0 };
+    } else if (ratingDiff >= 20) {
+      result = { homeGoals: 2, awayGoals: 1 };
+    } else if (ratingDiff <= -50) {
+      result = { homeGoals: 0, awayGoals: 3 };
+    } else if (ratingDiff <= -20) {
+      result = { homeGoals: 1, awayGoals: 2 };
+    } else {
+      const random = Math.random();
+      if (random < 0.3) result = { homeGoals: 2, awayGoals: 1 };
+      else if (random < 0.6) result = { homeGoals: 1, awayGoals: 2 };
+      else result = { homeGoals: 1, awayGoals: 1 };
+    }
+
+    const events = generateMatchEvents(home, away, result);
+    const stats = generateMatchStats(homeRating, awayRating);
+
+    // 显示比赛结果
+    matchSummary.innerHTML = `
+      <h3>${home} vs ${away}</h3>
+      <h3 class="text-xl font-bold">${result.homeGoals} - ${result.awayGoals}</h3>
+    `;
+
+    // 显示比赛事件（每秒一条）
+    eventsList.innerHTML = '';
+    let i = 0;
+    const timer = setInterval(() => {
+      if (i < events.length) {
+        const e = events[i];
+        const li = document.createElement('li');
+        li.className = 'event-item';
+        li.innerHTML = `
+          <div class="event-icon icon-${e.type}" title="${e.type}">${e.icon}</div>
+          <span class="event-minute">${e.minute}'</span>
+          <span class="event-desc">${e.description}</span>
+        `;
+        eventsList.appendChild(li);
+        i++;
+      } else {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    // 更新技术统计条形图
+    possessionText.textContent = `${stats.possession[0]}% - ${stats.possession[1]}%`;
+    setBar('possessionBar', stats.possession[0], stats.possession[1]);
+
+    expectedGoals.textContent = `${stats.expectedGoals[0]} - ${stats.expectedGoals[1]}`;
+    setBar('expectedGoalsBar', stats.expectedGoals[0], stats.expectedGoals[1]);
+
+    shots.textContent = `${stats.shots[0]} - ${stats.shots[1]}`;
+    setBar('shotsBar', stats.shots[0], stats.shots[1]);
+
+    corners.textContent = `${stats.corners[0]} - ${stats.corners[1]}`;
+    setBar('cornersBar', stats.corners[0], stats.corners[1]);
+
+    fouls.textContent = `${stats.fouls[0]} - ${stats.fouls[1]}`;
+    setBar('foulsBar', stats.fouls[0], stats.fouls[1]);
+
+    groundDuel.textContent = `${stats.groundDuel[0]}% - ${stats.groundDuel[1]}%`;
+    setBar('groundDuelBar', stats.groundDuel[0], stats.groundDuel[1]);
+
+    aerialDuel.textContent = `${stats.aerialDuel[0]}% - ${stats.aerialDuel[1]}%`;
+    setBar('aerialDuelBar', stats.aerialDuel[0], stats.aerialDuel[1]);
+
+    yellowCards.textContent = `${stats.yellowCards[0]} - ${stats.yellowCards[1]}`;
+    setBar('yellowCardsBar', stats.yellowCards[0], stats.yellowCards[1]);
+
+    redCards.textContent = `${stats.redCards[0]} - ${stats.redCards[1]}`;
+    setBar('redCardsBar', stats.redCards[0], stats.redCards[1]);
+  }
+
+  document.getElementById('simulateBtn').addEventListener('click', simulateMatch);
+</script>
+
+</body>
+</html>
