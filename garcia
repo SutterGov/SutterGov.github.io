@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加西亚联赛导航</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            background-color: #333333;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .button:hover {
+            background-color: #555555;
+        }
+        .note {
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="https://garciadatabase.glide.page/dl/da19fa" class="button">联赛数据库<div class="note">需要使用加速器访问</div></a>
+        <a href="http://garcia.free.mbbs.cc/#/thread/category/1" class="button">联赛论坛</a>
+        <a href="http://garcia.free.mbbs.cc/#/thread/category/2" class="button">联赛规则库</a>
+        <a href="https://fminside.net/players" class="button">FMinside-查球员</a>
+        <a href="https://searchfm.cn/" class="button">搜猪网-查球员</a>
+        <a href="https://www.douyin.com/user/MS4wLjABAAAALQAl7CO_rUGphB-5pIDMw1fIBNi8_Rz_fzFMKJmg7yA5MHVL6VhvziMfozkxxTHa?from_tab_name=main" class="button">联赛官方抖音<div class="note">需要使用加速器访问</div></a>
+        <a href="https://ws.eniblo.com/9ZvK4o1EnbOxn42Tlr/" class="button">顶级联赛积分榜</a>
+        <a href="https://ws.eniblo.com/j3JaT0CSGznpRuFRLZ/" class="button">次级联赛积分榜</a>
+        <a href="https://ws.eniblo.com/HSo6Bjz57B6GemYPEy/" class="button">预备队联赛积分榜</a>
+    </div>
+</body>
+</html>
