@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>球队声望计算器</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03)}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(180deg,#071024 0%, #07162a 100%); color:#e6eef6; margin:0; padding:28px;}
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px;margin-top:18px}
+    .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+    .inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=number], input[type=range], select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit}
+    .full{grid-column:1 / -1}
+    .small{font-size:12px;color:var(--muted);}
+    .result{display:flex;flex-direction:column;gap:12px}
+    .score{font-size:42px;font-weight:700}
+    .bar{height:14px;background:rgba(255,255,255,0.06);border-radius:8px;overflow:hidden}
+    .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    td,th{padding:6px 8px;border-bottom:1px dashed rgba(255,255,255,0.03)}
+    th{color:var(--muted);text-align:left;font-weight:600}
+    .muted{color:var(--muted);font-size:12px}
+    .actions{display:flex;gap:8px}
+    button{padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:#042027;font-weight:600;cursor:pointer}
+    .secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    footer{margin-top:16px;color:var(--muted);font-size:12px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr;}.inputs{grid-template-columns:1fr}.card{padding:12px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>球队声望计算器</h1>
+        <p class="lead">在页面前端输入球队数据，实时计算并展示声望（0–100）。采用你之前的模型权重与归一化规则。</p>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <form id="form">
+          <div class="inputs">
+            <div>
+              <label>联赛规模（N） <span class="small">（用于上赛季排名计算）</span></label>
+              <input type="number" id="leagueSize" min="1" value="20">
+            </div>
+            <div>
+              <label>上赛季排名（rank）</label>
+              <input type="number" id="rank" min="1" value="5">
+            </div>
+
+            <div>
+              <label>顶级联赛参赛年数（years_1st）</label>
+              <input type="number" id="years1" min="0" value="10">
+            </div>
+            <div>
+              <label>次级联赛参赛年数（years_2nd）</label>
+              <input type="number" id="years2" min="0" value="6">
+            </div>
+
+            <div>
+              <label>丙级联赛参赛年数（years_3rd） <span class="small">（越多对声望越不利）</span></label>
+              <input type="number" id="years3" min="0" value="2">
+            </div>
+            <div>
+              <label>球队组建年限（age）</label>
+              <input type="number" id="age" min="0" value="45">
+            </div>
+
+            <div>
+              <label>易地搬迁次数（moves） <span class="small">（每次扣分）</span></label>
+              <input type="number" id="moves" min="0" value="0">
+            </div>
+            <div>
+              <label>顶级联赛冠军次数（top_champs）</label>
+              <input type="number" id="topChamps" min="0" value="2">
+            </div>
+
+            <div>
+              <label>国内杯赛冠军次数（cup_champs）</label>
+              <input type="number" id="cupChamps" min="0" value="4">
+            </div>
+            <div>
+              <label>次级联赛冠军次数（2nd_champs）</label>
+              <input type="number" id="secondChamps" min="0" value="1">
+            </div>
+
+            <div>
+              <label>丙级及其他正式赛事冠军次数（3rd_champs）</label>
+              <input type="number" id="thirdChamps" min="0" value="0">
+            </div>
+            <div>
+              <label>洲际一级赛事参加次数（appr_1）</label>
+              <input type="number" id="appr1" min="0" value="6">
+            </div>
+
+            <div>
+              <label>洲际二级赛事参加次数（appr_2）</label>
+              <input type="number" id="appr2" min="0" value="8">
+            </div>
+            <div>
+              <label>洲际三级赛事参加次数（appr_3）</label>
+              <input type="number" id="appr3" min="0" value="3">
+            </div>
+
+            <div class="full">
+              <label>所在地球迷认可度（0–100）</label>
+              <input type="number" id="fanIndex" min="0" max="100" value="72">
+            </div>
+
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+            <div class="actions">
+              <button type="button" id="calc">计算声望</button>
+              <button type="button" id="example" class="secondary">示例数据</button>
+              <button type="button" id="copyJSON" class="secondary">复制输入 JSON</button>
+            </div>
+            <div style="margin-left:auto;color:var(--muted);font-size:13px">实时计算并显示分项贡献</div>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="result">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="muted">最终声望（0 – 100）</div>
+              <div class="score" id="finalScore">0.0</div>
+            </div>
+            <div style="width:55%">
+              <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+              <div class="muted" style="margin-top:6px;font-size:12px">解释：0 = 无声望，100 = 世界级强队</div>
+            </div>
+          </div>
+
+          <div>
+            <table id="breakdown">
+              <thead>
+                <tr><th>项</th><th style="width:90px">得分 (0-100)</th><th style="width:110px">权重</th><th style="width:110px">贡献</th></tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button id="exportCSV" class="secondary">导出分项为 CSV</button>
+            <button id="reset" class="secondary">重置</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      模型设定：MaxY=40, MaxAge=120, topCap=30, cupCap=20, 2ndCap=10, 3rdCap=10, continentalCap=20。权重按预设分配（包含对丙级年数与搬迁次数的负面权重）。
+    </footer>
+  </div>
+
+  <script>
+    // 权重（与之前设计一致）
+    const WEIGHTS = {
+      s1: 0.10, // 上赛季排名
+      s2: 0.10, // 顶级参赛年数
+      s3: 0.03, // 次级参赛年数
+      s4: -0.02, // 丙级参赛年数（负面）
+      s5: 0.10, // 组建年限
+      s6: -0.05, // 搬迁次数（负面）
+      s7: 0.18, // 顶级联赛冠军
+      s8: 0.10, // 杯赛冠军
+      s9: 0.04, // 次级冠军
+      s10:0.02, // 丙级及其他冠军
+      s11:0.10, // 洲际一级
+      s12:0.05, // 洲际二级
+      s13:0.03, // 洲际三级
+      s14:0.12  // 球迷认可度
+    };
+
+    // 常量
+    const MaxY = 40;
+    const MaxAge = 120;
+    const topCap = 30, cupCap = 20, cap2nd = 10, cap3rd = 10, continentalCap = 20;
+
+    function clamp(v, a, b){return Math.max(a, Math.min(b, v));}
+
+    function computeScores(inputs){
+      const N = Math.max(1, Number(inputs.leagueSize));
+      const rank = clamp(Number(inputs.rank),1,N);
+      // 1. 上赛季排名
+      const s1 = 100 * (1 - (rank - 1) / Math.max(1, (N - 1)));
+
+      // 2. 顶级年数
+      const s2 = 100 * clamp(inputs.years1 / MaxY, 0, 1);
+      // 3. 次级年数
+      const s3 = 100 * clamp(inputs.years2 / MaxY, 0, 1);
+      // 4. 丙级年数（越多对声望越不利） -> we keep score 0..100 representing "years proportion" and weight is negative
+      const s4 = 100 * clamp(inputs.years3 / MaxY, 0, 1);
+
+      // 5. 组建年限
+      const s5 = 100 * clamp(inputs.age / MaxAge, 0, 1);
+
+      // 6. 搬迁次数 -> score 0..100 (0 moves -> 0, many moves -> 100). We'll cap moves at 10 for scaling.
+      const movesCap = 10;
+      const s6 = 100 * clamp(inputs.moves / movesCap, 0, 1);
+
+      // 7. 顶级联赛冠军次数
+      const s7 = 100 * clamp(Math.min(inputs.topChamps, topCap) / topCap, 0, 1);
+      // 8. 国内杯赛冠军
+      const s8 = 100 * clamp(Math.min(inputs.cupChamps, cupCap) / cupCap, 0, 1);
+      // 9. 次级冠军
+      const s9 = 100 * clamp(Math.min(inputs.secondChamps, cap2nd) / cap2nd, 0, 1);
+      //10. 丙级及其他冠军
+      const s10 = 100 * clamp(Math.min(inputs.thirdChamps, cap3rd) / cap3rd, 0, 1);
+
+      //11-13. 洲际赛事
+      const s11 = 100 * clamp(Math.min(inputs.appr1, continentalCap) / continentalCap, 0, 1);
+      const s12 = 100 * clamp(Math.min(inputs.appr2, continentalCap) / continentalCap, 0, 1);
+      const s13 = 100 * clamp(Math.min(inputs.appr3, continentalCap) / continentalCap, 0, 1);
+
+      //14. 球迷认可度（0..100）
+      const s14 = clamp(inputs.fanIndex, 0, 100);
+
+      return {s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14};
+    }
+
+    function computeReputation(scores){
+      // Reputation = sum w_i * S_i, note weights include negative signs where appropriate
+      let total = 0;
+      for(const [k,w] of Object.entries(WEIGHTS)){
+        const sc = scores[k.replace('s','s')]; // same key
+        total += w * sc;
+      }
+      // total is 0..100 theoretically but could be outside due to negatives; clamp
+      total = clamp(total, 0, 100);
+      return Math.round(total * 10) / 10;
+    }
+
+    function gatherInputs(){
+      return {
+        leagueSize: Number(document.getElementById('leagueSize').value || 20),
+        rank: Number(document.getElementById('rank').value || 1),
+        years1: Number(document.getElementById('years1').value || 0),
+        years2: Number(document.getElementById('years2').value || 0),
+        years3: Number(document.getElementById('years3').value || 0),
+        age: Number(document.getElementById('age').value || 0),
+        moves: Number(document.getElementById('moves').value || 0),
+        topChamps: Number(document.getElementById('topChamps').value || 0),
+        cupChamps: Number(document.getElementById('cupChamps').value || 0),
+        secondChamps: Number(document.getElementById('secondChamps').value || 0),
+        thirdChamps: Number(document.getElementById('thirdChamps').value || 0),
+        appr1: Number(document.getElementById('appr1').value || 0),
+        appr2: Number(document.getElementById('appr2').value || 0),
+        appr3: Number(document.getElementById('appr3').value || 0),
+        fanIndex: Number(document.getElementById('fanIndex').value || 0)
+      };
+    }
+
+    function renderBreakdown(scores){
+      const tbody = document.querySelector('#breakdown tbody');
+      tbody.innerHTML = '';
+      const entries = [
+        ['上赛季排名', scores.s1, WEIGHTS.s1],
+        ['顶级参赛年数', scores.s2, WEIGHTS.s2],
+        ['次级参赛年数', scores.s3, WEIGHTS.s3],
+        ['丙级参赛年数（越多越差）', scores.s4, WEIGHTS.s4],
+        ['组建年限', scores.s5, WEIGHTS.s5],
+        ['易地搬迁次数（越多越差）', scores.s6, WEIGHTS.s6],
+        ['顶级联赛冠军次数', scores.s7, WEIGHTS.s7],
+        ['国内杯赛冠军次数', scores.s8, WEIGHTS.s8],
+        ['次级冠军次数', scores.s9, WEIGHTS.s9],
+        ['丙级及其他冠军次数', scores.s10, WEIGHTS.s10],
+        ['洲际一级参赛次数', scores.s11, WEIGHTS.s11],
+        ['洲际二级参赛次数', scores.s12, WEIGHTS.s12],
+        ['洲际三级参赛次数', scores.s13, WEIGHTS.s13],
+        ['所在地球迷认可度', scores.s14, WEIGHTS.s14]
+      ];
+
+      for(const [name, sc, w] of entries){
+        const contrib = Math.round((w * sc) * 100) / 100;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${name}</td><td>${(Math.round(sc*10)/10).toFixed(1)}</td><td>${(w*100).toFixed(1)}%</td><td>${contrib.toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function updateUI(){
+      const inputs = gatherInputs();
+      const scores = computeScores(inputs);
+      const final = computeReputation(scores);
+      document.getElementById('finalScore').textContent = final.toFixed(1);
+      const pct = final;
+      document.getElementById('barFill').style.width = pct + '%';
+      renderBreakdown(scores);
+    }
+
+    // Event handlers
+    document.getElementById('calc').addEventListener('click', updateUI);
+    document.getElementById('form').addEventListener('input', updateUI);
+
+    document.getElementById('reset').addEventListener('click', ()=>{
+      document.getElementById('form').reset();
+      // set defaults again
+      document.getElementById('leagueSize').value = 20;
+      document.getElementById('rank').value = 5;
+      document.getElementById('years1').value = 10;
+      document.getElementById('years2').value = 6;
+      document.getElementById('years3').value = 2;
+      document.getElementById('age').value = 45;
+      document.getElementById('moves').value = 0;
+      document.getElementById('topChamps').value = 2;
+      document.getElementById('cupChamps').value = 4;
+      document.getElementById('secondChamps').value = 1;
+      document.getElementById('thirdChamps').value = 0;
+      document.getElementById('appr1').value = 6;
+      document.getElementById('appr2').value = 8;
+      document.getElementById('appr3').value = 3;
+      document.getElementById('fanIndex').value = 72;
+      updateUI();
+    });
+
+    document.getElementById('example').addEventListener('click', ()=>{
+      // 填入一个强队示例
+      document.getElementById('leagueSize').value = 20;
+      document.getElementById('rank').value = 1;
+      document.getElementById('years1').value = 30;
+      document.getElementById('years2').value = 6;
+      document.getElementById('years3').value = 1;
+      document.getElementById('age').value = 102;
+      document.getElementById('moves').value = 0;
+      document.getElementById('topChamps').value = 18;
+      document.getElementById('cupChamps').value = 12;
+      document.getElementById('secondChamps').value = 2;
+      document.getElementById('thirdChamps').value = 0;
+      document.getElementById('appr1').value = 16;
+      document.getElementById('appr2').value = 18;
+      document.getElementById('appr3').value = 6;
+      document.getElementById('fanIndex').value = 95;
+      updateUI();
+    });
+
+    document.getElementById('copyJSON').addEventListener('click', ()=>{
+      const data = gatherInputs();
+      navigator.clipboard.writeText(JSON.stringify(data,null,2)).then(()=>{
+        alert('已复制输入 JSON 到剪贴板');
+      },()=>{alert('复制失败，请手动复制')});
+    });
+
+    document.getElementById('exportCSV').addEventListener('click', ()=>{
+      const inputs = gatherInputs();
+      const scores = computeScores(inputs);
+      const rows = [
+        ['项','得分_0_100','权重','贡献']
+      ];
+      const keys = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10','s11','s12','s13','s14'];
+      const names = ['上赛季排名','顶级参赛年数','次级参赛年数','丙级参赛年数','组建年限','易地搬迁次数','顶级联赛冠军次数','国内杯赛冠军次数','次级冠军次数','丙级及其他冠军次数','洲际一级参赛次数','洲际二级参赛次数','洲际三级参赛次数','所在地球迷认可度'];
+      keys.forEach((k,i)=>{
+        const sc = Math.round(scores[k]*10)/10;
+        const w = WEIGHTS[k];
+        const contrib = Math.round((w*sc)*100)/100;
+        rows.push([names[i],sc,(w*100).toFixed(1)+'%',contrib]);
+      });
+      const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'reputation_breakdown.csv'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // initialize
+    updateUI();
+  </script>
+</body>
+</html>
