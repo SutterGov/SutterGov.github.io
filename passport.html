@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sutter Republic II 護照生成器</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微軟雅黑", "Noto Sans TC", sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1a237e;
+            margin-bottom: 30px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 968px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 表單區域 */
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9rem;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 3px rgba(26,35,126,0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 10px 15px;
+            background: #1a237e;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .file-input-label:hover {
+            background: #283593;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(26,35,126,0.3);
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .type-option {
+            flex: 1;
+            min-width: 70px;
+        }
+
+        .type-option input {
+            display: none;
+        }
+
+        .type-option label {
+            display: block;
+            padding: 8px 5px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .type-option input:checked + label.type-foreign {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            color: #1565C0;
+        }
+
+        .type-option input:checked + label.type-business {
+            background: #FFFDE7;
+            border-color: #FBC02D;
+            color: #F57F17;
+        }
+
+        .type-option input:checked + label.type-official {
+            background: #FFEBEE;
+            border-color: #E53935;
+            color: #C62828;
+        }
+
+        .type-option input:checked + label.type-private {
+            background: #E8F5E9;
+            border-color: #43A047;
+            color: #2E7D32;
+        }
+
+        .location-selects {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(26,35,126,0.3);
+        }
+
+        /* 護照對開本容器 */
+        .passport-book {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            perspective: 1500px;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+        }
+
+        .passport-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+        }
+
+        /* 頁面之間的陰影效果 */
+        .passport-page {
+            position: relative;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 
+                0 -10px 30px rgba(0,0,0,0.1),
+                0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: -5px;
+            z-index: 10;
+        }
+
+        .passport-page:first-child {
+            z-index: 20;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            margin-bottom: -10px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.2),
+                inset 0 -10px 20px rgba(0,0,0,0.05);
+        }
+
+        .passport-page:last-child {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            z-index: 5;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.2),
+                inset 0 10px 20px rgba(0,0,0,0.03);
+        }
+
+        /* 中間裝訂線效果 */
+        .binding-line {
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to right, 
+                rgba(0,0,0,0.1) 0%, 
+                rgba(0,0,0,0.05) 50%, 
+                rgba(0,0,0,0.1) 100%);
+            z-index: 100;
+        }
+
+        /* 護照內頁容器 */
+        .passport-container {
+            width: 100%;
+            aspect-ratio: 1.4;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 防偽背景紋樣 */
+        .passport-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* 波浪線花紋 */
+        .wave-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 15px,
+                    rgba(26,35,126,0.3) 15px,
+                    rgba(26,35,126,0.3) 17px
+                );
+        }
+
+        .wave-pattern-2 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.06;
+            background-image: 
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(26,35,126,0.2) 20px,
+                    rgba(26,35,126,0.2) 22px
+                );
+        }
+
+        /* 曲線花紋 */
+        .curve-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            background-image: radial-gradient(
+                circle at 50% 50%,
+                transparent 30%,
+                rgba(26,35,126,0.4) 31%,
+                rgba(26,35,126,0.4) 32%,
+                transparent 33%
+            ),
+            radial-gradient(
+                circle at 0% 0%,
+                transparent 20%,
+                rgba(26,35,126,0.3) 21%,
+                rgba(26,35,126,0.3) 22%,
+                transparent 23%
+            );
+            background-size: 80px 80px, 120px 120px;
+        }
+
+        .guilloche-pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                repeating-radial-gradient(circle at 0 0, transparent 0, rgba(0,0,0,0.03) 10px),
+                repeating-radial-gradient(circle at 100% 100%, transparent 0, rgba(0,0,0,0.03) 10px);
+            background-size: 40px 40px, 60px 60px;
+        }
+
+        .security-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 30px,
+                rgba(0,0,0,0.1) 30px,
+                rgba(0,0,0,0.1) 31px
+            );
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 3.5rem;
+            opacity: 0.06;
+            font-weight: bold;
+            color: #1a237e;
+            pointer-events: none;
+            letter-spacing: 5px;
+            text-align: center;
+            line-height: 1.3;
+            z-index: 1;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .microtext {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.06;
+            font-size: 5px;
+            line-height: 7px;
+            word-wrap: break-word;
+            overflow: hidden;
+            color: #1a237e;
+            padding: 20px;
+            z-index: 1;
+        }
+
+        /* 不同類型的背景色 */
+        .passport-container.type-foreign-bg { background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); }
+        .passport-container.type-business-bg { background: linear-gradient(135deg, #FFFDE7 0%, #FFF9C4 100%); }
+        .passport-container.type-official-bg { background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%); }
+        .passport-container.type-private-bg { background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); }
+
+        .passport-content {
+            position: relative;
+            z-index: 10;
+            padding: 25px 25px 25px 35px;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 15px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .passport-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .passport-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a237e;
+            letter-spacing: 1px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .passport-subtitle {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 3px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .photo-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        .photo-container {
+            width: 110px;
+            height: 140px;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            color: #999;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 10px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        /* 蓋章效果的簽名 */
+        .stamp-signature {
+            width: 110px;
+            height: 110px;
+            border: 3px solid rgba(198, 40, 40, 0.4);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transform: rotate(-15deg);
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            margin-top: 10px;
+        }
+
+        .stamp-signature::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid rgba(198, 40, 40, 0.3);
+            border-radius: 50%;
+        }
+
+        .stamp-text {
+            font-size: 0.75rem;
+            color: rgba(198, 40, 40, 0.7);
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .stamp-name {
+            font-size: 0.9rem;
+            color: rgba(198, 40, 40, 0.8);
+            font-weight: 900;
+            margin-top: 5px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .info-section {
+            display: grid;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            color: #555;
+            font-weight: 500;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1a237e;
+            border-bottom: 1px solid rgba(0,0,0,0.15);
+            padding-bottom: 2px;
+            min-height: 1.4rem;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .passport-number-display {
+            font-family: 'Courier New', monospace !important;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: #c62828;
+            font-weight: bold;
+        }
+
+        .mrz-section {
+            grid-column: 1 / -1;
+            background: rgba(0,0,0,0.05);
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            line-height: 1.5;
+            word-break: break-all;
+        }
+
+        .ghost-photo {
+            position: absolute;
+            right: 25px;
+            top: 45%;
+            width: 90px;
+            height: 115px;
+            opacity: 0.25;
+            border-radius: 5px;
+            overflow: hidden;
+            filter: grayscale(100%);
+            mix-blend-mode: multiply;
+            z-index: 5;
+        }
+
+        .ghost-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nationality-display {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nationality-display .primary {
+            font-weight: 700;
+        }
+
+        .nationality-display .secondary {
+            font-weight: 400;
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        /* 蓋章頁樣式 */
+        .stamp-page {
+            background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+            padding: 30px;
+            min-height: 400px;
+            position: relative;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .stamp-page-header {
+            text-align: center;
+            border-bottom: 2px solid #1a237e;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stamp-page-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a237e;
+            letter-spacing: 2px;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .visa-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .visa-box {
+            aspect-ratio: 1;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .visa-box:hover {
+            border-color: #1a237e;
+            background: rgba(26,35,126,0.05);
+        }
+
+        .visa-stamp {
+            width: 70px;
+            height: 70px;
+            border: 3px solid #c62828;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-20deg);
+            opacity: 0.8;
+            font-size: 0.7rem;
+            color: #c62828;
+            font-weight: bold;
+            text-align: center;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .visa-text {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .official-stamp-large {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 150px;
+            height: 150px;
+            border: 4px solid rgba(198, 40, 40, 0.6);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-25deg);
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+            opacity: 0.9;
+        }
+
+        .official-stamp-large::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 2px solid rgba(198, 40, 40, 0.4);
+            border-radius: 50%;
+        }
+
+        .official-stamp-text {
+            font-size: 0.85rem;
+            color: rgba(198, 40, 40, 0.9);
+            font-weight: 900;
+            text-align: center;
+            line-height: 1.3;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .passport-note {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(26,35,126,0.05);
+            border-left: 4px solid #1a237e;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.8rem;
+            color: #555;
+            line-height: 1.6;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .preview-controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+            box-shadow: 0 4px 15px rgba(46,125,50,0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46,125,50,0.4);
+        }
+
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ Sutter Republic II 護照生成器</h1>
+
+        <div class="main-layout">
+            <!-- 表單區域 -->
+            <div class="form-section">
+                <h2 style="margin-bottom: 15px; color: #1a237e; font-family: Microsoft YaHei;">填寫資料</h2>
+
+                <div class="form-group">
+                    <label>護照類型 (Type)</label>
+                    <div class="type-selector">
+                        <div class="type-option">
+                            <input type="radio" name="passportType" id="typeForeign" value="foreign" checked>
+                            <label for="typeForeign" class="type-foreign">外事</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" name="passportType" id="typeBusiness" value="business">
+                            <label for="typeBusiness" class="type-business">商務</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" name="passportType" id="typeOfficial" value="official">
+                            <label for="typeOfficial" class="type-official">公務</label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" name="passportType" id="typePrivate" value="private">
+                            <label for="typePrivate" class="type-private">私人</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>大頭照</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="photoUpload" accept="image/*">
+                        <label for="photoUpload" class="file-input-label">📷 上傳照片</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>姓氏 (Surname)</label>
+                    <input type="text" id="surnameInput" placeholder="請輸入姓氏">
+                </div>
+
+                <div class="form-group">
+                    <label>名字 (Given Name)</label>
+                    <input type="text" id="givenNameInput" placeholder="請輸入名字">
+                </div>
+
+                <div class="form-group">
+                    <label>出生日期 (Date of Birth)</label>
+                    <input type="date" id="dobInput">
+                </div>
+
+                <div class="form-group">
+                    <label>性別 (Sex)</label>
+                    <select id="sexInput">
+                        <option value="">請選擇</option>
+                        <option value="M">男</option>
+                        <option value="F">女</option>
+                        <option value="X">非二元性別</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>第二國籍（選填）</label>
+                    <input type="text" id="secondNationality" placeholder="如無請留空">
+                </div>
+
+                <div class="form-group">
+                    <label>出生地 (Place of Birth)</label>
+                    <div class="location-selects">
+                        <select id="provinceSelect">
+                            <option value="">選擇省</option>
+                            <option value="斯卡拉爾">斯卡拉爾</option>
+                            <option value="慕德蘭">慕德蘭</option>
+                            <option value="西格爾基">西格爾基</option>
+                            <option value="霍利">霍利</option>
+                            <option value="漢陽">漢陽</option>
+                            <option value="全州">全州</option>
+                            <option value="多巴爾">多巴爾</option>
+                            <option value="青山">青山</option>
+                            <option value="群島省">群島省</option>
+                            <option value="灣區省">灣區省</option>
+                            <option value="聖巴廷">聖巴廷</option>
+                            <option value="東高地">東高地</option>
+                            <option value="柯西比">柯西比</option>
+                            <option value="卡瑪爾山">卡瑪爾山</option>
+                            <option value="錫薩拉">錫薩拉</option>
+                            <option value="巴峰特別領地">巴峰特別領地</option>
+                            <option value="帕基特">帕基特</option>
+                            <option value="霍納爾">霍納爾</option>
+                            <option value="薩共控制領地">薩共控制領地</option>
+                        </select>
+                        <select id="regionSelect">
+                            <option value="">選擇大區</option>
+                            <option value="/">/</option>
+                            <option value="湖畔城市群">湖畔城市群</option>
+                            <option value="西北城市群">西北城市群</option>
+                            <option value="東部城市群">東部城市群</option>
+                            <option value="南京南道城市群">南京南道城市群</option>
+                            <option value="瓦日正線城市群">瓦日正線城市群</option>
+                            <option value="東三省地區">東三省地區</option>
+                            <option value="遼寧城市群">遼寧城市群</option>
+                        </select>
+                        <select id="citySelect">
+                            <option value="">選擇特別市</option>
+                            <option value="/">/</option>
+                            <option value="哈利菲克首都特區">哈利菲克首都特區</option>
+                            <option value="斯卡蒂新城">斯卡蒂新城</option>
+                            <option value="比薩拉衛城">比薩拉衛城</option>
+                            <option value="雷克納拜爾">雷克納拜爾</option>
+                            <option value="北方自貿城">北方自貿城</option>
+                            <option value="基爾">基爾</option>
+                            <option value="博涅克海軍准將城">博涅克海軍准將城</option>
+                            <option value="灣區城">灣區城</option>
+                            <option value="夏薩特">夏薩特</option>
+                            <option value="狗蛋大將軍城">狗蛋大將軍城</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>簽發日期 (Date of Issue)</label>
+                    <input type="date" id="issueDateInput">
+                </div>
+
+                <div class="form-group">
+                    <label>有效期至 (Date of Expiry)</label>
+                    <input type="date" id="expiryDateInput">
+                </div>
+            </div>
+
+            <!-- 預覽區域 - 對開本護照 -->
+            <div class="passport-preview">
+                <h2 style="margin-bottom: 20px; color: #1a237e; text-align: center; font-family: Microsoft YaHei;">護照預覽</h2>
+
+                <div class="passport-book" id="passportBook">
+                    <div class="passport-pages">
+                        <!-- 第一頁：信息頁 -->
+                        <div class="passport-page">
+                            <div class="binding-line"></div>
+                            <div id="passportContainer" class="passport-container type-foreign-bg">
+                                <!-- 防偽背景 -->
+                                <div class="passport-background">
+                                    <div class="wave-pattern"></div>
+                                    <div class="wave-pattern-2"></div>
+                                    <div class="curve-pattern"></div>
+                                    <div class="guilloche-pattern"></div>
+                                    <div class="security-lines"></div>
+                                    <div class="watermark">SUTTER<br>REPUBLIC II</div>
+                                    <div class="microtext">
+                                        SUTTER REPUBLIC II PASSPORT OFFICIAL TRAVEL DOCUMENT SUTTER REPUBLIC II PASSPORT OFFICIAL TRAVEL DOCUMENT 
+                                        SUTTER REPUBLIC II PASSPORT OFFICIAL TRAVEL DOCUMENT SUTTER REPUBLIC II PASSPORT OFFICIAL TRAVEL DOCUMENT
+                                        SUTTER REPUBLIC II PASSPORT OFFICIAL TRAVEL DOCUMENT SUTTER REPUBLIC II PASSPORT OFFICIAL TRAVEL DOCUMENT
+                                    </div>
+                                </div>
+
+                                <!-- 護照內容 -->
+                                <div class="passport-content">
+                                    <div class="passport-header">
+                                        <div class="passport-title">Sutter Republic II PASSPORT</div>
+                                        <div class="passport-subtitle">薩特第二共和國 | 護照</div>
+                                    </div>
+
+                                    <div class="photo-section">
+                                        <div class="photo-container" id="mainPhotoContainer">
+                                            <div class="photo-placeholder">請上傳<br>照片</div>
+                                        </div>
+                                        <div class="stamp-signature" id="stampSignature">
+                                            <div class="stamp-text">SUTTER RII</div>
+                                            <div class="stamp-name" id="stampName"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-section">
+                                        <div class="info-row">
+                                            <span class="info-label">類型/Type</span>
+                                            <span class="info-value" id="typeDisplay">P</span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">護照號碼/No.</span>
+                                            <span class="info-value passport-number-display" id="passportNumberDisplay">Z0000000</span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">姓氏/Surname</span>
+                                            <span class="info-value" id="surnameDisplay"></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">名字/Given Name</span>
+                                            <span class="info-value" id="givenNameDisplay"></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">國籍/Nationality</span>
+                                            <div class="nationality-display">
+                                                <span class="info-value primary" id="nationalityDisplay">Sutter RII</span>
+                                                <span class="info-value secondary" id="secondNationalityDisplay"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">出生日期/D.O.B</span>
+                                            <span class="info-value" id="dobDisplay"></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">性別/Sex</span>
+                                            <span class="info-value" id="sexDisplay"></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">出生地/P.O.B</span>
+                                            <span class="info-value" id="pobDisplay"></span>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">簽發地/P.O.I</span>
+                                            <span class="info-value" id="poiDisplay"></span>
+                                        </div>
+
+                                        <div class="two-column">
+                                            <div class="info-row" style="grid-template-columns: 70px 1fr;">
+                                                <span class="info-label">簽發日期</span>
+                                                <span class="info-value" id="issueDateDisplay" style="font-size: 0.8rem;"></span>
+                                            </div>
+                                            <div class="info-row" style="grid-template-columns: 70px 1fr;">
+                                                <span class="info-label">有效期至</span>
+                                                <span class="info-value" id="expiryDateDisplay" style="font-size: 0.8rem;"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mrz-section" id="mrzDisplay">
+                                            P&lt;SR2&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>
+                                            Z0000000&lt;0SR2&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;4
+                                        </div>
+                                    </div>
+
+                                    <div class="ghost-photo" id="ghostPhotoContainer"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 第二頁：蓋章頁 -->
+                        <div class="passport-page">
+                            <div class="binding-line"></div>
+                            <div class="stamp-page">
+                                <div class="stamp-page-header">
+                                    <div class="stamp-page-title">ENTRY / EXIT STAMPS</div>
+                                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">出入境紀錄頁</div>
+                                </div>
+
+                                <div class="visa-grid">
+                                    <div class="visa-box">
+                                        <div class="visa-stamp">入境<br>2024</div>
+                                        <div class="visa-text">哈利菲克首都特區</div>
+                                    </div>
+                                    <div class="visa-box">
+                                        <div class="visa-stamp" style="border-color: #1565C0; color: #1565C0;">出境<br>2024</div>
+                                        <div class="visa-text">國際機場</div>
+                                    </div>
+                                    <div class="visa-box">
+                                        <div class="visa-stamp">入境<br>2025</div>
+                                        <div class="visa-text">灣區城</div>
+                                    </div>
+                                    <div class="visa-box">
+                                        <div class="visa-stamp" style="opacity: 0.3; border-style: dashed;">預留<br>空白</div>
+                                        <div class="visa-text">可用空位</div>
+                                    </div>
+                                    <div class="visa-box">
+                                        <div class="visa-stamp" style="opacity: 0.3; border-style: dashed;">預留<br>空白</div>
+                                        <div class="visa-text">可用空位</div>
+                                    </div>
+                                    <div class="visa-box">
+                                        <div class="visa-stamp" style="opacity: 0.3; border-style: dashed;">預留<br>空白</div>
+                                        <div class="visa-text">可用空位</div>
+                                    </div>
+                                </div>
+
+                                <div class="passport-note">
+                                    <strong>注意事項：</strong><br>
+                                    本護照為薩特第二共和國政府簽發之正式旅行證件，持照人應遵守各國法律。<br>
+                                    護照有效期為十年，期滿前應申請換發。<br>
+                                    This passport is a valid travel document issued by the Government of Sutter Republic II.
+                                </div>
+
+                                <div class="official-stamp-large">
+                                    <div class="official-stamp-text">SUTTER<br>REPUBLIC II<br>MINISTRY OF<br>FOREIGN AFFAIRS</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-controls">
+                    <button class="download-btn" onclick="downloadPassport()" id="downloadBtn">
+                        📥 下載護照圖片
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局變量
+        let uploadedPhotoData = null;
+        let currentPhotoType = 'foreign';
+
+        // 顏色映射
+        const typeColors = {
+            foreign: { bg: 'type-foreign-bg', code: 'P', color: '#2196F3' },
+            business: { bg: 'type-business-bg', code: 'B', color: '#FBC02D' },
+            official: { bg: 'type-official-bg', code: 'O', color: '#E53935' },
+            private: { bg: 'type-private-bg', code: 'R', color: '#43A047' }
+        };
+
+        // 監聽類型選擇
+        document.querySelectorAll('input[name="passportType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                updatePassportType(this.value);
+            });
+        });
+
+        function updatePassportType(type) {
+            currentPhotoType = type;
+            const container = document.getElementById('passportContainer');
+
+            // 移除所有背景類
+            Object.values(typeColors).forEach(t => container.classList.remove(t.bg));
+
+            // 添加新背景
+            container.classList.add(typeColors[type].bg);
+
+            // 更新類型顯示
+            document.getElementById('typeDisplay').textContent = typeColors[type].code;
+
+            // 如果有照片，重新處理幽靈照片
+            if (uploadedPhotoData) {
+                processGhostPhoto(uploadedPhotoData, type);
+            }
+        }
+
+        // 監聽照片上傳
+        document.getElementById('photoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedPhotoData = event.target.result;
+
+                    // 顯示主照片
+                    const mainContainer = document.getElementById('mainPhotoContainer');
+                    mainContainer.innerHTML = `<img src="${uploadedPhotoData}" alt="證件照">`;
+
+                    // 處理並顯示幽靈照片
+                    processGhostPhoto(uploadedPhotoData, currentPhotoType);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function processGhostPhoto(imageData, type) {
+            const ghostContainer = document.getElementById('ghostPhotoContainer');
+            const color = typeColors[type].color;
+
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 90;
+                canvas.height = 115;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(img, 0, 0, 90, 115);
+
+                const imageData = ctx.getImageData(0, 0, 90, 115);
+                const data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                    data[i] = gray;
+                    data[i + 1] = gray;
+                    data[i + 2] = gray;
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                ctx.globalCompositeOperation = 'source-atop';
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.4;
+                ctx.fillRect(0, 0, 90, 115);
+
+                ghostContainer.innerHTML = `<img src="${canvas.toDataURL()}" alt="Ghost Photo" style="opacity: 0.6;">`;
+            };
+            img.src = imageData;
+        }
+
+        // 生成隨機護照號碼
+        function generatePassportNumber() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = 'Z';
+            for (let i = 0; i < 7; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // 日期格式化
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+
+        // 監聽輸入變化
+        document.getElementById('surnameInput').addEventListener('input', function() {
+            const val = this.value.toUpperCase();
+            document.getElementById('surnameDisplay').textContent = val;
+            updateStamp();
+        });
+
+        document.getElementById('givenNameInput').addEventListener('input', function() {
+            const val = this.value.toUpperCase();
+            document.getElementById('givenNameDisplay').textContent = val;
+            updateStamp();
+        });
+
+        function updateStamp() {
+            const surname = document.getElementById('surnameInput').value.toUpperCase();
+            const givenName = document.getElementById('givenNameInput').value.toUpperCase();
+            const stampName = document.getElementById('stampName');
+
+            if (surname || givenName) {
+                stampName.textContent = surname + (givenName ? ' ' + givenName : '');
+            } else {
+                stampName.textContent = '';
+            }
+        }
+
+        document.getElementById('secondNationality').addEventListener('input', function() {
+            const sec = document.getElementById('secondNationalityDisplay');
+            if (this.value) {
+                sec.textContent = '/ ' + this.value.toUpperCase();
+            } else {
+                sec.textContent = '';
+            }
+        });
+
+        document.getElementById('dobInput').addEventListener('change', function() {
+            document.getElementById('dobDisplay').textContent = formatDate(this.value);
+        });
+
+        document.getElementById('sexInput').addEventListener('change', function() {
+            document.getElementById('sexDisplay').textContent = this.value;
+        });
+
+        document.getElementById('issueDateInput').addEventListener('change', function() {
+            document.getElementById('issueDateDisplay').textContent = formatDate(this.value);
+        });
+
+        document.getElementById('expiryDateInput').addEventListener('change', function() {
+            document.getElementById('expiryDateDisplay').textContent = formatDate(this.value);
+        });
+
+        // 地點選擇
+        function updateLocation() {
+            const province = document.getElementById('provinceSelect').value;
+            const region = document.getElementById('regionSelect').value;
+            const city = document.getElementById('citySelect').value;
+
+            let location = '';
+            if (province) {
+                location = province;
+                if (region && region !== '/') {
+                    location += ', ' + region;
+                }
+                if (city && city !== '/') {
+                    location += ', ' + city;
+                }
+            }
+
+            document.getElementById('pobDisplay').textContent = location;
+            document.getElementById('poiDisplay').textContent = location;
+        }
+
+        document.getElementById('provinceSelect').addEventListener('change', updateLocation);
+        document.getElementById('regionSelect').addEventListener('change', updateLocation);
+        document.getElementById('citySelect').addEventListener('change', updateLocation);
+
+        // 生成MRZ碼
+        function generateMRZ() {
+            const typeCode = typeColors[currentPhotoType].code;
+            const surname = (document.getElementById('surnameInput').value || '').toUpperCase();
+            const givenName = (document.getElementById('givenNameInput').value || '').toUpperCase();
+            const passportNo = document.getElementById('passportNumberDisplay').textContent;
+            const dob = document.getElementById('dobInput').value.replace(/-/g, '').substring(2);
+            const sex = document.getElementById('sexInput').value || 'M';
+            const expiry = document.getElementById('expiryDateInput').value.replace(/-/g, '').substring(2);
+
+            const line1 = `P<SR2${surname}<<${givenName}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<`;
+            const line2 = `${passportNo}<0SR2${dob}${sex}${expiry}0000000<<<<<<<<<<<<<<4`;
+
+            document.getElementById('mrzDisplay').innerHTML = 
+                line1.substring(0, 44) + '<br>' + line2.substring(0, 44);
+        }
+
+        // 下載護照
+        function downloadPassport() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+
+            const element = document.getElementById('passportBook');
+
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Sutter_Passport_${document.getElementById('passportNumberDisplay').textContent}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+
+                btn.disabled = false;
+                btn.textContent = '📥 下載護照圖片';
+            }).catch(err => {
+                console.error('截圖失敗:', err);
+                alert('生成圖片失敗，請重試');
+                btn.disabled = false;
+                btn.textContent = '📥 下載護照圖片';
+            });
+        }
+
+        // 初始化
+        updatePassportType('foreign');
+        document.getElementById('passportNumberDisplay').textContent = generatePassportNumber();
+
+        // 定時更新MRZ（當信息改變時）
+        setInterval(() => {
+            if (document.getElementById('surnameInput').value || 
+                document.getElementById('givenNameInput').value) {
+                generateMRZ();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
