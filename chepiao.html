@@ -1,0 +1,595 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特铁路车票生成器</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft YaHei", "微软雅黑", "PingFang SC", "Hiragino Sans GB", sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1565c0;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 控制面板样式 */
+        .control-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #37474f;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        select, input[type="text"], input[type="datetime-local"], input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25,118,210,0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1976d2, #1565c0);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(25,118,210,0.3);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 车票样式 - 基于原图设计 */
+        .ticket-wrapper {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .ticket {
+            width: 600px;
+            background: linear-gradient(180deg, #d4e5ed 0%, #c5d8e3 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            position: relative;
+            font-family: "SimHei", "Microsoft YaHei", "黑体", sans-serif;
+        }
+
+        .ticket::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,0.03) 35px, rgba(255,255,255,0.03) 70px);
+            pointer-events: none;
+        }
+
+        .ticket-header {
+            padding: 25px 30px 15px;
+            position: relative;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 35px;
+            border: 3px solid #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transform: skewX(-10deg);
+        }
+
+        .logo::after {
+            content: "";
+            position: absolute;
+            width: 60%;
+            height: 2px;
+            background: #333;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .header-text {
+            text-align: right;
+        }
+
+        .header-text .zh {
+            font-size: 18px;
+            color: #333;
+            letter-spacing: 4px;
+            margin-bottom: 4px;
+        }
+
+        .header-text .en {
+            font-size: 13px;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .ticket-body {
+            padding: 20px 30px;
+            position: relative;
+        }
+
+        .main-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .station {
+            text-align: center;
+            flex: 1;
+        }
+
+        .station-name-zh {
+            font-size: 42px;
+            font-weight: bold;
+            color: #1a1a1a;
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .station-name-en {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .arrow-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .arrow {
+            width: 0;
+            height: 0;
+            border-left: 25px solid #1a1a1a;
+            border-top: 18px solid transparent;
+            border-bottom: 18px solid transparent;
+            margin-bottom: 8px;
+        }
+
+        .route-type {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a1a1a;
+            writing-mode: horizontal-tb;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .ticket-class {
+            font-size: 24px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .datetime-price {
+            text-align: right;
+        }
+
+        .datetime {
+            font-size: 26px;
+            color: #1a1a1a;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-family: "Courier New", monospace;
+        }
+
+        .price {
+            font-size: 32px;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+
+        .passenger-info {
+            background: rgba(255,255,255,0.4);
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #1976d2;
+        }
+
+        .passenger-info .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .passenger-info .value {
+            font-size: 18px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .carrier {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .validity {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.6;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding-top: 12px;
+        }
+
+        .validity .en {
+            font-size: 13px;
+            color: #555;
+            margin-top: 3px;
+        }
+
+        .ticket-footer {
+            background: linear-gradient(180deg, #a8c8dc 0%, #9bbcd4 100%);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .serial-number {
+            font-size: 28px;
+            color: #c62828;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-family: "Courier New", monospace;
+        }
+
+        .welcome-text {
+            text-align: right;
+        }
+
+        .welcome-text .zh {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .welcome-text .en {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #1565c0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="container">
+        <h1>🚄 萨特铁路车票生成器</h1>
+
+        <div class="main-layout">
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <div class="section-title">📝 车票信息设置</div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>出发站</label>
+                        <select id="fromStation">
+                            <option value="南布里温嘉特|South Brivingate">南布里温嘉特 (South Brivingate)</option>
+                            <option value="哈利菲克|Hollyfeak">哈利菲克 (Hollyfeak)</option>
+                            <option value="白鹿|Bailu">白鹿 (Bailu)</option>
+                            <option value="夏萨特|Hazard">夏萨特 (Hazard)</option>
+                            <option value="雷神港|Thundergod Port">雷神港 (Thundergod Port)</option>
+                            <option value="瓦埃勒|Vahle">瓦埃勒 (Vahle)</option>
+                            <option value="山口雷诺法|Renofa Yamagata">山口雷诺法 (Renofa Yamagata)</option>
+                            <option value="工业城|Industry City">工业城 (Industry City)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>到达站</label>
+                        <select id="toStation">
+                            <option value="雄壤|Kzrongryong">雄壤 (Kzrongryong)</option>
+                            <option value="比萨拉卫城|Bisahra City">比萨拉卫城 (Bisahra City)</option>
+                            <option value="斯卡蒂新城|Nuevo City Skati">斯卡蒂新城 (Nuevo City Skati)</option>
+                            <option value="狗蛋大将军城|Dogegg General City">狗蛋大将军城 (Dogegg General City)</option>
+                            <option value="准将城|Vice-General City">准将城 (Vice-General City)</option>
+                            <option value="全北|Jeonbuk">全北 (Jeonbuk)</option>
+                            <option value="圣城|Saint-City">圣城 (Saint-City)</option>
+                            <option value="湾区城|Bay Area City">湾区城 (Bay Area City)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>乘客姓名</label>
+                        <input type="text" id="passengerName" placeholder="请输入姓名" value="">
+                    </div>
+
+                    <div class="form-group">
+                        <label>国籍</label>
+                        <input type="text" id="nationality" placeholder="请输入国籍" value="">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label>日期时间</label>
+                        <input type="datetime-local" id="datetime">
+                    </div>
+
+                    <div class="form-group">
+                        <label>票价 ($)</label>
+                        <input type="number" id="price" value="43.5" step="0.1">
+                    </div>
+                </div>
+
+                <button class="download-btn" onclick="downloadTicket()">
+                    ⬇️ 下载车票图片
+                </button>
+            </div>
+
+            <!-- 车票预览 -->
+            <div class="ticket-wrapper">
+                <div class="ticket" id="ticket">
+                    <div class="ticket-header">
+                        <div class="logo-section">
+                            <div class="logo"></div>
+                            <div class="header-text">
+                                <div class="zh">萨特铁路 自由席车票</div>
+                                <div class="en">Ticket of Sutter RII Railways</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-body">
+                        <div class="main-route">
+                            <div class="station">
+                                <div class="station-name-zh" id="fromZh">南布里温嘉特</div>
+                                <div class="station-name-en" id="fromEn">South Brivingate</div>
+                            </div>
+
+                            <div class="arrow-section">
+                                <div class="arrow"></div>
+                                <div class="route-type">区间</div>
+                            </div>
+
+                            <div class="station">
+                                <div class="station-name-zh" id="toZh">雄壤</div>
+                                <div class="station-name-en" id="toEn">Kzrongryong</div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="ticket-class">区间/普通自由席</div>
+                            <div class="datetime-price">
+                                <div class="datetime" id="ticketDate">03/01/21 17:15</div>
+                                <div class="price" id="ticketPrice">$43.5</div>
+                            </div>
+                        </div>
+
+                        <div class="passenger-info" id="passengerInfo" style="display: none;">
+                            <div class="label">乘客信息 / Passenger Information</div>
+                            <div class="value" id="passengerDisplay"></div>
+                        </div>
+
+                        <div class="carrier">萨特国家铁路集团承运</div>
+
+                        <div class="validity">
+                            二十四小时有效，可出站一次换乘<br>
+                            <span class="en">Valid 24 hours, you can exit once for transfer.</span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <div class="serial-number">030121491673</div>
+                        <div class="welcome-text">
+                            <div class="zh">欢迎乘坐萨特铁路</div>
+                            <div class="en">Welcome to onboard Sutter RII Railways</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 设置默认日期时间
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('datetime').value = now.toISOString().slice(0, 16);
+
+        // 更新车票预览
+        function updateTicket() {
+            // 更新出发站
+            const fromVal = document.getElementById('fromStation').value.split('|');
+            document.getElementById('fromZh').textContent = fromVal[0];
+            document.getElementById('fromEn').textContent = fromVal[1];
+
+            // 更新到达站
+            const toVal = document.getElementById('toStation').value.split('|');
+            document.getElementById('toZh').textContent = toVal[0];
+            document.getElementById('toEn').textContent = toVal[1];
+
+            // 更新日期时间
+            const dt = new Date(document.getElementById('datetime').value);
+            const formatted = dt.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).replace(/\//g, '/').replace(',', '');
+            document.getElementById('ticketDate').textContent = formatted;
+
+            // 更新价格
+            document.getElementById('ticketPrice').textContent = '$' + document.getElementById('price').value;
+
+            // 更新乘客信息
+            const name = document.getElementById('passengerName').value.trim();
+            const nation = document.getElementById('nationality').value.trim();
+            const passengerInfo = document.getElementById('passengerInfo');
+
+            if (name || nation) {
+                passengerInfo.style.display = 'block';
+                let infoText = '';
+                if (name) infoText += name;
+                if (name && nation) infoText += ' / ';
+                if (nation) infoText += nation;
+                document.getElementById('passengerDisplay').textContent = infoText;
+            } else {
+                passengerInfo.style.display = 'none';
+            }
+        }
+
+        // 添加事件监听
+        document.getElementById('fromStation').addEventListener('change', updateTicket);
+        document.getElementById('toStation').addEventListener('change', updateTicket);
+        document.getElementById('datetime').addEventListener('change', updateTicket);
+        document.getElementById('price').addEventListener('input', updateTicket);
+        document.getElementById('passengerName').addEventListener('input', updateTicket);
+        document.getElementById('nationality').addEventListener('input', updateTicket);
+
+        // 生成随机序列号
+        function generateSerial() {
+            const serial = Array.from({length: 13}, () => Math.floor(Math.random() * 10)).join('');
+            document.querySelector('.serial-number').textContent = serial;
+        }
+        generateSerial();
+
+        // 下载车票
+        function downloadTicket() {
+            const ticket = document.getElementById('ticket');
+            const btn = document.querySelector('.download-btn');
+
+            btn.textContent = '⏳ 生成中...';
+            btn.disabled = true;
+
+            html2canvas(ticket, {
+                scale: 2,
+                backgroundColor: null,
+                useCORS: true,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '萨特铁路车票_' + document.getElementById('fromZh').textContent + '-' + document.getElementById('toZh').textContent + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.textContent = '⬇️ 下载车票图片';
+                btn.disabled = false;
+                generateSerial(); // 生成新序列号
+            }).catch(err => {
+                alert('生成图片失败，请重试');
+                btn.textContent = '⬇️ 下载车票图片';
+                btn.disabled = false;
+            });
+        }
+
+        // 初始化
+        updateTicket();
+    </script>
+</body>
+</html>
