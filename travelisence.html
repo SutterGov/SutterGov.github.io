@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特第二共和国旅行证在线申领系统</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微軟雅黑", "Noto Sans TC", sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 左侧申请表 */
+        .application-form {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .form-title {
+            font-size: 1.3rem;
+            color: #1a237e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1a237e;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", "微軟雅黑", sans-serif;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 3px rgba(26,35,126,0.1);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .file-input-label:hover {
+            background: #e8eaf6;
+            border-color: #1a237e;
+            color: #1a237e;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1a237e 0%, #303f9f 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(26,35,126,0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26,35,126,0.4);
+        }
+
+        /* 右侧预览区域 */
+        .preview-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .preview-title {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 旅行证双页容器 */
+        .travel-document {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+
+        /* 页面阴影和装订效果 */
+        .doc-page {
+            position: relative;
+            padding: 40px;
+            background: white;
+            box-shadow: inset 20px 0 30px -15px rgba(0,0,0,0.1);
+        }
+
+        .doc-page:not(:last-child) {
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 
+                0 10px 30px rgba(0,0,0,0.1),
+                inset 20px 0 30px -15px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+        }
+
+        .binding-margin {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 25px;
+            background: linear-gradient(to right, 
+                rgba(0,0,0,0.08) 0%, 
+                rgba(0,0,0,0.03) 50%,
+                transparent 100%);
+            border-right: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* 页眉 */
+        .page-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            margin-bottom: 25px;
+            margin-left: 20px;
+        }
+
+        .header-left h2 {
+            font-size: 1.4rem;
+            color: #1a237e;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .header-left .subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .header-right .doc-type {
+            font-size: 1rem;
+            color: #c62828;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .header-right .doc-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: #1a237e;
+            font-weight: bold;
+        }
+
+        /* 防伪背景 */
+        .security-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .guilloche {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            opacity: 0.04;
+            background-image: 
+                repeating-linear-gradient(30deg, transparent, transparent 20px, rgba(26,35,126,0.3) 20px, rgba(26,35,126,0.3) 22px),
+                repeating-linear-gradient(-30deg, transparent, transparent 20px, rgba(26,35,126,0.3) 20px, rgba(26,35,126,0.3) 22px);
+        }
+
+        .wave-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.06;
+            background-image: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 40px,
+                rgba(26,35,126,0.2) 40px,
+                rgba(26,35,126,0.2) 42px
+            );
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-25deg);
+            font-size: 4rem;
+            color: rgba(26,35,126,0.05);
+            font-weight: bold;
+            letter-spacing: 5px;
+            text-align: center;
+            z-index: 0;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            position: relative;
+            z-index: 10;
+            margin-left: 20px;
+        }
+
+        /* 主内容网格 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 130px 1fr;
+            gap: 25px;
+        }
+
+        .photo-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .photo-box {
+            width: 130px;
+            height: 160px;
+            border: 2px solid #333;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            font-size: 0.75rem;
+            color: #999;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .official-stamp {
+            width: 110px;
+            height: 110px;
+            border: 3px solid #c62828;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-15deg);
+            opacity: 0.9;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .official-stamp::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border: 1px solid #c62828;
+            border-radius: 50%;
+        }
+
+        .stamp-text {
+            font-size: 0.65rem;
+            color: #c62828;
+            text-align: center;
+            line-height: 1.3;
+            font-weight: bold;
+        }
+
+        .stamp-name {
+            font-size: 0.8rem;
+            color: #c62828;
+            font-weight: 900;
+            margin-top: 5px;
+        }
+
+        /* 信息表格 */
+        .info-table {
+            display: grid;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a237e;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 2px;
+            min-height: 1.5rem;
+        }
+
+        .info-row.two-col {
+            grid-template-columns: 120px 1fr 120px 1fr;
+        }
+
+        .highlight {
+            color: #c62828;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .restriction-box {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .restriction-label {
+            font-size: 0.7rem;
+            color: #e65100;
+            margin-bottom: 5px;
+        }
+
+        .restriction-value {
+            font-size: 0.9rem;
+            color: #bf360c;
+            font-weight: 600;
+        }
+
+        /* MRZ区域 */
+        .mrz-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-top: 2px solid #333;
+            border-bottom: 2px solid #333;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* 声明页样式 */
+        .declaration-page {
+            background: #fafafa;
+        }
+
+        .declaration-content {
+            font-size: 0.85rem;
+            line-height: 1.8;
+            color: #333;
+            text-align: justify;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .declaration-title {
+            font-size: 1.1rem;
+            color: #1a237e;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #1a237e;
+            padding-bottom: 10px;
+        }
+
+        .highlight-text {
+            background: linear-gradient(transparent 60%, #fff176 60%);
+            font-weight: 600;
+        }
+
+        .signature-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+
+        .signature-label {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        /* 下载按钮 */
+        .download-section {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 35px;
+            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(46,125,50,0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(46,125,50,0.4);
+        }
+
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 提示信息 */
+        .alert-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #1565c0;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: #1a237e;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 10px;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <h1>🏛️ 萨特第二共和国旅行证在线申领系统</h1>
+        <p>Sutter Republic II Travel Document Online Application</p>
+    </div>
+
+    <div class="container">
+        <!-- 左侧申请表单 -->
+        <div class="application-form">
+            <div class="form-title">📝 申请信息填写</div>
+
+            <div class="alert-box">
+                本旅行证适用于：海外出生国籍冲突者、紧急补办居民、特殊区域访客
+            </div>
+
+            <div class="form-group">
+                <label>申请类别 (Category)</label>
+                <select id="categorySelect">
+                    <option value="CONFLICT">国籍冲突者 (Nationality Conflict)</option>
+                    <option value="EMERGENCY">紧急旅行 (Emergency Travel)</option>
+                    <option value="SPECIAL">特殊区域访客 (Special Region Visitor)</option>
+                    <option value="ASYLEE">政治庇护 (Asylee)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>证件照片 (Photo)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="photoInput" accept="image/*">
+                    <label for="photoInput" class="file-input-label">
+                        📷 点击上传证件照
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>姓氏 (Surname)</label>
+                    <input type="text" id="surnameInput" placeholder="SURNAME">
+                </div>
+                <div class="form-group">
+                    <label>名字 (Given Name)</label>
+                    <input type="text" id="givenNameInput" placeholder="GIVEN NAME">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>原国籍 (Former Nationality)</label>
+                <input type="text" id="formerNatInput" placeholder="如：CHINA, USA...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>出生日期 (Date of Birth)</label>
+                    <input type="date" id="dobInput">
+                </div>
+                <div class="form-group">
+                    <label>性别 (Sex)</label>
+                    <select id="sexInput">
+                        <option value="M">男 (M)</option>
+                        <option value="F">女 (F)</option>
+                        <option value="X">其他 (X)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>出生地点 (Place of Birth)</label>
+                <input type="text" id="pobInput" placeholder="城市, 国家">
+            </div>
+
+            <div class="form-group">
+                <label>签发机关 (Issuing Authority)</label>
+                <select id="authoritySelect">
+                    <option value="Sutter Embassy, Beijing">萨特驻华大使馆 (北京)</option>
+                    <option value="Sutter Consulate, Shanghai">萨特驻上海总领事馆</option>
+                    <option value="Sutter Embassy, Washington">萨特驻美大使馆 (华盛顿)</option>
+                    <option value="Sutter Consulate, New York">萨特驻纽约总领事馆</option>
+                    <option value="Sutter Embassy, London">萨特驻英大使馆 (伦敦)</option>
+                    <option value="Sutter Liaison Office, Tsvagas">萨特驻推斯韦加斯联络处</option>
+                    <option value="Sutter Mission, SAC">萨特驻萨共控制区代表处</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>签发日期 (Issue Date)</label>
+                    <input type="date" id="issueInput">
+                </div>
+                <div class="form-group">
+                    <label>有效期至 (Expiry Date)</label>
+                    <input type="date" id="expiryInput">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>旅行证号码 (Document No.)</label>
+                <input type="text" id="docNoInput" placeholder="自动生成" readonly style="background: #f5f5f5;">
+            </div>
+
+            <button class="submit-btn" onclick="generateDocument()">
+                ✨ 生成旅行证
+            </button>
+        </div>
+
+        <!-- 右侧预览区域 -->
+        <div class="preview-section">
+            <div class="preview-title">📄 旅行证预览 (双页)</div>
+
+            <div class="travel-document" id="travelDocument">
+                <!-- 第一页：信息页 -->
+                <div class="doc-page">
+                    <div class="binding-margin"></div>
+                    <div class="security-bg">
+                        <div class="guilloche"></div>
+                        <div class="wave-lines"></div>
+                        <div class="watermark">SUTTER<br>TRAVEL<br>DOCUMENT</div>
+                    </div>
+
+                    <div class="page-header">
+                        <div class="header-left">
+                            <h2>SUTTER REPUBLIC II</h2>
+                            <div class="subtitle">Ministry of Foreign Affairs / 外交部</div>
+                        </div>
+                        <div class="header-right">
+                            <div class="doc-type">TRAVEL DOCUMENT</div>
+                            <div class="doc-code" id="docCodeDisplay">TD</div>
+                        </div>
+                    </div>
+
+                    <div class="content-area">
+                        <div class="main-grid">
+                            <div class="photo-area">
+                                <div class="photo-box" id="photoBox">
+                                    <div class="photo-placeholder">照片<br>PHOTO</div>
+                                </div>
+                                <div class="official-stamp">
+                                    <div class="stamp-text">SUTTER<br>REPUBLIC II<br>MINISTRY OF<br>FOREIGN AFFAIRS</div>
+                                </div>
+                            </div>
+
+                            <div class="info-table">
+                                <div class="info-row">
+                                    <span class="info-label">Type / 类型</span>
+                                    <span class="info-value" id="typeDisplay">PT</span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Document No.</span>
+                                    <span class="info-value highlight" id="docNoDisplay">TD0000000</span>
+                                </div>
+
+                                <div class="info-row two-col">
+                                    <span class="info-label">Surname</span>
+                                    <span class="info-value" id="surnameDisplay"></span>
+                                    <span class="info-label">Sex</span>
+                                    <span class="info-value" id="sexDisplay">M</span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Given Names</span>
+                                    <span class="info-value" id="givenNameDisplay"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Nationality</span>
+                                    <span class="info-value">Sutter RII <span class="category-badge" id="categoryBadge">CONFLICT</span></span>
+                                </div>
+
+                                <div class="info-row two-col">
+                                    <span class="info-label">Date of Birth</span>
+                                    <span class="info-value" id="dobDisplay"></span>
+                                    <span class="info-label">Former Nat.</span>
+                                    <span class="info-value" id="formerNatDisplay" style="font-size: 0.9rem;"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Place of Birth</span>
+                                    <span class="info-value" id="pobDisplay"></span>
+                                </div>
+
+                                <div class="info-row two-col">
+                                    <span class="info-label">Date of Issue</span>
+                                    <span class="info-value" id="issueDisplay"></span>
+                                    <span class="info-label">Date of Expiry</span>
+                                    <span class="info-value" id="expiryDisplay"></span>
+                                </div>
+
+                                <div class="info-row">
+                                    <span class="info-label">Authority</span>
+                                    <span class="info-value" style="font-size: 0.85rem;" id="authorityDisplay"></span>
+                                </div>
+
+                                <div class="restriction-box">
+                                    <div class="restriction-label">ENTRIES / RESTRICTIONS</div>
+                                    <div class="restriction-value" id="restrictionDisplay">MULTIPLE ENTRIES / 多次入境</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mrz-section" id="mrzDisplay">
+                            PTUTD&lt;&lt;SUTTER&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>
+                            TD0000000&lt;0SR2&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;4
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第二页：声明页 -->
+                <div class="doc-page declaration-page">
+                    <div class="binding-margin"></div>
+                    <div class="security-bg">
+                        <div class="guilloche"></div>
+                        <div class="watermark" style="color: rgba(26,35,126,0.03);">DECLARATION</div>
+                    </div>
+
+                    <div class="content-area">
+                        <div class="declaration-title">
+                            旅行证使用声明 / DECLARATION
+                        </div>
+
+                        <div class="declaration-content">
+                            <p>
+                                <span class="highlight-text">萨特第二共和国旅行证</span>，是代替萨特第二共和国护照所使用的旅行证件，由萨特第二共和国的各个驻外使领馆签发给符合条件的旅外萨特公民，其中主要包括：
+                            </p>
+                            <br>
+                            <p>
+                                ① <strong>在外出生，不具有萨特户籍的国籍冲突者</strong>；
+                            </p>
+                            <p>
+                                ② <strong>遗失各类萨特第二共和国护照，亟需紧急旅行证件的萨特第二共和国居民</strong>；
+                            </p>
+                            <p>
+                                ③ <strong>需要访问萨特第二共和国又未持有效身份证件的推斯韦加斯、萨共控制区域等居民</strong>。
+                            </p>
+                            <br>
+                            <p style="font-size: 0.8rem; color: #666; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 10px;">
+                                The Sutter Republic II Travel Document is issued by the Ministry of Foreign Affairs and its overseas missions to eligible Sutter citizens abroad, including those with nationality conflicts, emergency replacements, and residents of special administrative regions.
+                            </p>
+                        </div>
+
+                        <div class="signature-section">
+                            <div class="signature-grid">
+                                <div>
+                                    <div class="signature-line" id="holderSignature"></div>
+                                    <div class="signature-label">持证人签名 (Holder's Signature)</div>
+                                </div>
+                                <div>
+                                    <div class="signature-line" id="dateSignature"></div>
+                                    <div class="signature-label">日期 (Date)</div>
+                                </div>
+                                <div>
+                                    <div class="signature-line" style="border-bottom: 1px solid #c62828;"></div>
+                                    <div class="signature-label" style="color: #c62828;">签发机关印章 (Official Stamp)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 10px; background: rgba(26,35,126,0.05); border-radius: 5px; font-size: 0.75rem; color: #666; text-align: center;">
+                            <strong>重要提示：</strong>本旅行证有效期一年，不得涂改、转让。遗失须立即报告。<br>
+                            This document is valid for one year and is not transferable. Report loss immediately.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <button class="download-btn" onclick="downloadDocument()" id="downloadBtn">
+                    📥 下载旅行证 (Download)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categoryMap = {
+            'CONFLICT': { code: 'C', desc: '国籍冲突者' },
+            'EMERGENCY': { code: 'E', desc: '紧急旅行' },
+            'SPECIAL': { code: 'S', desc: '特殊区域访客' },
+            'ASYLEE': { code: 'A', desc: '政治庇护' }
+        };
+
+        let uploadedPhoto = null;
+
+        // 生成随机旅行证号码
+        function generateDocNumber() {
+            const prefix = 'TD';
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = prefix;
+            for (let i = 0; i < 7; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // 初始化
+        document.getElementById('docNoInput').value = generateDocNumber();
+        document.getElementById('docNoDisplay').textContent = document.getElementById('docNoInput').value;
+
+        // 照片上传处理
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedPhoto = event.target.result;
+                    document.getElementById('photoBox').innerHTML = 
+                        `<img src="${uploadedPhoto}" alt="证件照">`;
+                    document.getElementById('holderSignature').innerHTML = 
+                        `<img src="${uploadedPhoto}" style="height: 35px; opacity: 0.3; filter: grayscale(100%);">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 实时更新预览
+        function updatePreview() {
+            const surname = document.getElementById('surnameInput').value.toUpperCase();
+            const givenName = document.getElementById('givenNameInput').value.toUpperCase();
+
+            document.getElementById('surnameDisplay').textContent = surname;
+            document.getElementById('givenNameDisplay').textContent = givenName;
+            document.getElementById('sexDisplay').textContent = document.getElementById('sexInput').value;
+            document.getElementById('formerNatDisplay').textContent = document.getElementById('formerNatInput').value.toUpperCase();
+            document.getElementById('pobDisplay').textContent = document.getElementById('pobInput').value.toUpperCase();
+
+            const issueDate = document.getElementById('issueInput').value;
+            const expiryDate = document.getElementById('expiryInput').value;
+
+            document.getElementById('issueDisplay').textContent = issueDate;
+            document.getElementById('expiryDisplay').textContent = expiryDate;
+            document.getElementById('dateSignature').textContent = issueDate;
+
+            document.getElementById('dobDisplay').textContent = document.getElementById('dobInput').value;
+            document.getElementById('authorityDisplay').textContent = document.getElementById('authoritySelect').value;
+
+            // 更新类别标签
+            const category = document.getElementById('categorySelect').value;
+            document.getElementById('categoryBadge').textContent = category;
+            document.getElementById('restrictionDisplay').textContent = 
+                category === 'EMERGENCY' ? 'SINGLE ENTRY / 单次入境' : 'MULTIPLE ENTRIES / 多次入境';
+
+            // 更新MRZ
+            updateMRZ();
+        }
+
+        function updateMRZ() {
+            const docNo = document.getElementById('docNoInput').value;
+            const surname = (document.getElementById('surnameInput').value || '<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<').toUpperCase().padEnd(35, '<');
+            const givenName = (document.getElementById('givenNameInput').value || '<<<<<<').toUpperCase().padEnd(15, '<');
+            const dob = document.getElementById('dobInput').value.replace(/-/g, '').substring(2, 8) || '000000';
+            const sex = document.getElementById('sexInput').value || 'M';
+            const expiry = document.getElementById('expiryInput').value.replace(/-/g, '').substring(2, 8) || '000000';
+
+            const line1 = `PTUTD&lt;&lt;${surname}&lt;${givenName}`;
+            const line2 = `${docNo}&lt;0SR2${dob}${sex}${expiry}000000&lt;&lt;${categoryMap[document.getElementById('categorySelect').value]?.code || 'C'}&lt;&lt;&lt;&lt;8`;
+
+            document.getElementById('mrzDisplay').innerHTML = 
+                line1.substring(0, 44) + '<br>' + line2.substring(0, 44);
+        }
+
+        // 绑定输入监听
+        ['surnameInput', 'givenNameInput', 'sexInput', 'formerNatInput', 'pobInput', 
+         'issueInput', 'expiryInput', 'dobInput', 'authoritySelect', 'categorySelect'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePreview);
+        });
+
+        function generateDocument() {
+            // 重新生成号码
+            const newNo = generateDocNumber();
+            document.getElementById('docNoInput').value = newNo;
+            document.getElementById('docNoDisplay').textContent = newNo;
+            updatePreview();
+
+            // 动画效果
+            const doc = document.getElementById('travelDocument');
+            doc.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                doc.style.transform = 'scale(1)';
+            }, 200);
+
+            alert('旅行证已生成！请检查信息并下载。');
+        }
+
+        function downloadDocument() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.textContent = '生成图片中...';
+
+            const element = document.getElementById('travelDocument');
+
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#f8f9fa',
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Sutter_Travel_Document_${document.getElementById('docNoInput').value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.disabled = false;
+                btn.textContent = '📥 下载旅行证 (Download)';
+            }).catch(err => {
+                console.error('生成失败:', err);
+                alert('图片生成失败，请重试');
+                btn.disabled = false;
+                btn.textContent = '📥 下载旅行证 (Download)';
+            });
+        }
+
+        // 预设今天日期
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('issueInput').value = today;
+
+        // 预设一年后到期
+        const nextYear = new Date();
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        document.getElementById('expiryInput').value = nextYear.toISOString().split('T')[0];
+
+        updatePreview();
+    </script>
+</body>
+</html>
