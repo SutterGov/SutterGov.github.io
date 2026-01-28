@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特第二共和国身份证在线申领系统 | Sutter Republic II ID Card Application</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=OCR-B&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sutter-blue: #1e3a8a;
+            --sutter-red: #b91c1c;
+            --sutter-white: #f8fafc;
+            --text-blue: #1d4ed8;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--sutter-blue) 0%, #312e81 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(30,58,138,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            opacity: 0.1;
+        }
+
+        .emblem-preview {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            margin-top: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1000px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 左侧表单 */
+        .form-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-top: 4px solid var(--sutter-red);
+            height: fit-content;
+        }
+
+        .form-title {
+            font-size: 1.3rem;
+            color: var(--sutter-blue);
+            margin-bottom: 25px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--sutter-blue);
+            box-shadow: 0 0 0 3px rgba(30,58,138,0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            border: 2px dashed var(--sutter-blue);
+            border-radius: 12px;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .file-label:hover {
+            background: #e0e7ff;
+            transform: translateY(-2px);
+            border-color: var(--sutter-red);
+        }
+
+        .file-label .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--sutter-blue) 0%, #3730a3 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(30,58,138,0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30,58,138,0.4);
+        }
+
+        /* 右侧预览区 */
+        .preview-panel {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .preview-title {
+            text-align: center;
+            color: var(--sutter-blue);
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* 身份证卡片 */
+        .id-card {
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1.58;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(0,0,0,0.1);
+            position: relative;
+            border: 1px solid #ddd;
+        }
+
+        /* 防伪纹样背景 */
+        .security-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(135deg, rgba(224,231,255,0.3) 0%, rgba(199,210,254,0.3) 100%),
+                url('https://bpic.588ku.com/element_pic/23/04/25/ecd508fe649c9f622d0f1951f697ad6b.png') center/cover;
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        /* Guilloche 防伪纹理 */
+        .guilloche {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            background-image: 
+                repeating-linear-gradient(30deg, transparent, transparent 20px, rgba(30,58,138,0.4) 20px, rgba(30,58,138,0.4) 22px),
+                repeating-linear-gradient(-30deg, transparent, transparent 20px, rgba(185,28,28,0.2) 20px, rgba(185,28,28,0.2) 22px);
+            z-index: 1;
+        }
+
+        .id-card-content {
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 15px;
+        }
+
+        /* 顶部栏 */
+        .card-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flag-icon {
+            width: 50px;
+            height: 35px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9g1Oc.png') center/cover;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--sutter-blue);
+            letter-spacing: 0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .header-emblem {
+            width: 40px;
+            height: 40px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+        }
+
+        /* 左侧照片区 */
+        .photo-section {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .photo-main {
+            width: 130px;
+            height: 160px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        /* 钢印效果国旗 */
+        .embossed-flag {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 55px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9g1Oc.png') center/contain no-repeat;
+            opacity: 0.4;
+            filter: contrast(150%) brightness(110%);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+        }
+
+        /* 签名 */
+        .signature-box {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 1.3rem;
+            color: #333;
+            transform: rotate(-5deg);
+            margin-top: 5px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 右侧信息区 */
+        .info-section {
+            position: relative;
+            display: grid;
+            gap: 12px;
+            padding-left: 10px;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: #1f2937;
+            font-weight: 700;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 2px;
+            font-family: "Noto Sans SC", sans-serif;
+        }
+
+        .info-row.two-col {
+            grid-template-columns: 110px 1fr 80px 60px;
+        }
+
+        .id-number {
+            font-family: 'OCR-B', 'Courier New', monospace;
+            font-size: 1.3rem;
+            color: var(--sutter-red);
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        /* 右侧幽灵照片 */
+        .ghost-photo {
+            position: absolute;
+            right: 20px;
+            top: 60px;
+            width: 100px;
+            height: 125px;
+            opacity: 0.25;
+            overflow: hidden;
+            border-radius: 4px;
+            filter: grayscale(100%);
+        }
+
+        .ghost-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* NFC徽章 */
+        .nfc-badge {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: url('https://logos-world.net/wp-content/uploads/2024/01/NFC-Logo.png') center/contain no-repeat;
+            opacity: 0.8;
+            z-index: 20;
+        }
+
+        /* 国徽水印 */
+        .emblem-watermark {
+            position: absolute;
+            top: 10%;
+            left: 60%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            width: 150px;
+            height: 150px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        /* 下载按钮 */
+        .download-area {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(5,150,105,0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(5,150,105,0.4);
+        }
+
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 芯片图标 */
+        .chip-icon {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4d03f 50%, #d4af37 100%);
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #996515;
+            font-weight: bold;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .chip-icon::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+
+        .id-label {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 0.7rem;
+            color: #666;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <div class="emblem-preview"></div>
+        <h1>萨特第二共和国身份证在线申领系统</h1>
+        <p>Sutter Republic II National Identity Card Application System</p>
+    </div>
+
+    <div class="container">
+        <!-- 左侧表单 -->
+        <div class="form-panel">
+            <div class="form-title">
+                <span>📝</span>
+                <span>身份信息采集</span>
+            </div>
+
+            <div class="form-group">
+                <label>证件照片 (Photo)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="photoInput" accept="image/*">
+                    <label for="photoInput" class="file-label">
+                        <div class="icon">📷</div>
+                        <div>点击上传证件照</div>
+                        <div style="font-size: 0.8rem; color: #999;">建议白底，35mm×45mm</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>姓名 (Full Name)</label>
+                <input type="text" id="nameInput" placeholder="请输入姓名">
+            </div>
+
+            <div class="form-group">
+                <label>性别 (Sex)</label>
+                <select id="sexInput">
+                    <option value="">请选择</option>
+                    <option value="M">男 (Male)</option>
+                    <option value="F">女 (Female)</option>
+                    <option value="X">其他 (X)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>出生日期 (Date of Birth)</label>
+                <input type="date" id="dobInput">
+            </div>
+
+            <div class="form-group">
+                <label>出生省份 (Place of Birth)</label>
+                <select id="provinceInput">
+                    <option value="">请选择省份</option>
+                    <option value="斯卡拉尔">斯卡拉尔 (Skalar)</option>
+                    <option value="慕德兰">慕德兰 (Muderland)</option>
+                    <option value="西格尔基">西格尔基 (Sigelki)</option>
+                    <option value="霍利">霍利 (Holly)</option>
+                    <option value="汉阳">汉阳 (Hanyang)</option>
+                    <option value="全州">全州 (Jeonju)</option>
+                    <option value="多巴尔">多巴尔 (Dobar)</option>
+                    <option value="青山">青山 (Tsinghilln)</option>
+                    <option value="群岛省">群岛省 (Archipelago)</option>
+                    <option value="湾区省">湾区省 (Bay Area)</option>
+                    <option value="圣巴廷">圣巴廷 (Saint Batin)</option>
+                    <option value="东高地">东高地 (East Highlands)</option>
+                    <option value="柯西比">柯西比 (Kessiby)</option>
+                    <option value="卡玛尔山">卡玛尔山 (Kamal Hill)</option>
+                    <option value="锡萨拉">锡萨拉 (Hisahra)</option>
+                    <option value="巴峰特别领地">巴峰特别领地 (Bafeng Territory)</option>
+                    <option value="帕基特">帕基特 (Pakit)</option>
+                    <option value="霍纳尔">霍纳尔 (Hornal)</option>
+                    <option value="萨共控制领地">萨共控制领地 (CPS Administered)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>身份证号 (ID Number)</label>
+                <input type="text" id="idNoInput" readonly style="background: #f5f5f5; color: var(--sutter-red); font-weight: bold;">
+            </div>
+
+            <button class="submit-btn" onclick="generateID()">
+                ✨ 生成身份证
+            </button>
+        </div>
+
+        <!-- 右侧预览 -->
+        <div class="preview-panel">
+            <div class="preview-title">🆔 身份证预览 (ID Card Preview)</div>
+
+            <div class="id-card" id="idCard">
+                <div class="security-bg"></div>
+                <div class="guilloche"></div>
+                <div class="emblem-watermark"></div>
+                <div class="chip-icon">SRII</div>
+
+                <div class="id-card-content">
+                    <div class="card-header">
+                        <div class="header-left">
+                            <div class="flag-icon"></div>
+                            <div class="header-text">
+                                <div class="header-title">萨特第二共和国</div>
+                                <div class="header-subtitle">Sutter Republic II · 身份证 / ID Card</div>
+                            </div>
+                        </div>
+                        <div class="header-emblem"></div>
+                    </div>
+
+                    <div class="photo-section">
+                        <div class="photo-main" id="photoMain">
+                            <div class="photo-placeholder">照片<br>Photo</div>
+                            <div class="embossed-flag"></div>
+                        </div>
+                        <div class="signature-box" id="signatureBox"></div>
+                    </div>
+
+                    <div class="info-section">
+                        <div class="info-row">
+                            <span class="info-label">身份证号 / ID No.</span>
+                            <span class="info-value id-number" id="idNoDisplay">0000000000</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">姓名 / Name</span>
+                            <span class="info-value" id="nameDisplay"></span>
+                        </div>
+
+                        <div class="info-row two-col">
+                            <span class="info-label">出生日期 / D.O.B</span>
+                            <span class="info-value" id="dobDisplay"></span>
+                            <span class="info-label">性别 / Sex</span>
+                            <span class="info-value" id="sexDisplay"></span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">出生省份 / P.O.B</span>
+                            <span class="info-value" id="provinceDisplay"></span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">国籍 / Nationality</span>
+                            <span class="info-value" style="color: var(--sutter-blue);">SR2 / SUTTER</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">签发机关 / Authority</span>
+                            <span class="info-value" style="font-size: 0.9rem;">萨特公安部 (MOI-SR2)</span>
+                        </div>
+                    </div>
+
+                    <div class="ghost-photo" id="ghostPhoto"></div>
+                    <div class="nfc-badge"></div>
+                    <div class="id-label">ID Card · Sutter Republic II</div>
+                </div>
+            </div>
+
+            <div class="download-area">
+                <button class="download-btn" onclick="downloadID()" id="downloadBtn">
+                    <span>⬇️</span>
+                    <span>下载身份证图片</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedPhoto = null;
+        let processedGhostPhoto = null;
+
+        // 生成身份证号（18位，参考斯洛克格式）
+        function generateIDNumber() {
+            const prefix = 'SR';
+            const year = new Date().getFullYear().toString().substr(2, 2);
+            let result = prefix + year;
+            for (let i = 0; i < 12; i++) {
+                result += Math.floor(Math.random() * 10);
+            }
+            return result;
+        }
+
+        // 初始化
+        document.getElementById('idNoInput').value = generateIDNumber();
+        document.getElementById('idNoDisplay').textContent = document.getElementById('idNoInput').value;
+
+        // 照片上传与处理
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedPhoto = event.target.result;
+
+                    // 显示主照片
+                    const photoMain = document.getElementById('photoMain');
+                    photoMain.innerHTML = `
+                        <img src="${uploadedPhoto}" alt="证件照">
+                        <div class="embossed-flag"></div>
+                    `;
+
+                    // 处理幽灵照片（去色+透明度）
+                    processGhostPhoto(uploadedPhoto);
+
+                    // 更新签名
+                    updateSignature();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function processGhostPhoto(imageData) {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 100;
+                canvas.height = 125;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(img, 0, 0, 100, 125);
+
+                // 去色处理
+                const imageData = ctx.getImageData(0, 0, 100, 125);
+                const data = imageData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                    data[i] = gray;
+                    data[i + 1] = gray;
+                    data[i + 2] = gray;
+                }
+                ctx.putImageData(imageData, 0, 0);
+
+                processedGhostPhoto = canvas.toDataURL();
+                document.getElementById('ghostPhoto').innerHTML = 
+                    `<img src="${processedGhostPhoto}" alt="Ghost">`;
+            };
+            img.src = imageData;
+        }
+
+        function updateSignature() {
+            const name = document.getElementById('nameInput').value;
+            const sigBox = document.getElementById('signatureBox');
+            if (name) {
+                sigBox.textContent = name;
+            } else {
+                sigBox.textContent = '';
+            }
+        }
+
+        // 实时更新
+        function updateCard() {
+            document.getElementById('nameDisplay').textContent = document.getElementById('nameInput').value;
+            document.getElementById('sexDisplay').textContent = document.getElementById('sexInput').value;
+            document.getElementById('dobDisplay').textContent = document.getElementById('dobInput').value;
+            document.getElementById('provinceDisplay').textContent = document.getElementById('provinceInput').value;
+            updateSignature();
+        }
+
+        ['nameInput', 'sexInput', 'dobInput', 'provinceInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateCard);
+        });
+
+        function generateID() {
+            const newNo = generateIDNumber();
+            document.getElementById('idNoInput').value = newNo;
+            document.getElementById('idNoDisplay').textContent = newNo;
+            updateCard();
+
+            // 动画
+            const card = document.getElementById('idCard');
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+            }, 200);
+
+            alert('身份证生成成功！');
+        }
+
+        function downloadID() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span><span>生成中...</span>';
+
+            const card = document.getElementById('idCard');
+
+            html2canvas(card, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Sutter_ID_${document.getElementById('idNoInput').value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.disabled = false;
+                btn.innerHTML = '<span>⬇️</span><span>下载身份证图片</span>';
+            }).catch(err => {
+                console.error(err);
+                alert('生成失败，请重试');
+                btn.disabled = false;
+                btn.innerHTML = '<span>⬇️</span><span>下载身份证图片</span>';
+            });
+        }
+    </script>
+</body>
+</html>
