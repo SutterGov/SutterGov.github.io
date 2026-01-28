@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特第二共和国入籍证申领系统 | Sutter Republic II Citizenship</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sutter-blue: #1a237e;
+            --sutter-gold: #c9a227;
+            --sutter-red: #b71c1c;
+            --sutter-light: #e8eaf6;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 顶部国徽和标题 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--sutter-blue) 0%, #283593 100%);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(26,35,126,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .emblem {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1000px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 左侧表单 */
+        .form-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            height: fit-content;
+            border-top: 5px solid var(--sutter-gold);
+        }
+
+        .form-title {
+            font-size: 1.3rem;
+            color: var(--sutter-blue);
+            margin-bottom: 25px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--sutter-blue);
+            box-shadow: 0 0 0 4px rgba(26,35,126,0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            border: 2px dashed var(--sutter-blue);
+            border-radius: 10px;
+            cursor: pointer;
+            background: var(--sutter-light);
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .file-label:hover {
+            background: rgba(26,35,126,0.05);
+            transform: translateY(-2px);
+        }
+
+        .file-label .icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--sutter-blue) 0%, #3949ab 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(26,35,126,0.3);
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26,35,126,0.4);
+        }
+
+        /* 右侧预览区 */
+        .preview-panel {
+            background: rgba(255,255,255,0.5);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .preview-title {
+            text-align: center;
+            color: var(--sutter-blue);
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        /* 入籍证设计 */
+        .certificate {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* 国旗色顶部条 */
+        .cert-header {
+            background: linear-gradient(90deg, 
+                var(--sutter-blue) 0%, 
+                var(--sutter-blue) 40%, 
+                white 40%, 
+                white 60%, 
+                var(--sutter-red) 60%, 
+                var(--sutter-red) 100%);
+            height: 8px;
+            width: 100%;
+        }
+
+        .cert-content {
+            padding: 40px;
+            position: relative;
+            background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
+        }
+
+        /* 国徽水印背景 */
+        .watermark-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 防伪纹理 */
+        .security-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.03;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(26,35,126,0.5) 35px, rgba(26,35,126,0.5) 37px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(199,162,39,0.3) 35px, rgba(199,162,39,0.3) 37px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 边框装饰 */
+        .cert-border {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 2px solid var(--sutter-gold);
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .cert-border::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 1px solid rgba(26,35,126,0.2);
+            border-radius: 3px;
+        }
+
+        .cert-inner {
+            position: relative;
+            z-index: 3;
+        }
+
+        /* 顶部国徽和标题 */
+        .cert-top {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .cert-emblem {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+        }
+
+        .cert-title {
+            font-size: 1.6rem;
+            color: var(--sutter-blue);
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+            font-family: "Noto Serif SC", serif;
+        }
+
+        .cert-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* 照片区域 */
+        .photo-section {
+            float: right;
+            width: 120px;
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .photo-box {
+            width: 120px;
+            height: 150px;
+            border: 3px solid var(--sutter-gold);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            font-size: 0.75rem;
+            color: #999;
+            text-align: center;
+        }
+
+        .photo-label {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* 信息表格 */
+        .info-section {
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: baseline;
+        }
+
+        .info-label {
+            width: 120px;
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            flex: 1;
+            font-size: 1.1rem;
+            color: var(--sutter-blue);
+            font-weight: 700;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 5px;
+            min-height: 30px;
+            font-family: "Noto Serif SC", serif;
+        }
+
+        .cert-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            color: var(--sutter-red);
+            letter-spacing: 2px;
+        }
+
+        /* 底部区域 */
+        .cert-footer {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: end;
+        }
+
+        .signature-area {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            height: 40px;
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        .signature-stamp {
+            position: absolute;
+            right: 10px;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--sutter-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+            background: rgba(255,255,255,0.8);
+        }
+
+        .signature-stamp span {
+            font-size: 0.6rem;
+            color: var(--sutter-red);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .signature-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .date-area {
+            text-align: center;
+        }
+
+        .date-value {
+            font-size: 1rem;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .date-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* 底部文字 */
+        .cert-note {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.75rem;
+            color: #999;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* 下载按钮 */
+        .download-area {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--sutter-gold) 0%, #d4b43a 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(201,162,39,0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(201,162,39,0.4);
+        }
+
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 全息效果装饰 */
+        .hologram {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 80px;
+            height: 30px;
+            background: linear-gradient(90deg, 
+                rgba(255,0,0,0.3) 0%, 
+                rgba(0,255,0,0.3) 50%, 
+                rgba(0,0,255,0.3) 100%);
+            border-radius: 3px;
+            transform: rotate(-5deg);
+            opacity: 0.6;
+            z-index: 4;
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .cert-content {
+                padding: 25px;
+            }
+
+            .photo-section {
+                float: none;
+                margin: 0 auto 20px;
+            }
+
+            .info-row {
+                flex-direction: column;
+            }
+
+            .info-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <div class="emblem"></div>
+        <h1>萨特第二共和国入籍证申领系统</h1>
+        <p>Sutter Republic II Citizenship Certificate Application System</p>
+    </div>
+
+    <div class="container">
+        <!-- 左侧申请表单 -->
+        <div class="form-panel">
+            <div class="form-title">
+                <span>📝</span>
+                <span>入籍申请表</span>
+            </div>
+
+            <div class="form-group">
+                <label>证件照片 (Passport Photo)</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="photoInput" accept="image/*">
+                    <label for="photoInput" class="file-label">
+                        <div class="icon">📷</div>
+                        <div>点击上传证件照</div>
+                        <div style="font-size: 0.8rem; color: #999; margin-top: 5px;">建议尺寸 35mm x 45mm</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>姓名 (Full Name)</label>
+                <input type="text" id="nameInput" placeholder="请输入您的姓名">
+            </div>
+
+            <div class="form-group">
+                <label>性别 (Sex)</label>
+                <select id="sexInput">
+                    <option value="">请选择</option>
+                    <option value="男 (M)">男 (Male)</option>
+                    <option value="女 (F)">女 (Female)</option>
+                    <option value="其他 (X)">其他 (Other)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>出生日期 (Date of Birth)</label>
+                <input type="date" id="dobInput">
+            </div>
+
+            <div class="form-group">
+                <label>原国籍 (Former Nationality)</label>
+                <input type="text" id="formerNatInput" placeholder="如：Larnaca Republic">
+            </div>
+
+            <div class="form-group">
+                <label>入籍证编号 (Certificate No.)</label>
+                <input type="text" id="certNoInput" readonly style="background: #f5f5f5; color: var(--sutter-red); font-weight: bold;">
+            </div>
+
+            <button class="submit-btn" onclick="generateCertificate()">
+                ✨ 生成入籍证
+            </button>
+        </div>
+
+        <!-- 右侧预览区 -->
+        <div class="preview-panel">
+            <div class="preview-title">📜 入籍证预览 (Citizenship Certificate Preview)</div>
+
+            <div class="certificate" id="certificate">
+                <div class="cert-header"></div>
+                <div class="cert-content">
+                    <div class="watermark-bg"></div>
+                    <div class="security-pattern"></div>
+                    <div class="cert-border"></div>
+                    <div class="hologram"></div>
+
+                    <div class="cert-inner">
+                        <div class="cert-top">
+                            <div class="cert-emblem"></div>
+                            <div class="cert-title">入&nbsp;&nbsp;籍&nbsp;&nbsp;证</div>
+                            <div class="cert-subtitle">CERTIFICATE OF NATURALIZATION</div>
+                        </div>
+
+                        <div class="photo-section">
+                            <div class="photo-box" id="certPhotoBox">
+                                <div class="photo-placeholder">照片<br>Photo</div>
+                            </div>
+                            <div class="photo-label">持证人照片<br>Holder's Photo</div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-row">
+                                <span class="info-label">证书编号 / No.</span>
+                                <span class="info-value cert-number" id="certNoDisplay">CC00000000</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">姓名 / Name</span>
+                                <span class="info-value" id="nameDisplay"></span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">性别 / Sex</span>
+                                <span class="info-value" id="sexDisplay"></span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">出生日期 / D.O.B</span>
+                                <span class="info-value" id="dobDisplay"></span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">原国籍 / Former Nationality</span>
+                                <span class="info-value" id="formerNatDisplay"></span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">现国籍 / Current Nationality</span>
+                                <span class="info-value" style="color: var(--sutter-red);">萨特第二共和国公民<br>Sutter Republic II Citizen</span>
+                            </div>
+                        </div>
+
+                        <div style="clear: both;"></div>
+
+                        <div class="cert-footer">
+                            <div class="signature-area">
+                                <div class="signature-line">
+                                    <div class="signature-stamp">
+                                        <span>SUTTER<br>REPUBLIC II<br>MOFA</span>
+                                    </div>
+                                </div>
+                                <div class="signature-label">移民局签章<br>Director of Immigration</div>
+                            </div>
+
+                            <div class="date-area">
+                                <div class="date-value" id="issueDateDisplay"></div>
+                                <div class="date-label">签发日期<br>Date of Issue</div>
+                            </div>
+                        </div>
+
+                        <div class="cert-note">
+                            本证书证明上述人员已根据《萨特第二共和国国籍法》加入萨特国籍，享有萨特公民一切权利并承担相应义务。<br>
+                            This certificate is issued pursuant to the Nationality Law of Sutter Republic II and serves as proof of citizenship.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-area">
+                <button class="download-btn" onclick="downloadCertificate()" id="downloadBtn">
+                    <span>⬇️</span>
+                    <span>下载入籍证图片</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedPhoto = null;
+
+        // 生成随机证书编号
+        function generateCertNumber() {
+            const prefix = 'CC';
+            const year = new Date().getFullYear();
+            const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            return `${prefix}${year}${random}`;
+        }
+
+        // 初始化
+        document.getElementById('certNoInput').value = generateCertNumber();
+        document.getElementById('certNoDisplay').textContent = document.getElementById('certNoInput').value;
+        document.getElementById('issueDateDisplay').textContent = new Date().toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // 照片上传
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedPhoto = event.target.result;
+                    document.getElementById('certPhotoBox').innerHTML = 
+                        `<img src="${uploadedPhoto}" alt="证件照">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 实时更新
+        function updateCertificate() {
+            document.getElementById('nameDisplay').textContent = document.getElementById('nameInput').value;
+            document.getElementById('sexDisplay').textContent = document.getElementById('sexInput').value;
+            document.getElementById('dobDisplay').textContent = document.getElementById('dobInput').value;
+            document.getElementById('formerNatDisplay').textContent = document.getElementById('formerNatInput').value;
+        }
+
+        ['nameInput', 'sexInput', 'dobInput', 'formerNatInput'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateCertificate);
+        });
+
+        function generateCertificate() {
+            const newNo = generateCertNumber();
+            document.getElementById('certNoInput').value = newNo;
+            document.getElementById('certNoDisplay').textContent = newNo;
+            updateCertificate();
+
+            // 动画效果
+            const cert = document.getElementById('certificate');
+            cert.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                cert.style.transform = 'scale(1)';
+            }, 200);
+
+            alert('入籍证生成成功！请确认信息后下载。');
+        }
+
+        function downloadCertificate() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span><span>生成中...</span>';
+
+            const element = document.getElementById('certificate');
+
+            html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Sutter_Citizenship_${document.getElementById('certNoInput').value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                btn.disabled = false;
+                btn.innerHTML = '<span>⬇️</span><span>下载入籍证图片</span>';
+            }).catch(err => {
+                console.error('生成失败:', err);
+                alert('图片生成失败，请重试');
+                btn.disabled = false;
+                btn.innerHTML = '<span>⬇️</span><span>下载入籍证图片</span>';
+            });
+        }
+    </script>
+</body>
+</html>
