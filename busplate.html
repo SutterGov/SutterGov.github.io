@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特汽车客运发票申报系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            min-height: 100vh;
+        }
+        
+        .invoice-font {
+            font-family: 'Noto Serif SC', serif;
+        }
+        
+        .ticket-hole {
+            width: 12px;
+            height: 12px;
+            background-color: #e2e8f0;
+            border-radius: 50%;
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .stamp {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border: 3px solid #dc2626;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #dc2626;
+            font-weight: bold;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 30%, rgba(220, 38, 38, 0.1) 70%);
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1),
+                        0 0 0 8px rgba(220, 38, 38, 0.05);
+        }
+        
+        .stamp::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border: 1px solid #dc2626;
+            border-radius: 50%;
+        }
+        
+        .stamp-text {
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .perforation-line {
+            border-top: 2px dashed #cbd5e1;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .perforation-line::before,
+        .perforation-line::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #e2e8f0;
+            border-radius: 50%;
+            top: -11px;
+        }
+        
+        .perforation-line::before { left: -10px; }
+        .perforation-line::after { right: -10px; }
+        
+        .paper-texture {
+            background-color: #fafaf9;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 21px,
+                    rgba(0,0,0,.02) 22px
+                );
+            box-shadow: 
+                0 1px 3px rgba(0,0,0,0.12),
+                0 1px 2px rgba(0,0,0,0.24),
+                inset 0 0 60px rgba(0,0,0,0.02);
+        }
+        
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="py-8 px-4">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2 tracking-wider">萨特汽车客运发票申报系统</h1>
+            <p class="text-slate-300">Sat State Motor Passenger Transport Invoice System</p>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Form Section -->
+            <div class="glass-panel rounded-2xl p-8 shadow-2xl">
+                <div class="flex items-center mb-6">
+                    <div class="w-1 h-8 bg-blue-600 rounded-full mr-3"></div>
+                    <h2 class="text-2xl font-bold text-gray-800">信息填写</h2>
+                </div>
+
+                <form id="invoiceForm" class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">乘车日期</label>
+                            <input type="date" id="travelDate" required 
+                                class="input-focus w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">发车时间</label>
+                            <input type="text" id="departureTime" readonly 
+                                class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-600 cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">出发站</label>
+                            <select id="fromStation" required 
+                                class="input-focus w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white">
+                                <option value="">请选择出发站</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">终到站</label>
+                            <select id="toStation" required 
+                                class="input-focus w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white">
+                                <option value="">请选择终到站</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">执行票价 ($)</label>
+                            <input type="text" id="ticketPrice" readonly 
+                                class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-600 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">座位号</label>
+                            <input type="text" id="seatNumber" readonly 
+                                class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-600 font-mono">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">车牌号</label>
+                            <input type="text" id="plateNumber" readonly 
+                                class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-600 font-mono font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">车辆类型</label>
+                            <input type="text" id="vehicleType" readonly 
+                                class="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-600 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" onclick="generateInvoice()" 
+                            class="btn-gradient flex-1 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            生成发票
+                        </button>
+                        <button type="button" onclick="randomizeAll()" 
+                            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            随机生成
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="glass-panel rounded-2xl p-8 shadow-2xl">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="w-1 h-8 bg-red-600 rounded-full mr-3"></div>
+                        <h2 class="text-2xl font-bold text-gray-800">发票预览</h2>
+                    </div>
+                    <button onclick="downloadInvoice()" 
+                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 shadow-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        下载图片
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto pb-4">
+                    <div id="invoiceCapture" class="paper-texture relative min-w-[600px] p-8 rounded-lg border border-gray-300">
+                        <!-- Top Holes -->
+                        <div class="flex justify-between mb-4 px-4">
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                        </div>
+
+                        <!-- Main Invoice Content -->
+                        <div class="relative">
+                            <!-- Stamp -->
+                            <div class="stamp" style="top: 30%; right: 15%;">
+                                <div class="stamp-text">
+                                    萨特国家<br>
+                                    交通运输集团<br>
+                                    <span class="text-xs mt-1 block">发票专用章</span>
+                                </div>
+                            </div>
+
+                            <!-- Header -->
+                            <div class="text-center mb-6">
+                                <h1 class="text-3xl font-bold text-red-700 invoice-font tracking-widest mb-2">萨特汽车客运发票</h1>
+                                <div class="flex justify-center items-center gap-8 text-sm text-gray-600">
+                                    <span>发票代码：<span class="font-mono">137052092002</span></span>
+                                    <span>发票号码：<span class="font-mono" id="previewInvoiceNum">01418861</span></span>
+                                </div>
+                            </div>
+
+                            <!-- First Section -->
+                            <div class="border-2 border-gray-800 mb-4 p-4 relative">
+                                <div class="absolute -left-2 top-1/2 -translate-y-1/2 bg-red-600 text-white px-2 py-1 text-xs font-bold writing-mode-vertical" style="writing-mode: vertical-rl;">发票联</div>
+                                
+                                <table class="w-full text-sm invoice-font ml-4">
+                                    <tr class="border-b border-gray-300">
+                                        <td class="py-2 px-2 w-24 text-gray-600">乘车日期</td>
+                                        <td class="py-2 px-2 font-bold" id="previewDate">2024-01-15</td>
+                                        <td class="py-2 px-2 w-24 text-gray-600">发车时间</td>
+                                        <td class="py-2 px-2 font-bold" id="previewTime">14:30</td>
+                                        <td class="py-2 px-2 w-24 text-gray-600">检票口</td>
+                                        <td class="py-2 px-2 font-bold" id="previewGate">A3</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-300">
+                                        <td class="py-2 px-2 text-gray-600">出发站</td>
+                                        <td class="py-2 px-2 font-bold text-lg" id="previewFrom">湾区城</td>
+                                        <td class="py-2 px-2 text-gray-600">终到站</td>
+                                        <td class="py-2 px-2 font-bold text-lg" id="previewTo">雷克纳拜尔</td>
+                                        <td class="py-2 px-2 text-gray-600">座位号</td>
+                                        <td class="py-2 px-2 font-bold text-red-600 text-lg" id="previewSeat">05</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-2 px-2 text-gray-600">车辆类型</td>
+                                        <td class="py-2 px-2 font-bold" colspan="3" id="previewVehicle">大金龙XMQ6127</td>
+                                        <td class="py-2 px-2 text-gray-600">车牌号</td>
+                                        <td class="py-2 px-2 font-bold font-mono" id="previewPlate">SR-8K2M9</td>
+                                    </tr>
+                                </table>
+
+                                <div class="mt-4 flex justify-between items-center border-t-2 border-dashed border-gray-400 pt-3">
+                                    <div class="text-gray-600">执行票价：<span class="text-2xl font-bold text-red-600 font-mono" id="previewPrice">$128.00</span></div>
+                                    <div class="text-xs text-gray-500">限乘当日当次车有效</div>
+                                </div>
+                            </div>
+
+                            <!-- Perforation -->
+                            <div class="perforation-line"></div>
+
+                            <!-- Second Section (Stub) -->
+                            <div class="border-2 border-gray-800 p-4 relative mt-4">
+                                <div class="absolute -left-2 top-1/2 -translate-y-1/2 bg-gray-600 text-white px-2 py-1 text-xs font-bold" style="writing-mode: vertical-rl;">存根联</div>
+                                
+                                <div class="flex justify-between items-end ml-4">
+                                    <div class="space-y-2 text-sm invoice-font">
+                                        <div>日期：<span class="font-bold" id="previewDate2">2024-01-15</span></div>
+                                        <div>车次：<span class="font-bold" id="previewTrip">SR2024-881</span></div>
+                                        <div>到站：<span class="font-bold" id="previewTo2">雷克纳拜尔</span></div>
+                                        <div>票价：<span class="font-bold font-mono" id="previewPrice2">$128.00</span></div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-xs text-gray-500 mb-1">检票专用，检票撕下</div>
+                                        <div class="w-32 h-12 bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center text-xs text-gray-400 font-mono border border-gray-300">
+                                            <span id="previewBarcode">||||||| |||| ||||||</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Holes -->
+                        <div class="flex justify-between mt-4 px-4">
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                            <div class="ticket-hole"></div>
+                        </div>
+
+                        <!-- Serial Number at bottom -->
+                        <div class="mt-4 text-center text-xs text-gray-400 font-mono">
+                            37050201 01418861
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center text-sm text-gray-500">
+                    提示：点击"下载图片"可保存发票为PNG格式
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Definitions
+        const vehicleTypes = [
+            '中国宇通ZK6128H',
+            '大金龙XMQ6127',
+            '萨特机械革命A2021Q',
+            '北方尼奥普兰BFC6120',
+            '青年尼奥普兰JNP6137',
+            '比亚迪纯电B13.BHF',
+            '依维柯欧洲旅行者C35',
+            '雷诺Iliade',
+            '捷克卡罗萨LC736',
+            '萨特机械革命22UA'
+        ];
+
+        const cities = [
+            '雷克纳拜尔', '湾区城', '斯托维扬斯克', '列宁格勒', '准将城', 
+            '推斯韦加斯', '坎通', '斯卡蒂', '成川', '铁岭', 
+            '阜新', '大连', '瓦埃勒', '两水源', '海神港', 
+            '基尔', '边境镇', '西格尔基格勒', '河南卡玛西亚', '全北', 
+            '南京南道', '京畿道', '雄壤', '肖冰祷公爵领', '卡纳格林姆', 
+            '死线城', '圣城', '多巴尔', '东方深水港', '哈利菲克', 
+            '维尔图', '工业城', '山口雷诺法'
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            populateCities();
+            // Set today's date as default
+            document.getElementById('travelDate').valueAsDate = new Date();
+            randomizeAll();
+        });
+
+        function populateCities() {
+            const fromSelect = document.getElementById('fromStation');
+            const toSelect = document.getElementById('toStation');
+            
+            cities.forEach(city => {
+                fromSelect.add(new Option(city, city));
+                toSelect.add(new Option(city, city));
+            });
+            
+            // Set default different values
+            fromSelect.selectedIndex = 1;
+            toSelect.selectedIndex = 2;
+        }
+
+        function generateRandomTime() {
+            const startMinutes = 7 * 60; // 7:00
+            const endMinutes = 21.5 * 60; // 21:30
+            const randomMinutes = Math.floor(Math.random() * (endMinutes - startMinutes + 1)) + startMinutes;
+            const hours = Math.floor(randomMinutes / 60);
+            const mins = randomMinutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        function generateRandomPlate() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+            let plate = 'SR-';
+            for (let i = 0; i < 5; i++) {
+                plate += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return plate;
+        }
+
+        function generateRandomPrice() {
+            return Math.floor(Math.random() * (450 - 25 + 1)) + 25;
+        }
+
+        function generateRandomSeat() {
+            return Math.floor(Math.random() * 70) + 1;
+        }
+
+        function randomizeAll() {
+            // Fill form with random data
+            document.getElementById('departureTime').value = generateRandomTime();
+            document.getElementById('plateNumber').value = generateRandomPlate();
+            document.getElementById('ticketPrice').value = '$' + generateRandomPrice();
+            document.getElementById('seatNumber').value = generateRandomSeat().toString().padStart(2, '0');
+            document.getElementById('vehicleType').value = vehicleTypes[Math.floor(Math.random() * vehicleTypes.length)];
+            
+            // Random cities if not selected
+            if (!document.getElementById('fromStation').value) {
+                document.getElementById('fromStation').selectedIndex = Math.floor(Math.random() * cities.length);
+            }
+            if (!document.getElementById('toStation').value) {
+                let toIndex;
+                do {
+                    toIndex = Math.floor(Math.random() * cities.length);
+                } while (toIndex === document.getElementById('fromStation').selectedIndex);
+                document.getElementById('toStation').selectedIndex = toIndex;
+            }
+            
+            generateInvoice();
+        }
+
+        function generateInvoice() {
+            // Validate date
+            const date = document.getElementById('travelDate').value;
+            if (!date) {
+                alert('请选择乘车日期');
+                return;
+            }
+            
+            // Get form values
+            const time = document.getElementById('departureTime').value;
+            const from = document.getElementById('fromStation').value;
+            const to = document.getElementById('toStation').value;
+            
+            if (!from || !to) {
+                alert('请选择出发站和终到站');
+                return;
+            }
+            
+            if (from === to) {
+                alert('出发站和终到站不能相同');
+                return;
+            }
+            
+            const price = document.getElementById('ticketPrice').value;
+            const seat = document.getElementById('seatNumber').value;
+            const plate = document.getElementById('plateNumber').value;
+            const vehicle = document.getElementById('vehicleType').value;
+            
+            // Update preview
+            document.getElementById('previewDate').textContent = date;
+            document.getElementById('previewDate2').textContent = date;
+            document.getElementById('previewTime').textContent = time;
+            document.getElementById('previewFrom').textContent = from;
+            document.getElementById('previewTo').textContent = to;
+            document.getElementById('previewTo2').textContent = to;
+            document.getElementById('previewSeat').textContent = seat;
+            document.getElementById('previewPrice').textContent = price + '.00';
+            document.getElementById('previewPrice2').textContent = price + '.00';
+            document.getElementById('previewPlate').textContent = plate;
+            document.getElementById('previewVehicle').textContent = vehicle;
+            document.getElementById('previewGate').textContent = String.fromCharCode(65 + Math.floor(Math.random() * 6)) + Math.floor(Math.random() * 9 + 1);
+            
+            // Generate random invoice number
+            document.getElementById('previewInvoiceNum').textContent = '0141' + Math.floor(8000 + Math.random() * 1999);
+            
+            // Generate trip number
+            document.getElementById('previewTrip').textContent = 'SR' + date.replace(/-/g, '') + '-' + Math.floor(100 + Math.random() * 899);
+            
+            // Animation effect
+            const captureArea = document.getElementById('invoiceCapture');
+            captureArea.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                captureArea.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function downloadInvoice() {
+            const element = document.getElementById('invoiceCapture');
+            
+            // Check if invoice has been generated
+            if (!document.getElementById('previewDate').textContent) {
+                alert('请先生成发票');
+                return;
+            }
+            
+            html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#fafaf9',
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `萨特客运发票_${document.getElementById('previewDate').textContent}_${document.getElementById('previewPlate').textContent}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            }).catch(err => {
+                console.error('生成图片失败:', err);
+                alert('图片生成失败，请重试');
+            });
+        }
+
+        // Auto-generate when date changes
+        document.getElementById('travelDate').addEventListener('change', generateInvoice);
+    </script>
+</body>
+</html>
