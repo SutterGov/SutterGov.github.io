@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特证券交易所 - 实时交易系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Roboto+Mono:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        .mono { font-family: 'Roboto Mono', monospace; }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stock-up { color: #ef4444; }
+        .stock-down { color: #22c55e; }
+        .stock-flat { color: #94a3b8; }
+        
+        .neon-border {
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 
+                        0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%);
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .ticker {
+            display: inline-block;
+            white-space: nowrap;
+            padding-right: 100%;
+            animation: ticker 30s linear infinite;
+        }
+        
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+        
+        .news-flash {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%);
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .btn-trade {
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+        
+        .btn-buy {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.4);
+        }
+        
+        .btn-buy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(220, 38, 38, 0.6);
+        }
+        
+        .btn-sell {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.4);
+        }
+        
+        .btn-sell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -2px rgba(22, 163, 74, 0.6);
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        tr:hover td {
+            background-color: rgba(59, 130, 246, 0.1);
+            transition: background-color 0.2s;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+            height: 100%;
+            transition: width 1s linear;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+        }
+        
+        .flash-red { animation: pulse-red 1s; }
+        .flash-green { animation: pulse-green 1s; }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+        }
+        
+        .report-paper {
+            background: #fafaf9;
+            color: #1c1917;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Responsive adjustments for report */
+        @media (max-width: 768px) {
+            .report-paper {
+                width: 95%;
+                padding: 1rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Mini chart canvas styling */
+        .mini-chart {
+            width: 100px;
+            height: 30px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-40 border-b border-slate-700">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="text-3xl font-black text-amber-500 glow-text tracking-tighter">
+                    SSE<span class="text-sm text-slate-400 font-normal ml-2">萨特证券交易所</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-2 text-sm text-slate-400">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span>市场交易中</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <div class="text-right">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">剩余时间</div>
+                    <div class="text-2xl font-bold mono text-amber-400" id="timer">10:00</div>
+                </div>
+                <div class="h-8 w-px bg-slate-600"></div>
+                <div class="text-right">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">可用资金</div>
+                    <div class="text-2xl font-bold mono text-emerald-400" id="cashDisplay">₲100,000.00</div>
+                </div>
+                <div class="text-right hidden sm:block">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">总资产</div>
+                    <div class="text-2xl font-bold mono text-blue-400" id="totalAsset">₲100,000.00</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- News Ticker -->
+    <div class="ticker-wrap py-3 border-b border-slate-700 bg-slate-900/50">
+        <div class="container mx-auto px-4 flex items-center">
+            <span class="text-amber-500 font-bold mr-4 text-sm uppercase tracking-wider whitespace-nowrap">📰 突发新闻</span>
+            <div class="overflow-hidden flex-1 relative h-6">
+                <div id="newsContainer" class="absolute w-full transition-all duration-500">
+                    <p class="text-sm text-slate-300 truncate" id="currentNews">欢迎来到萨特证券交易所，正在等待开市...</p>
+                </div>
+            </div>
+            <div class="ml-4 text-xs text-slate-500 mono" id="eventCountdown"></div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events Preview -->
+    <div id="previewBar" class="hidden bg-amber-900/30 border-b border-amber-600/30 px-4 py-2">
+        <div class="container mx-auto flex items-center text-sm">
+            <span class="text-amber-500 font-bold mr-2">⏱️ 即将发生 (5s):</span>
+            <span id="previewText" class="text-amber-200 italic"></span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 container mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Stock List -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="glass-panel rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-slate-200 flex items-center">
+                        <span class="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
+                        市场行情
+                    </h2>
+                    <div class="flex space-x-2 text-xs">
+                        <span class="flex items-center"><span class="w-3 h-3 bg-red-600 rounded-sm mr-1"></span>国企</span>
+                        <span class="flex items-center"><span class="w-3 h-3 bg-blue-600 rounded-sm mr-1"></span>私企</span>
+                        <span class="flex items-center"><span class="w-3 h-3 bg-amber-600 rounded-sm mr-1"></span>地方国营</span>
+                        <span class="flex items-center"><span class="w-3 h-3 bg-purple-600 rounded-sm mr-1"></span>党产</span>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-700 text-xs uppercase tracking-wider">
+                                <th class="text-left py-3 px-2">股票名称/代码</th>
+                                <th class="text-left py-3 px-2">走势</th>
+                                <th class="text-right py-3 px-2">现价</th>
+                                <th class="text-right py-3 px-2">涨跌</th>
+                                <th class="text-right py-3 px-2">成交量</th>
+                                <th class="text-center py-3 px-2">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTableBody" class="mono">
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Chart Area -->
+            <div class="glass-panel rounded-lg p-4 h-64 flex items-center justify-center border border-slate-700/50 bg-slate-900/30">
+                <div class="text-center text-slate-500">
+                    <div class="text-4xl mb-2">📊</div>
+                    <p>实时行情图表</p>
+                    <p class="text-xs mt-2">交易活跃中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio -->
+        <div class="space-y-6">
+            <div class="glass-panel rounded-lg p-4">
+                <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center">
+                    <span class="w-1 h-6 bg-emerald-500 rounded-full mr-3"></span>
+                    我的持仓
+                </h2>
+                
+                <div id="emptyPortfolio" class="text-center py-8 text-slate-500">
+                    <div class="text-3xl mb-2">📭</div>
+                    <p class="text-sm">暂无持仓</p>
+                    <p class="text-xs mt-1">点击"买入"开始交易</p>
+                </div>
+                
+                <div id="portfolioList" class="space-y-3 hidden">
+                    <!-- Generated by JS -->
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-slate-700">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-400">浮动盈亏</span>
+                        <span class="mono font-bold" id="floatingPnL">₲0.00</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="pnlBar" class="progress-bar w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="glass-panel rounded-lg p-4 max-h-64 overflow-y-auto">
+                <h2 class="text-sm font-bold text-slate-400 mb-3 uppercase tracking-wider">近期成交</h2>
+                <div id="tradeHistory" class="space-y-2 text-xs mono">
+                    <div class="text-slate-600 italic">等待第一笔交易...</div>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="glass-panel rounded-lg p-4 border-2 border-amber-500/30">
+                <h2 class="text-sm font-bold text-amber-500 mb-3 uppercase tracking-wider">交易控制</h2>
+                <div class="space-y-3">
+                    <button id="startBtn" onclick="startGame()" class="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold rounded-lg transition-all shadow-lg shadow-amber-900/50">
+                        ▶ 开始交易 (10分钟)
+                    </button>
+                    <button id="stopBtn" onclick="stopGame()" disabled class="w-full py-3 bg-slate-700 text-slate-500 font-bold rounded-lg cursor-not-allowed transition-all">
+                        ⏹ 停止并生成报告
+                    </button>
+                </div>
+                <div class="mt-3 text-xs text-slate-500 text-center">
+                    点击开始后无法暂停，请谨慎操作
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Report Modal - 修改为自适应版本 -->
+    <div id="reportModal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-2 md:p-4">
+        <div class="report-paper w-full max-w-3xl rounded-lg p-4 md:p-8 relative overflow-y-auto" style="max-height: 95vh;">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600"></div>
+            
+            <div id="reportContent" class="w-full">
+                <div class="text-center mb-4 md:mb-6 border-b-2 border-slate-200 pb-4">
+                    <h1 class="text-2xl md:text-3xl font-black text-slate-800 mb-1">萨特证券交易所</h1>
+                    <p class="text-slate-600 text-xs md:text-sm uppercase tracking-widest">交易结算报告</p>
+                    <div class="mt-2 text-xs text-slate-500 mono">Report ID: <span id="reportId">SSE-2024-888888</span></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 md:gap-4 mb-4 md:mb-6 text-xs md:text-sm">
+                    <div>
+                        <span class="text-slate-500">用户名:</span>
+                        <span class="font-bold text-slate-800 ml-1 md:ml-2 block md:inline" id="reportUsername">未命名交易员</span>
+                    </div>
+                    <div class="md:text-right">
+                        <span class="text-slate-500">交易时长:</span>
+                        <span class="font-bold text-slate-800 ml-1 md:ml-2" id="reportDuration">10:00</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500">初始资金:</span>
+                        <span class="font-bold text-slate-800 ml-1 md:ml-2">₲100,000.00</span>
+                    </div>
+                    <div class="md:text-right">
+                        <span class="text-slate-500">最终资产:</span>
+                        <span class="font-bold text-lg md:text-2xl text-amber-600 ml-1 md:ml-2 block md:inline" id="reportFinal">₲0.00</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6 border border-slate-200">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-2">
+                        <span class="font-bold text-slate-700 mb-1 md:mb-0">总盈亏</span>
+                        <span class="text-xl md:text-2xl font-black mono" id="reportPnL">+₲0.00</span>
+                    </div>
+                    <div class="flex flex-col md:flex-row justify-between text-xs text-slate-500 gap-1 md:gap-0">
+                        <span>收益率: <span id="reportReturn">0.00%</span></span>
+                        <span>成交笔数: <span id="reportTrades">0</span></span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="font-bold text-slate-800 mb-2 md:mb-3 border-l-4 border-amber-500 pl-2 md:pl-3 text-sm md:text-base">详细交易记录</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs md:text-xs">
+                            <thead class="bg-slate-100 text-slate-600">
+                                <tr>
+                                    <th class="py-2 px-1 md:px-2 text-left whitespace-nowrap">时间</th>
+                                    <th class="py-2 px-1 md:px-2 text-left">股票</th>
+                                    <th class="py-2 px-1 md:px-2 text-right whitespace-nowrap">类型</th>
+                                    <th class="py-2 px-1 md:px-2 text-right">数量</th>
+                                    <th class="py-2 px-1 md:px-2 text-right whitespace-nowrap">价格</th>
+                                    <th class="py-2 px-1 md:px-2 text-right whitespace-nowrap">金额</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody" class="mono text-slate-700">
+                                <!-- Generated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="text-center text-xs text-slate-400 mt-4 md:mt-8 pt-4 border-t border-slate-200">
+                    <p>萨特国家金融监管局监制 | 本报告仅作模拟交易参考</p>
+                    <p class="mt-1">Generated by Satir Securities Exchange Simulation System</p>
+                </div>
+            </div>
+
+            <div class="mt-4 md:mt-6 flex flex-col md:flex-row gap-3 sticky bottom-0 bg-inherit pt-2 pb-2 md:pb-0 border-t md:border-0 border-slate-200">
+                <input type="text" id="usernameInput" placeholder="输入您的用户名" class="flex-1 px-3 md:px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-amber-500 text-slate-800 text-sm md:text-base w-full">
+                <div class="flex gap-2">
+                    <button onclick="downloadReport()" class="flex-1 md:flex-none px-4 md:px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 text-sm md:text-base whitespace-nowrap">
+                        <span>📥</span> 下载报告
+                    </button>
+                    <button onclick="closeModal()" class="px-3 md:px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-600 rounded-lg transition-colors text-sm md:text-base">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Modal -->
+    <div id="tradeModal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold mb-4 text-center" id="tradeTitle">买入股票</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">股票</label>
+                    <div class="text-lg font-bold text-amber-400" id="tradeStockName">--</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">当前价格</label>
+                        <div class="text-xl mono" id="tradePrice">--</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1">可用资金</label>
+                        <div class="text-xl mono text-emerald-400" id="tradeAvailable">--</div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">交易数量</label>
+                    <input type="number" id="tradeAmount" min="1" value="100" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:border-blue-500 focus:outline-none mono">
+                    <div class="flex justify-between mt-1 text-xs text-slate-500">
+                        <button onclick="setMaxAmount()" class="hover:text-blue-400">全部买入</button>
+                        <span id="maxShares">最多可买: 0股</span>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-700 flex gap-3">
+                    <button onclick="confirmTrade()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors" id="confirmTradeBtn">确认买入</button>
+                    <button onclick="closeTradeModal()" class="px-4 py-3 border border-slate-600 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            isRunning: false,
+            startTime: null,
+            timeRemaining: 600,
+            cash: 100000,
+            portfolio: {}, // {stockId: {quantity, avgCost}}
+            trades: [],
+            events: [],
+            currentEvent: null,
+            stockPrices: {},
+            priceHistory: {}
+        };
+
+        // Stock Definitions
+        const stocks = [
+            { id: 'SRAIL', name: '萨特国家铁路集团', fullname: '萨特国家铁路集团（国铁）', type: '国企', sector: '基建', basePrice: 45.50, volatility: 0.02 },
+            { id: 'SSTEL', name: '萨特国家钢铁集团', fullname: '萨特国家钢铁集团（国钢）', type: '国企', sector: '工业', basePrice: 28.80, volatility: 0.025 },
+            { id: 'PML', name: '帕梅拉集团', fullname: '帕梅拉集团（贸易和房地产）', type: '私企', sector: '贸易', basePrice: 62.30, volatility: 0.03 },
+            { id: 'KIR', name: '基尔集团', fullname: '基尔集团（贸易和房地产）', type: '私企', sector: '贸易', basePrice: 55.00, volatility: 0.028 },
+            { id: 'GENO', name: '准将城油气集团', fullname: '准将城油气集团（锡萨拉省地方国营）', type: '地方国营', sector: '能源', basePrice: 38.90, volatility: 0.035 },
+            { id: 'MSLM', name: '穆斯林集团', fullname: '穆斯林集团（柯西比省地方国营）', type: '地方国营', sector: '综合', basePrice: 42.50, volatility: 0.022 },
+            { id: 'SUPB', name: '超级小海湾集团', fullname: '超级小海湾集团（五月花党党产）', type: '党产', sector: '科技', basePrice: 128.00, volatility: 0.04 },
+            { id: 'EHP', name: '东高地农产集团', fullname: '东高地农产集团（东高地省地方国营）', type: '地方国营', sector: '农业', basePrice: 18.60, volatility: 0.018 },
+            { id: 'GALT', name: '银河托拉斯', fullname: '银河托拉斯（综合）', type: '私企', sector: '综合', basePrice: 89.40, volatility: 0.032 },
+            { id: 'LIQ', name: '利勤伯集团', fullname: '利勤伯集团（审计和司法）', type: '私企', sector: '服务', basePrice: 35.20, volatility: 0.015 },
+            { id: 'MECH', name: '机械革命集团', fullname: '机械革命集团（机械制造、科技）', type: '私企', sector: '科技', basePrice: 76.80, volatility: 0.038 },
+            { id: 'SNWD', name: '南水北调集团', fullname: '南水北调集团（水利）', type: '国企', sector: '基建', basePrice: 22.40, volatility: 0.012 },
+            { id: 'HRSE', name: '萨特赛马会集团', fullname: '萨特赛马会集团（赛马体育娱乐）', type: '私企', sector: '娱乐', basePrice: 15.80, volatility: 0.05 },
+            { id: 'SSF', name: '斯卡拉尔主权基金', fullname: '斯卡拉尔主权基金（斯卡拉尔省地方国营）', type: '地方国营', sector: '金融', basePrice: 95.00, volatility: 0.02 }
+        ];
+
+        // 60 Random Events
+        const eventTemplates = [
+            // 政策类 - 国企利好
+            { title: "国家基建刺激计划", desc: "萨特政府宣布启动5年10万亿基建计划，重点投资铁路和水利", effect: { type: ['国企'], value: 0.05 }, duration: 20 },
+            { title: "央企改革深化", desc: "国家推动国有企业混合所有制改革，提升经营效率", effect: { type: ['国企'], value: 0.04 }, duration: 15 },
+            { title: "央行降息25基点", desc: "萨特国家银行下调基准利率，市场流动性充裕", effect: { type: ['all'], value: 0.03 }, duration: 25 },
+            { title: "环保政策收紧", desc: "新的碳排放标准出台，高耗能企业成本上升", effect: { type: ['国企', '地方国营'], value: -0.03, sector: ['工业', '能源'] }, duration: 20 },
+            
+            // 地方政策
+            { title: "锡萨拉省发现新油田", desc: "准将城附近发现大型页岩油储备", effect: { type: ['地方国营'], stock: ['GENO'], value: 0.08 }, duration: 30 },
+            { title: "柯西比省贸易协定", desc: "穆斯林集团获得跨境贸易独家经营权", effect: { type: ['地方国营'], stock: ['MSLM'], value: 0.06 }, duration: 25 },
+            { title: "东高地农业补贴", desc: "省政府增加小麦种植补贴30%", effect: { type: ['地方国营'], stock: ['EHP'], value: 0.05 }, duration: 20 },
+            { title: "斯卡拉尔金融创新", desc: "省际金融中心地位确立，政策支持力度加大", effect: { type: ['地方国营'], stock: ['SSF'], value: 0.04 }, duration: 18 },
+            
+            // 党产特殊
+            { title: "五月花党代表大会", desc: "党产企业获得新一轮注资，科技创新基金成立", effect: { type: ['党产'], value: 0.06 }, duration: 22 },
+            { title: "党纪整风运动", desc: "党产企业面临更严格的审计和监管", effect: { type: ['党产'], value: -0.04 }, duration: 15 },
+            
+            // 国际环境
+            { title: "国际贸易协定签署", desc: "萨特与邻国签署自由贸易协定，关税大幅降低", effect: { sector: ['贸易'], value: 0.05 }, duration: 25 },
+            { title: "全球金融危机预警", desc: "国际货币基金组织下调全球增长预期", effect: { type: ['all'], value: -0.04 }, duration: 20 },
+            { title: "制裁威胁", desc: "海外市场考虑对萨特实施技术封锁", effect: { sector: ['科技'], value: -0.05 }, duration: 18 },
+            { title: "能源价格上涨", desc: "国际油价突破每桶100美元", effect: { sector: ['能源'], value: 0.06 }, duration: 25 },
+            { title: "粮食危机", desc: "全球粮食短缺导致农产品价格飙升", effect: { sector: ['农业'], value: 0.07 }, duration: 28 },
+            { title: "战争阴云", desc: "边境紧张局势升级，国防开支预期增加", effect: { sector: ['工业'], value: 0.04 }, duration: 22 },
+            
+            // 行业特定
+            { title: "高铁技术突破", desc: "国铁集团掌握新一代磁悬浮技术", effect: { stock: ['SRAIL'], value: 0.06 }, duration: 20 },
+            { title: "钢铁产能过剩", desc: "全国钢铁库存创5年新高，价格下跌", effect: { stock: ['SSTEL'], value: -0.05 }, duration: 25 },
+            { title: "房地产泡沫破裂", desc: "一线城市房价连续三月下跌，房企债务危机", effect: { sector: ['贸易'], value: -0.06 }, duration: 30 },
+            { title: "石油管道泄漏", desc: "准将城主要管道发生泄漏事故，停产检修", effect: { stock: ['GENO'], value: -0.07 }, duration: 15 },
+            { title: "区块链革命", desc: "党产企业宣布采用区块链技术改造供应链", effect: { stock: ['SUPB'], value: 0.08 }, duration: 20 },
+            { title: "干旱预警", desc: "东高地省遭遇罕见旱灾，农作物减产", effect: { stock: ['EHP'], value: -0.06 }, duration: 25 },
+            { title: "反垄断调查", desc: "银河托拉斯涉嫌垄断被调查组进驻", effect: { stock: ['GALT'], value: -0.05 }, duration: 20 },
+            { title: "司法改革法案", desc: "新增审计需求爆发，利勤伯订单饱满", effect: { stock: ['LIQ'], value: 0.05 }, duration: 18 },
+            { title: "AI技术突破", desc: "机械革命集团发布新一代工业机器人", effect: { stock: ['MECH'], value: 0.07 }, duration: 24 },
+            { title: "洪涝灾害", desc: "南水北调工程发挥防洪效益，获额外拨款", effect: { stock: ['SNWD'], value: 0.04 }, duration: 20 },
+            { title: "赛马丑闻", desc: "萨特赛马会被曝禁药丑闻，股价大跌", effect: { stock: ['HRSE'], value: -0.08 }, duration: 30 },
+            { title: "主权财富基金扩张", desc: "斯卡拉尔基金收购海外优质资产", effect: { stock: ['SSF'], value: 0.05 }, duration: 22 },
+            
+            // 社会事件
+            { title: "大罢工", desc: "全国铁路工人罢工三天，运输中断", effect: { stock: ['SRAIL'], value: -0.05 }, duration: 18 },
+            { title: "疫情爆发", desc: "新型流感传播，全国进入防疫状态", effect: { type: ['all'], value: -0.03 }, duration: 25 },
+            { title: "恐怖袭击", desc: "首都发生爆炸事件，市场恐慌", effect: { type: ['all'], value: -0.05 }, duration: 15 },
+            { title: "国庆阅兵", desc: "国家实力展示提振民众信心", effect: { type: ['国企'], value: 0.03 }, duration: 20 },
+            { title: "领导人更迭", desc: "新一届政府强调市场化改革", effect: { type: ['私企'], value: 0.04 }, duration: 25 },
+            
+            // 企业特定
+            { title: "帕梅拉集团并购", desc: "收购竞争对手，市场份额提升", effect: { stock: ['PML'], value: 0.05 }, duration: 20 },
+            { title: "基尔集团债务违约", desc: "无法按期偿还债券，信用评级下调", effect: { stock: ['KIR'], value: -0.08 }, duration: 28 },
+            { title: "技术泄密", desc: "机械革命核心图纸被竞争对手窃取", effect: { stock: ['MECH'], value: -0.06 }, duration: 22 },
+            { title: "重大合同", desc: "银河托拉斯中标海外基建项目", effect: { stock: ['GALT'], value: 0.06 }, duration: 25 },
+            { title: "分红预案", desc: "多家企业宣布高分红送转方案", effect: { type: ['all'], value: 0.02 }, duration: 15 },
+            
+            // 黑天鹅
+            { title: "地震袭击东高地", desc: "7级地震摧毁主要农业基础设施", effect: { stock: ['EHP'], value: -0.12 }, duration: 35 },
+            { title: "石油国有化法案", desc: "议会讨论能源行业国有化，私企恐慌", effect: { type: ['私企'], sector: ['能源'], value: -0.08 }, duration: 30 },
+            { title: "货币贬值", desc: "西格尔基元兑美元汇率暴跌10%", effect: { type: ['all'], value: -0.05 }, duration: 25 },
+            { title: "外星接触", desc: "天文学家确认收到外星信号，科技股暴涨", effect: { sector: ['科技'], value: 0.10 }, duration: 40 },
+            { title: "尤里卡时刻", desc: "国钢实验室发现室温超导材料", effect: { stock: ['SSTEL'], value: 0.15 }, duration: 35 },
+            
+            // 补充事件凑够60个
+            { title: "税收优惠", desc: "制造业增值税率下调2个百分点", effect: { sector: ['工业', '科技'], value: 0.04 }, duration: 20 },
+            { title: "利率市场化", desc: "存款利率上限放开，银行股受益", effect: { type: ['地方国营'], stock: ['SSF'], value: 0.04 }, duration: 22 },
+            { title: "养老金入市", desc: "社保基金获准投资股市，长期资金入场", effect: { type: ['all'], value: 0.03 }, duration: 25 },
+            { title: "QFII扩容", desc: "外资持股比例上限提高", effect: { type: ['私企'], value: 0.04 }, duration: 20 },
+            { title: "房地产调控", desc: "限购限贷政策再升级", effect: { sector: ['贸易'], value: -0.04 }, duration: 25 },
+            { title: "新能源补贴退坡", desc: "电动汽车补贴逐年递减", effect: { sector: ['科技'], value: -0.03 }, duration: 18 },
+            { title: "5G商用牌照", desc: "超小海湾集团获得5G运营许可", effect: { stock: ['SUPB'], value: 0.07 }, duration: 24 },
+            { title: "铁路票价改革", desc: "国铁获得自主定价权", effect: { stock: ['SRAIL'], value: 0.04 }, duration: 20 },
+            { title: "审计风暴", desc: "财政部严查央企账目", effect: { type: ['国企'], value: -0.03 }, duration: 22 },
+            { title: "农村电商爆发", desc: "农产品上行渠道打通", effect: { stock: ['EHP'], value: 0.05 }, duration: 25 },
+            { title: "赛马博彩合法化", desc: "萨特赛马会获得博彩牌照", effect: { stock: ['HRSE'], value: 0.12 }, duration: 30 },
+            { title: "水利投资加码", desc: "国家防汛抗旱总指挥部追加预算", effect: { stock: ['SNWD'], value: 0.06 }, duration: 23 },
+            { title: "钢铁限产", desc: "冬季环保限产令发布", effect: { stock: ['SSTEL'], value: 0.05 }, duration: 28 },
+            { title: "贸易战停火", desc: "双方同意暂停加征新关税", effect: { sector: ['贸易'], value: 0.06 }, duration: 26 },
+            { title: "数据泄露", desc: "超级小海湾集团用户数据被盗", effect: { stock: ['SUPB'], value: -0.06 }, duration: 20 },
+            { title: "主权评级上调", desc: "标普上调萨特信用评级至AA-", effect: { type: ['all'], value: 0.03 }, duration: 22 },
+            { title: "资本外流", desc: "外汇储备连续三月下降", effect: { type: ['all'], value: -0.04 }, duration: 25 },
+            { title: "芯片禁运", desc: "高端芯片进口受限，科技企业受挫", effect: { sector: ['科技'], value: -0.05 }, duration: 28 },
+            { title: "黄金价格上涨", desc: "避险情绪升温，主权基金受益", effect: { stock: ['SSF'], value: 0.04 }, duration: 20 },
+            { title: "医疗改革", desc: "医保覆盖范围扩大，服务业受益", effect: { sector: ['服务'], value: 0.03 }, duration: 18 }
+        ];
+
+        let timerInterval;
+        let priceInterval;
+        let eventInterval;
+        let upcomingEvent = null;
+
+        function init() {
+            stocks.forEach(stock => {
+                gameState.stockPrices[stock.id] = stock.basePrice;
+                gameState.priceHistory[stock.id] = [stock.basePrice];
+                gameState.portfolio[stock.id] = { quantity: 0, avgCost: 0 };
+            });
+            renderStocks();
+            updateDisplay();
+        }
+
+        function drawMiniChart(canvasId, data) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = 100;
+            const height = canvas.height = 30;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            if (data.length < 2) return;
+            
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const range = max - min || 1;
+            
+            const getX = (i) => (i / (data.length - 1)) * width;
+            const getY = (val) => height - ((val - min) / range) * height;
+            
+            // Determine color based on trend
+            const startPrice = data[0];
+            const endPrice = data[data.length - 1];
+            const color = endPrice >= startPrice ? '#ef4444' : '#22c55e';
+            
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            
+            data.forEach((price, i) => {
+                const x = getX(i);
+                const y = getY(price);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            
+            ctx.stroke();
+            
+            // Fill gradient
+            ctx.lineTo(width, height);
+            ctx.lineTo(0, height);
+            ctx.closePath();
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, color + '40'); // 25% opacity
+            gradient.addColorStop(1, color + '00'); // 0% opacity
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function renderStocks() {
+            const tbody = document.getElementById('stockTableBody');
+            tbody.innerHTML = '';
+            
+            stocks.forEach(stock => {
+                const price = gameState.stockPrices[stock.id];
+                const change = ((price - stock.basePrice) / stock.basePrice * 100).toFixed(2);
+                const changeClass = change > 0 ? 'stock-up' : change < 0 ? 'stock-down' : 'stock-flat';
+                const typeColor = stock.type === '国企' ? 'bg-red-600' : 
+                                 stock.type === '私企' ? 'bg-blue-600' : 
+                                 stock.type === '党产' ? 'bg-purple-600' : 'bg-amber-600';
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-800 transition-colors';
+                row.innerHTML = `
+                    <td class="py-3 px-2">
+                        <div class="flex items-center">
+                            <span class="w-2 h-2 rounded-full ${typeColor} mr-2"></span>
+                            <div>
+                                <div class="font-bold text-slate-200">${stock.name}</div>
+                                <div class="text-xs text-slate-500">${stock.id} | ${stock.type}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-2">
+                        <canvas id="chart-${stock.id}" class="mini-chart" width="100" height="30"></canvas>
+                    </td>
+                    <td class="py-3 px-2 text-right font-bold mono text-lg">₲${price.toFixed(2)}</td>
+                    <td class="py-3 px-2 text-right mono ${changeClass}">${change > 0 ? '+' : ''}${change}%</td>
+                    <td class="py-3 px-2 text-right text-xs text-slate-400">${(Math.random()*10000+1000).toFixed(0)}</td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="openTrade('${stock.id}', 'buy')" class="btn-trade btn-buy px-3 py-1 rounded text-xs mr-1">买入</button>
+                        <button onclick="openTrade('${stock.id}', 'sell')" class="btn-trade btn-sell px-3 py-1 rounded text-xs">卖出</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                
+                // Draw chart immediately after adding to DOM
+                setTimeout(() => drawMiniChart(`chart-${stock.id}`, gameState.priceHistory[stock.id]), 0);
+            });
+        }
+
+        function startGame() {
+            if (gameState.isRunning) return;
+            
+            gameState.isRunning = true;
+            gameState.startTime = Date.now();
+            gameState.timeRemaining = 600;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('stopBtn').classList.remove('bg-slate-700', 'text-slate-500', 'cursor-not-allowed');
+            document.getElementById('stopBtn').classList.add('bg-red-600', 'hover:bg-red-700', 'text-white');
+            
+            // Timer
+            timerInterval = setInterval(() => {
+                gameState.timeRemaining--;
+                updateTimer();
+                if (gameState.timeRemaining <= 0) stopGame();
+            }, 1000);
+            
+            // Price updates every 2s
+            priceInterval = setInterval(updatePrices, 2000);
+            
+            // Events every 10s (with 5s preview)
+            eventInterval = setInterval(scheduleEvent, 10000);
+            scheduleEvent(); // First event immediately
+            
+            addNews("交易开始！市场开盘，祝你好运！🚀", "system");
+        }
+
+        function scheduleEvent() {
+            if (!gameState.isRunning) return;
+            
+            // Select random event
+            const event = {...eventTemplates[Math.floor(Math.random() * eventTemplates.length)]};
+            upcomingEvent = event;
+            
+            // Show preview
+            document.getElementById('previewBar').classList.remove('hidden');
+            document.getElementById('previewText').textContent = `[传闻] ${event.title}`;
+            document.getElementById('eventCountdown').textContent = '5s';
+            
+            let countdown = 5;
+            const countdownInt = setInterval(() => {
+                countdown--;
+                document.getElementById('eventCountdown').textContent = countdown + 's';
+                if (countdown <= 0) {
+                    clearInterval(countdownInt);
+                    triggerEvent(event);
+                }
+            }, 1000);
+        }
+
+        function triggerEvent(event) {
+            document.getElementById('previewBar').classList.add('hidden');
+            document.getElementById('eventCountdown').textContent = '';
+            
+            addNews(`【突发】${event.title}: ${event.desc}`, "event");
+            
+            // Apply effect
+            gameState.events.push({
+                ...event,
+                endTime: Date.now() + event.duration * 1000
+            });
+            
+            // Visual feedback
+            const newsContainer = document.getElementById('newsContainer');
+            newsContainer.classList.add(event.effect.value > 0 ? 'flash-green' : 'flash-red');
+            setTimeout(() => newsContainer.classList.remove('flash-green', 'flash-red'), 1000);
+        }
+
+        function updatePrices() {
+            stocks.forEach(stock => {
+                let price = gameState.stockPrices[stock.id];
+                let change = 1 + (Math.random() - 0.5) * stock.volatility;
+                
+                // Apply active events
+                gameState.events = gameState.events.filter(e => e.endTime > Date.now());
+                gameState.events.forEach(event => {
+                    let applies = false;
+                    if (event.effect.type && event.effect.type.includes('all')) applies = true;
+                    if (event.effect.type && event.effect.type.includes(stock.type)) applies = true;
+                    if (event.effect.sector && event.effect.sector.includes(stock.sector)) applies = true;
+                    if (event.effect.stock && event.effect.stock.includes(stock.id)) applies = true;
+                    
+                    if (applies) {
+                        change *= (1 + event.effect.value * 0.1); // Dampen the effect
+                    }
+                });
+                
+                price *= change;
+                price = Math.max(price, stock.basePrice * 0.3); // Floor at 30% of base
+                gameState.stockPrices[stock.id] = price;
+                gameState.priceHistory[stock.id].push(price);
+            });
+            
+            renderStocks();
+            updatePortfolio();
+            updateDisplay();
+        }
+
+        function addNews(text, type) {
+            const div = document.getElementById('currentNews');
+            div.style.opacity = 0;
+            setTimeout(() => {
+                div.textContent = text;
+                div.style.opacity = 1;
+            }, 200);
+        }
+
+        function updateTimer() {
+            const m = Math.floor(gameState.timeRemaining / 60).toString().padStart(2, '0');
+            const s = (gameState.timeRemaining % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${m}:${s}`;
+        }
+
+        function updateDisplay() {
+            document.getElementById('cashDisplay').textContent = '₲' + gameState.cash.toLocaleString('en-US', {minimumFractionDigits: 2});
+            
+            let total = gameState.cash;
+            stocks.forEach(stock => {
+                const pos = gameState.portfolio[stock.id];
+                if (pos.quantity > 0) {
+                    total += pos.quantity * gameState.stockPrices[stock.id];
+                }
+            });
+            document.getElementById('totalAsset').textContent = '₲' + total.toLocaleString('en-US', {minimumFractionDigits: 2});
+        }
+
+        function updatePortfolio() {
+            const container = document.getElementById('portfolioList');
+            const emptyMsg = document.getElementById('emptyPortfolio');
+            let hasPosition = false;
+            let totalPnL = 0;
+            
+            container.innerHTML = '';
+            
+            stocks.forEach(stock => {
+                const pos = gameState.portfolio[stock.id];
+                if (pos.quantity > 0) {
+                    hasPosition = true;
+                    const currentPrice = gameState.stockPrices[stock.id];
+                    const marketValue = pos.quantity * currentPrice;
+                    const costBasis = pos.quantity * pos.avgCost;
+                    const pnl = marketValue - costBasis;
+                    totalPnL += pnl;
+                    
+                    const pnlClass = pnl >= 0 ? 'text-red-500' : 'text-green-500';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'bg-slate-800/50 rounded p-3 border border-slate-700 flex justify-between items-center';
+                    div.innerHTML = `
+                        <div>
+                            <div class="font-bold text-sm">${stock.name}</div>
+                            <div class="text-xs text-slate-500 mono">${pos.quantity}股 × ₲${pos.avgCost.toFixed(2)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold mono">₲${marketValue.toFixed(2)}</div>
+                            <div class="text-xs mono ${pnlClass}">${pnl >= 0 ? '+' : ''}₲${pnl.toFixed(2)}</div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+            
+            if (hasPosition) {
+                container.classList.remove('hidden');
+                emptyMsg.classList.add('hidden');
+            }
+            
+            const pnlDisplay = document.getElementById('floatingPnL');
+            pnlDisplay.textContent = (totalPnL >= 0 ? '+' : '') + '₲' + totalPnL.toLocaleString('en-US', {minimumFractionDigits: 2});
+            pnlDisplay.className = 'mono font-bold ' + (totalPnL >= 0 ? 'text-red-500' : 'text-green-500');
+            
+            // Update PnL bar
+            const maxPnL = 50000; // Scale reference
+            const percentage = Math.max(0, Math.min(100, (totalPnL + maxPnL) / (2 * maxPnL) * 100));
+            document.getElementById('pnlBar').style.width = percentage + '%';
+            document.getElementById('pnlBar').className = 'progress-bar ' + (totalPnL >= 0 ? '' : 'bg-gradient-to-r from-gray-600 to-red-600');
+        }
+
+        // Trade Modal Logic
+        let currentTrade = null;
+
+        function openTrade(stockId, action) {
+            if (!gameState.isRunning && gameState.trades.length === 0) {
+                alert('请先点击"开始交易"按钮');
+                return;
+            }
+            
+            const stock = stocks.find(s => s.id === stockId);
+            const price = gameState.stockPrices[stockId];
+            
+            currentTrade = { stock, action, price };
+            
+            document.getElementById('tradeTitle').textContent = action === 'buy' ? '买入股票' : '卖出股票';
+            document.getElementById('tradeStockName').textContent = stock.name;
+            document.getElementById('tradePrice').textContent = '₲' + price.toFixed(2);
+            document.getElementById('tradeAvailable').textContent = '₲' + gameState.cash.toFixed(2);
+            document.getElementById('confirmTradeBtn').textContent = action === 'buy' ? '确认买入' : '确认卖出';
+            document.getElementById('confirmTradeBtn').className = action === 'buy' ? 
+                'flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors' :
+                'flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors';
+            
+            // Calculate max
+            const max = action === 'buy' ? Math.floor(gameState.cash / price) : gameState.portfolio[stockId].quantity;
+            document.getElementById('maxShares').textContent = `最大可${action === 'buy' ? '买' : '卖'}: ${max}股`;
+            document.getElementById('tradeAmount').value = Math.min(100, max);
+            document.getElementById('tradeAmount').max = max;
+            
+            document.getElementById('tradeModal').classList.remove('hidden');
+        }
+
+        function setMaxAmount() {
+            const max = currentTrade.action === 'buy' ? 
+                Math.floor(gameState.cash / currentTrade.price) : 
+                gameState.portfolio[currentTrade.stock.id].quantity;
+            document.getElementById('tradeAmount').value = max;
+        }
+
+        function confirmTrade() {
+            const amount = parseInt(document.getElementById('tradeAmount').value);
+            if (!amount || amount <= 0) return;
+            
+            const { stock, action, price } = currentTrade;
+            const total = amount * price;
+            
+            if (action === 'buy') {
+                if (total > gameState.cash) {
+                    alert('资金不足');
+                    return;
+                }
+                
+                gameState.cash -= total;
+                const pos = gameState.portfolio[stock.id];
+                const newTotalCost = pos.quantity * pos.avgCost + total;
+                pos.quantity += amount;
+                pos.avgCost = newTotalCost / pos.quantity;
+                
+                logTrade('买入', stock, amount, price, total);
+            } else {
+                if (amount > gameState.portfolio[stock.id].quantity) {
+                    alert('持仓不足');
+                    return;
+                }
+                
+                gameState.cash += total;
+                gameState.portfolio[stock.id].quantity -= amount;
+                
+                logTrade('卖出', stock, amount, price, total);
+            }
+            
+            closeTradeModal();
+            updatePortfolio();
+            updateDisplay();
+        }
+
+        function logTrade(type, stock, amount, price, total) {
+            const time = new Date().toLocaleTimeString('zh-CN');
+            gameState.trades.push({ time, type, stock: stock.name, amount, price, total });
+            
+            const history = document.getElementById('tradeHistory');
+            if (gameState.trades.length === 1) history.innerHTML = '';
+            
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center py-2 border-b border-slate-800/50 ' + (type === '买入' ? 'text-red-400' : 'text-green-400');
+            div.innerHTML = `
+                <span>${time}</span>
+                <span class="font-bold">${type}</span>
+                <span>${stock.name}</span>
+                <span>${amount}股</span>
+                <span class="font-bold">₲${price.toFixed(2)}</span>
+            `;
+            history.insertBefore(div, history.firstChild);
+        }
+
+        function closeTradeModal() {
+            document.getElementById('tradeModal').classList.add('hidden');
+            currentTrade = null;
+        }
+
+        function stopGame() {
+            if (!gameState.isRunning) return;
+            
+            clearInterval(timerInterval);
+            clearInterval(priceInterval);
+            clearInterval(eventInterval);
+            
+            gameState.isRunning = false;
+            
+            showReport();
+        }
+
+        function showReport() {
+            const modal = document.getElementById('reportModal');
+            modal.classList.remove('hidden');
+            
+            // Calculate final stats
+            let finalAsset = gameState.cash;
+            stocks.forEach(stock => {
+                const pos = gameState.portfolio[stock.id];
+                if (pos.quantity > 0) {
+                    finalAsset += pos.quantity * gameState.stockPrices[stock.id];
+                }
+            });
+            
+            const pnl = finalAsset - 100000;
+            const returnRate = (pnl / 100000 * 100).toFixed(2);
+            
+            document.getElementById('reportDuration').textContent = document.getElementById('timer').textContent;
+            document.getElementById('reportFinal').textContent = '₲' + finalAsset.toLocaleString('en-US', {minimumFractionDigits: 2});
+            
+            const pnlEl = document.getElementById('reportPnL');
+            pnlEl.textContent = (pnl >= 0 ? '+' : '') + '₲' + pnl.toLocaleString('en-US', {minimumFractionDigits: 2});
+            pnlEl.className = 'text-2xl font-black mono ' + (pnl >= 0 ? 'text-red-600' : 'text-green-600');
+            
+            document.getElementById('reportReturn').textContent = (pnl >= 0 ? '+' : '') + returnRate + '%';
+            document.getElementById('reportTrades').textContent = gameState.trades.length;
+            document.getElementById('reportId').textContent = 'SSE-' + new Date().getFullYear() + '-' + Math.floor(100000 + Math.random() * 899999);
+            
+            // Fill trade table
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = '';
+            gameState.trades.forEach(trade => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-100';
+                row.innerHTML = `
+                    <td class="py-2 px-1 md:px-2 whitespace-nowrap">${trade.time}</td>
+                    <td class="py-2 px-1 md:px-2 font-bold">${trade.stock}</td>
+                    <td class="py-2 px-1 md:px-2 text-right ${trade.type === '买入' ? 'text-red-600' : 'text-green-600'} whitespace-nowrap">${trade.type}</td>
+                    <td class="py-2 px-1 md:px-2 text-right">${trade.amount}</td>
+                    <td class="py-2 px-1 md:px-2 text-right">₲${trade.price.toFixed(2)}</td>
+                    <td class="py-2 px-1 md:px-2 text-right font-bold">₲${trade.total.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            if (gameState.trades.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-center text-slate-400 italic">本周期无交易记录</td></tr>';
+            }
+        }
+
+        function downloadReport() {
+            const username = document.getElementById('usernameInput').value || '匿名交易员';
+            document.getElementById('reportUsername').textContent = username;
+            
+            const reportContent = document.getElementById('reportContent');
+            
+            html2canvas(reportContent, {
+                scale: 2,
+                backgroundColor: '#fafaf9',
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `萨特证券交易报告_${username}_${new Date().toISOString().slice(0,10)}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
