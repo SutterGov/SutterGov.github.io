@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特第二共和国建交国书生成器 | Sutter Republic II Letter of Credence Generator</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Noto Serif SC", "Playfair Display", serif;
+            background: linear-gradient(135deg, #0d1642 0%, #1a237e 50%, #283593 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2c1810;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .form-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            height: fit-content;
+            border: 2px solid #c9a227;
+        }
+
+        .form-title {
+            font-size: 1.3rem;
+            color: #1a237e;
+            margin-bottom: 25px;
+            font-weight: 700;
+            text-align: center;
+            border-bottom: 2px solid #c9a227;
+            padding-bottom: 15px;
+            font-family: 'Cinzel', serif;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a237e;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            font-family: "Noto Serif SC", serif;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 3px rgba(26,35,126,0.1);
+        }
+
+        .file-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border: 2px dashed #1a237e;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #f5f7ff;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .file-label:hover {
+            background: #e8eaf6;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(26,35,126,0.3);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #c9a227 0%, #f4d03f 100%);
+            color: #1a1a1a;
+            box-shadow: 0 4px 15px rgba(201,162,39,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .sutter-info {
+            background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #1a237e;
+        }
+
+        .sutter-info h4 {
+            color: #1a237e;
+            margin-bottom: 10px;
+        }
+
+        .sutter-info p {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .sutter-flag-preview {
+            width: 60px;
+            height: 40px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+
+        .document-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .document-container {
+            background: #faf8f0;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 40px 50px;
+            box-shadow: 0 0 0 1px #d4af37, 0 0 0 8px #fff, 0 0 0 9px #d4af37, 0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @media (max-width: 900px) {
+            .document-container {
+                width: 100%;
+                min-height: auto;
+                padding: 30px;
+            }
+        }
+
+        .document-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139,69,19,0.03) 2px, rgba(139,69,19,0.03) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .document-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px double #c9a227;
+        }
+
+        .doc-emblem {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .doc-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.6rem;
+            color: #1a237e;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .doc-subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .nations-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(26,35,126,0.05) 0%, rgba(201,162,39,0.05) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(201,162,39,0.3);
+        }
+
+        .nation-block {
+            text-align: center;
+            flex: 1;
+        }
+
+        .nation-flag {
+            width: 80px;
+            height: 53px;
+            object-fit: cover;
+            border: 2px solid #c9a227;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            background: #f0f0f0;
+        }
+
+        .nation-name {
+            font-weight: 700;
+            color: #1a237e;
+            font-size: 1rem;
+            margin-bottom: 3px;
+        }
+
+        .nation-name-en {
+            font-size: 0.75rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .diplomatic-symbol {
+            font-size: 2rem;
+            color: #c9a227;
+            margin: 0 20px;
+        }
+
+        .doc-body {
+            margin: 30px 0;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        .doc-date {
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #1a237e;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        .doc-section {
+            margin-bottom: 25px;
+        }
+
+        .doc-section h3 {
+            font-family: 'Cinzel', serif;
+            color: #1a237e;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            border-left: 4px solid #c9a227;
+            padding-left: 12px;
+        }
+
+        .doc-text {
+            font-size: 0.9rem;
+            text-indent: 2em;
+            margin-bottom: 15px;
+        }
+
+        .doc-text-fr {
+            font-size: 0.85rem;
+            text-indent: 2em;
+            margin-bottom: 15px;
+            font-style: italic;
+            color: #444;
+            border-left: 2px solid #c9a227;
+            padding-left: 15px;
+            margin-left: 10px;
+        }
+
+        .signatures {
+            margin-top: 50px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .signature-block {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            height: 50px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-family: 'Playfair Display', cursive;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #2c1810;
+        }
+
+        .signature-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .signature-title {
+            font-weight: 700;
+            color: #1a237e;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .doc-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #c9a227;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .seal {
+            position: absolute;
+            bottom: 60px;
+            right: 60px;
+            width: 100px;
+            height: 100px;
+            border: 3px solid #c9a227;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.15;
+            transform: rotate(-15deg);
+            font-size: 0.7rem;
+            text-align: center;
+            color: #1a237e;
+            font-weight: 700;
+            pointer-events: none;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            z-index: 1000;
+        }
+
+        .note {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.85rem;
+            text-align: center;
+            max-width: 210mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading">正在生成国书...</div>
+
+    <div class="header">
+        <h1>📜 萨特第二共和国建交国书生成器</h1>
+        <p>Diplomatic Letter of Credence Generator</p>
+    </div>
+
+    <div class="container">
+        <div class="form-panel">
+            <div class="form-title">📝 建交申请信息</div>
+
+            <div class="form-group">
+                <label>申请国中文名</label>
+                <input type="text" id="countryZh" placeholder="如：法兰西共和国" value="法兰西共和国">
+            </div>
+
+            <div class="form-group">
+                <label>申请国外文名</label>
+                <input type="text" id="countryEn" placeholder="如：French Republic" value="French Republic">
+            </div>
+
+            <div class="form-group">
+                <label>申请国国旗</label>
+                <input type="file" id="flagUpload" accept="image/*" style="display: none;">
+                <label for="flagUpload" class="file-label">
+                    <span style="font-size: 1.5rem;">🏳️</span>
+                    <span>点击上传国旗图片</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>外交代表签名</label>
+                <input type="text" id="signature" placeholder="如：Jean Dupont" value="Jean Dupont">
+            </div>
+
+            <button class="btn btn-primary" onclick="updateDocument()">✨ 生成国书预览</button>
+            <button class="btn btn-gold" onclick="downloadDocument()">📜 下载建交国书</button>
+
+            <div class="sutter-info">
+                <h4>🇺🇳 萨特第二共和国信息</h4>
+                <p><strong>中文名：</strong>萨特第二共和国</p>
+                <p><strong>外文名：</strong>Sutter Republic II</p>
+                <p><strong>外交代表：</strong>Schnekov</p>
+                <img src="data:image/png;base64,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" class="sutter-flag-preview" alt="萨特第二共和国国旗">
+            </div>
+        </div>
+
+        <div class="document-preview">
+            <div class="document-container" id="document">
+                <div class="document-content">
+                    <div class="doc-header">
+                        <div class="doc-emblem"></div>
+                        <div class="doc-title">联 合 公 报</div>
+                        <div class="doc-subtitle">Communiqué Conjoint / Joint Communiqué</div>
+                    </div>
+
+                    <div class="nations-header">
+                        <div class="nation-block">
+                            <img src="data:image/png;base64,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mVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmVZlmUvg/9/4D8U6cpzLAAAAABJRU5ErkJggg==" class="nation-flag" id="sutterFlagDisplay" alt="萨特第二共和国">
+                            <div class="nation-name">萨特第二共和国</div>
+                            <div class="nation-name-en">Sutter Republic II</div>
+                        </div>
+
+                        <div class="diplomatic-symbol">🤝</div>
+
+                        <div class="nation-block">
+                            <img src="" class="nation-flag" id="countryFlagDisplay" style="display: none;" crossOrigin="anonymous">
+                            <div class="nation-flag" id="flagPlaceholder" style="background: linear-gradient(135deg, #ddd 0%, #bbb 100%); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #666;">待上传</div>
+                            <div class="nation-name" id="countryNameDisplay">法兰西共和国</div>
+                            <div class="nation-name-en" id="countryNameEnDisplay">French Republic</div>
+                        </div>
+                    </div>
+
+                    <div class="doc-date">
+                        <span id="currentDate"></span>
+                    </div>
+
+                    <div class="doc-body">
+                        <div class="doc-section">
+                            <h3>中文文本 Texte Chinois</h3>
+                            <p class="doc-text">
+                                签署本联合公报，旨在巩固两国的外交基础，推进政治、经贸、科技、文化等多层面合作，并以此为两国关系新篇章之开端。双方表示，将以和平为导向、以人民福祉为核心而建立外交关系，共同携手应对全球挑战，促进地区和国际间的稳定与合作。
+                            </p>
+                            <p class="doc-text">
+                                双方一致认为，今日联合公报之签署不仅是外交行动的延续，也是友谊和信任的具体体现。双方在未来将持续加强沟通、深化互信，依据联合公报的原则，持续推进双方更紧密的合作，开创和谐繁荣的新时代。
+                            </p>
+                        </div>
+
+                        <div class="doc-section">
+                            <h3>法文文本 Texte Français</h3>
+                            <p class="doc-text-fr">
+                                La signature de ce communiqué conjoint vise à consolider les fondements diplomatiques entre les deux pays, à promouvoir la coopération à tous les niveaux dans les domaines politique, économique, commercial, scientifique et technologique, culturel et autres, et à marquer l'ouverture d'une nouvelle ère dans les relations bilatérales. Les deux parties ont déclaré vouloir établir des relations diplomatiques fondées sur la paix et le bien-être de leurs populations, relever ensemble les défis mondiaux et promouvoir la stabilité et la coopération régionales et internationales.
+                            </p>
+                            <p class="doc-text-fr">
+                                Les deux parties ont convenu que la signature de ce communiqué conjoint aujourd'hui s'inscrit non seulement dans la continuité des actions diplomatiques entreprises, mais constitue également une manifestation concrète d'amitié et de confiance. À l'avenir, les deux parties continueront de renforcer leur communication, d'approfondir leur confiance mutuelle et, conformément aux principes du présent communiqué conjoint, de développer une coopération toujours plus étroite afin d'inaugurer une nouvelle ère d'harmonie et de prospérité.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="signatures">
+                        <div class="signature-block">
+                            <div class="signature-line" id="sutterSignature">Schnekov</div>
+                            <div class="signature-label">萨特第二共和国代表</div>
+                            <div class="signature-title">Representative of Sutter Republic II</div>
+                        </div>
+
+                        <div class="signature-block">
+                            <div class="signature-line" id="countrySignature">Jean Dupont</div>
+                            <div class="signature-label" id="countryLabel">法兰西共和国代表</div>
+                            <div class="signature-title" id="countryTitleEn">Representative of French Republic</div>
+                        </div>
+                    </div>
+
+                    <div class="doc-footer">
+                        本文件一式两份，以中文和法文书就，两种文本同等作准。<br>
+                        Fait en deux exemplaires, en langues chinoise et française, les deux textes faisant également foi.
+                    </div>
+
+                    <div class="seal">
+                        MINISTRY OF<br>FOREIGN AFFAIRS<br>SUTTER RII
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                💡 提示：请确保上传的国旗图片清晰，建议尺寸为 300×200 像素以上。生成的国书采用 A4 尺寸（210×297mm），适合打印存档。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+        const currentDate = new Date().toLocaleDateString('zh-CN', dateOptions);
+        document.getElementById('currentDate').textContent = currentDate;
+
+        let uploadedFlag = null;
+
+        document.getElementById('flagUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    uploadedFlag = event.target.result;
+                    const img = document.getElementById('countryFlagDisplay');
+                    img.src = uploadedFlag;
+                    img.style.display = 'block';
+                    document.getElementById('flagPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function updateDocument() {
+            const countryZh = document.getElementById('countryZh').value || '申请国';
+            const countryEn = document.getElementById('countryEn').value || 'Country';
+            const signature = document.getElementById('signature').value || '签名';
+
+            document.getElementById('countryNameDisplay').textContent = countryZh;
+            document.getElementById('countryNameEnDisplay').textContent = countryEn;
+            document.getElementById('countrySignature').textContent = signature;
+            document.getElementById('countryLabel').textContent = countryZh + '代表';
+            document.getElementById('countryTitleEn').textContent = 'Representative of ' + countryEn;
+        }
+
+        async function downloadDocument() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+
+            const images = document.getElementById('document').getElementsByTagName('img');
+            const loadPromises = Array.from(images).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                });
+            });
+
+            await Promise.all(loadPromises);
+
+            const element = document.getElementById('document');
+
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#faf8f0',
+                    logging: false
+                });
+
+                const link = document.createElement('a');
+                const country = document.getElementById('countryEn').value || 'Country';
+                link.download = `Sutter_Communique_${country}_${new Date().getFullYear()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                loading.style.display = 'none';
+                alert('建交国书已生成！');
+            } catch(err) {
+                console.error(err);
+                loading.style.display = 'none';
+                alert('生成失败，请重试');
+            }
+        }
+
+        updateDocument();
+    </script>
+</body>
+</html>
