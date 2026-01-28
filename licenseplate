@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特第二共和国车牌生成器 | Sutter Republic II License Plate Generator</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --military-green: #2e7d32;
+            --foreign-blue: #1a237e;  /* 萨特国旗深蓝 */
+            --civilian-blue: #87ceeb;
+            --text-dark: #1a1a1a;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .controls {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            height: fit-content;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: #1a237e;
+            margin-bottom: 20px;
+            font-weight: 700;
+            border-left: 4px solid #1a237e;
+            padding-left: 12px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 0.9rem;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 0 3px rgba(26,35,126,0.1);
+        }
+
+        .plate-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .type-option { position: relative; }
+        .type-option input { position: absolute; opacity: 0; }
+
+        .type-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .type-option input:checked + .type-label {
+            border-color: #1a237e;
+            background: #e8eaf6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .type-icon {
+            width: 40px;
+            height: 25px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-mil { background: linear-gradient(to right, #2e7d32 40%, white 40%); }
+        .type-for { background: linear-gradient(to right, #1a237e 40%, white 40%); }  /* 深蓝 */
+        .type-civ { background: linear-gradient(to right, #87ceeb 40%, white 40%); }
+
+        .bird-icon-mini {
+            position: absolute;
+            top: 3px;
+            left: 8px;
+            width: 18px;
+            height: 18px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Paradisaea_apoda_-London_Zoo_-crown-8a.jpg/640px-Paradisaea_apoda_-London_Zoo_-crown-8a.jpg') center/contain no-repeat;
+            filter: brightness(0) invert(1);
+            border-radius: 50%;
+        }
+
+        .type-name { font-size: 0.8rem; font-weight: 600; }
+
+        .plate-preview {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .plate-container {
+            background: white;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: inline-block;
+        }
+
+        .license-plate {
+            display: flex;
+            align-items: stretch;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.1),
+                0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid #ccc;
+            font-family: 'Anton', 'Bebas Neue', Impact, sans-serif;
+        }
+
+        /* 左侧条带 - 包含极乐鸟 */
+        .plate-strip {
+            width: 55px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 8px 4px;
+            color: white;
+            font-weight: 700;
+            position: relative;
+            gap: 8px;
+        }
+
+        .strip-military { background: var(--military-green); }
+        .strip-foreign { background: var(--foreign-blue); }  /* 深蓝色 */
+        .strip-civilian { background: var(--civilian-blue); }
+
+        /* 极乐鸟图标 - 位于条带上部 */
+        .strip-bird {
+            width: 42px;
+            height: 42px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9nXRh.png') center/contain no-repeat;
+            filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            flex-shrink: 0;
+        }
+
+        /* 使用SVG作为备选 */
+        .strip-bird-svg {
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .strip-letter {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            font-family: 'Bebas Neue', sans-serif;
+        }
+
+        /* 中间区域 */
+        .plate-middle {
+            display: flex;
+            align-items: center;
+            border-right: 2px solid #ddd;
+            padding: 0 15px;
+            gap: 12px;
+        }
+
+        .province-code {
+            font-size: 3.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 3px;
+            line-height: 1;
+            font-family: 'Anton', sans-serif;
+            transform: scaleX(0.9);
+            transform-origin: left center;
+        }
+
+        .flag-emblem {
+            width: 55px;
+            height: 38px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        /* 右侧号码区域 */
+        .plate-number-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            min-width: 0;
+        }
+
+        .plate-number {
+            font-size: 5.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: 12px;
+            font-family: 'Anton', sans-serif;
+            line-height: 1;
+            white-space: nowrap;
+            transform: scaleX(0.85);
+            transform-origin: center;
+        }
+
+        /* 三种尺寸 - 字体更大更扁 */
+        .plate-size-euro {
+            height: 110px;
+            min-width: 520px;
+        }
+
+        .plate-size-euro .province-code { 
+            font-size: 4.2rem; 
+            transform: scaleX(0.85);
+        }
+        .plate-size-euro .plate-number { 
+            font-size: 5.8rem; 
+            letter-spacing: 15px;
+            transform: scaleX(0.8);
+        }
+        .plate-size-euro .plate-middle { padding: 0 18px; }
+        .plate-size-euro .flag-emblem { width: 60px; height: 42px; }
+        .plate-size-euro .plate-strip { width: 60px; }
+        .plate-size-euro .strip-bird { width: 45px; height: 45px; }
+        .plate-size-euro .strip-letter { font-size: 1.5rem; }
+
+        .plate-size-small {
+            height: 110px;
+            min-width: 330px;
+        }
+
+        .plate-size-small .province-code { 
+            font-size: 2.8rem; 
+            transform: scaleX(0.85);
+        }
+        .plate-size-small .plate-number { 
+            font-size: 4.2rem; 
+            letter-spacing: 8px;
+            transform: scaleX(0.82);
+        }
+        .plate-size-small .plate-middle { padding: 0 10px; gap: 8px; }
+        .plate-size-small .flag-emblem { width: 42px; height: 30px; }
+        .plate-size-small .plate-strip { width: 45px; padding: 6px 2px; }
+        .plate-size-small .strip-bird { width: 35px; height: 35px; }
+        .plate-size-small .strip-letter { font-size: 1.1rem; }
+
+        .plate-size-large {
+            height: 160px;
+            min-width: 480px;
+        }
+
+        .plate-size-large .province-code { 
+            font-size: 5.8rem; 
+            transform: scaleX(0.85);
+        }
+        .plate-size-large .plate-number { 
+            font-size: 7.5rem; 
+            letter-spacing: 18px;
+            transform: scaleX(0.78);
+        }
+        .plate-size-large .plate-middle { padding: 0 25px; }
+        .plate-size-large .flag-emblem { width: 80px; height: 55px; }
+        .plate-size-large .plate-strip { width: 75px; }
+        .plate-size-large .strip-bird { width: 55px; height: 55px; }
+        .plate-size-large .strip-letter { font-size: 1.8rem; }
+
+        .download-btns {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(26,35,126,0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2e7d32 0%, #4caf50 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46,125,50,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .size-label {
+            color: white;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: -15px;
+        }
+
+        .plate-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            max-width: 520px;
+        }
+
+        .plate-info h3 { margin-bottom: 10px; font-size: 1.1rem; }
+        .plate-info p { font-size: 0.9rem; opacity: 0.9; line-height: 1.5; }
+
+        .bird-preview {
+            width: 80px;
+            height: 80px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Paradisaea_apoda_-London_Zoo_-crown-8a.jpg/640px-Paradisaea_apoda_-London_Zoo_-crown-8a.jpg') center/contain no-repeat;
+            filter: brightness(0) invert(1);
+            background-color: #1a237e;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 3px solid #1a237e;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="header">
+        <h1>🚗 萨特第二共和国车牌在线申领系统</h1>
+        <p>Sutter Republic II Vehicle License Plate System</p>
+    </div>
+
+    <div class="container">
+        <!-- 左侧控制面板 -->
+        <div class="controls">
+            <div class="section-title">🎫 车牌类型</div>
+            <div class="plate-types">
+                <div class="type-option">
+                    <input type="radio" name="plateType" id="typeMilitary" value="military" onchange="updatePlate()">
+                    <label for="typeMilitary" class="type-label">
+                        <div class="type-icon type-mil"></div>
+                        <div class="type-name">军事车牌</div>
+                    </label>
+                </div>
+                <div class="type-option">
+                    <input type="radio" name="plateType" id="typeForeign" value="foreign" onchange="updatePlate()">
+                    <label for="typeForeign" class="type-label">
+                        <div class="type-icon type-for"></div>
+                        <div class="type-name">外事车牌</div>
+                    </label>
+                </div>
+                <div class="type-option">
+                    <input type="radio" name="plateType" id="typeCivilian" value="civilian" checked onchange="updatePlate()">
+                    <label for="typeCivilian" class="type-label">
+                        <div class="type-icon type-civ"></div>
+                        <div class="type-name">私家车牌</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="section-title">📍 省份选择</div>
+            <div class="form-group">
+                <label>注册省份</label>
+                <select id="provinceSelect" onchange="updatePlate()">
+                    <option value="SK">斯卡拉尔 (SK)</option>
+                    <option value="MD">慕德兰 (MD)</option>
+                    <option value="SG">西格尔基 (SG)</option>
+                    <option value="HL">霍利 (HL)</option>
+                    <option value="HA">汉阳 (HA)</option>
+                    <option value="JJ">全州 (JJ)</option>
+                    <option value="DO">多巴尔 (DO)</option>
+                    <option value="TH" selected>青山 (TH)</option>
+                    <option value="IP">群岛省 (IP)</option>
+                    <option value="BA">湾区省 (BA)</option>
+                    <option value="SB">圣巴廷 (SB)</option>
+                    <option value="EH">东高地 (EH)</option>
+                    <option value="KE">柯西比 (KE)</option>
+                    <option value="KH">卡玛尔山 (KH)</option>
+                    <option value="HI">锡萨拉 (HI)</option>
+                    <option value="BF">巴峰特别领地 (BF)</option>
+                    <option value="PK">帕基特 (PK)</option>
+                    <option value="HR">霍纳尔 (HR)</option>
+                    <option value="CP">萨共控制领地 (CP)</option>
+                </select>
+            </div>
+
+            <div class="section-title">🔢 车牌号码</div>
+            <div class="form-group">
+                <label>后五位字符（字母/数字）</label>
+                <input type="text" id="plateNumber" maxlength="5" placeholder="如：2ALK8" value="2ALK8" oninput="updatePlate()">
+            </div>
+
+            <div class="section-title" style="margin-top: 20px;">💾 下载选项</div>
+            <div class="download-btns">
+                <button class="btn btn-primary" onclick="downloadPlate('euro')">
+                    📥 欧洲标准
+                </button>
+                <button class="btn btn-secondary" onclick="downloadPlate('small')">
+                    📥 小型车
+                </button>
+                <button class="btn btn-secondary" onclick="downloadPlate('large')">
+                    📥 大型车
+                </button>
+            </div>
+        </div>
+
+        <!-- 右侧预览区 -->
+        <div class="plate-preview">
+            <div class="size-label">欧洲标准尺寸 (520×110mm)</div>
+            <div class="plate-container">
+                <div id="plateEuro" class="license-plate plate-size-euro">
+                    <div class="plate-strip strip-civilian" id="stripEuro">
+                        <div class="strip-bird"></div>
+                        <div class="strip-letter">HC</div>
+                    </div>
+                    <div class="plate-middle">
+                        <div class="province-code" id="codeEuro">TH</div>
+                        <img src="https://i.imgs.ovh/2026/01/28/y9g1Oc.png" class="flag-emblem" id="flagEuro">
+                    </div>
+                    <div class="plate-number-section">
+                        <div class="plate-number" id="numEuro">2ALK8</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="size-label">小型车尺寸 (330×110mm)</div>
+            <div class="plate-container">
+                <div id="plateSmall" class="license-plate plate-size-small">
+                    <div class="plate-strip strip-civilian" id="stripSmall">
+                        <div class="strip-bird"></div>
+                        <div class="strip-letter">HC</div>
+                    </div>
+                    <div class="plate-middle">
+                        <div class="province-code" id="codeSmall">TH</div>
+                        <img src="https://i.imgs.ovh/2026/01/28/y9g1Oc.png" class="flag-emblem" id="flagSmall">
+                    </div>
+                    <div class="plate-number-section">
+                        <div class="plate-number" id="numSmall">2ALK8</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="size-label">大型车尺寸 (480×160mm)</div>
+            <div class="plate-container">
+                <div id="plateLarge" class="license-plate plate-size-large">
+                    <div class="plate-strip strip-civilian" id="stripLarge">
+                        <div class="strip-bird"></div>
+                        <div class="strip-letter">HC</div>
+                    </div>
+                    <div class="plate-middle">
+                        <div class="province-code" id="codeLarge">TH</div>
+                        <img src="https://i.imgs.ovh/2026/01/28/y9g1Oc.png" class="flag-emblem" id="flagLarge">
+                    </div>
+                    <div class="plate-number-section">
+                        <div class="plate-number" id="numLarge">2ALK8</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="plate-info">
+                <h3>车牌说明</h3>
+                <p id="plateDesc">
+                    私家车牌照，左侧浅蓝色条带（HC标识），白色极乐鸟图标位于上部，青山省注册（TH代码）。<br>
+                    外事车牌为深蓝色条带，军事为绿色条带。<br>
+                    萨特公安部发牌。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const typeConfig = {
+            military: { 
+                class: 'strip-military', 
+                text: 'A', 
+                desc: '军事车牌：左侧绿色条带（A标识），白色极乐鸟位于条带上部，萨特人民军专用。',
+                color: '#2e7d32'
+            },
+            foreign: { 
+                class: 'strip-foreign', 
+                text: 'F', 
+                desc: '外事车牌：左侧<b>深蓝色</b>条带（F标识），白色极乐鸟位于条带上部，使馆/领事馆专用。',
+                color: '#1a237e'
+            },
+            civilian: { 
+                class: 'strip-civilian', 
+                text: 'HC', 
+                desc: '私家车牌照：左侧浅蓝色条带（HC标识），白色极乐鸟位于条带上部，民用车辆。',
+                color: '#87ceeb'
+            }
+        };
+
+        const provinceNames = {
+            'SK': '斯卡拉尔', 'MD': '慕德兰', 'SG': '西格尔基', 'HL': '霍利',
+            'HA': '汉阳', 'JJ': '全州', 'DO': '多巴尔', 'TH': '青山',
+            'IP': '群岛省', 'BA': '湾区省', 'SB': '圣巴廷', 'EH': '东高地',
+            'KE': '柯西比', 'KH': '卡玛尔山', 'HI': '锡萨拉', 'BF': '巴峰特别领地',
+            'PK': '帕基特', 'HR': '霍纳尔', 'CP': '萨共控制领地'
+        };
+
+        function updatePlate() {
+            const type = document.querySelector('input[name="plateType"]:checked').value;
+            const code = document.getElementById('provinceSelect').value;
+            const number = document.getElementById('plateNumber').value.toUpperCase().slice(0,5);
+            const config = typeConfig[type];
+
+            ['Euro', 'Small', 'Large'].forEach(size => {
+                const strip = document.getElementById('strip' + size);
+                strip.className = 'plate-strip ' + config.class;
+                strip.querySelector('.strip-letter').textContent = config.text;
+                document.getElementById('code' + size).textContent = code;
+                document.getElementById('num' + size).textContent = number || '00000';
+            });
+
+            const provinceName = provinceNames[code];
+            document.getElementById('plateDesc').innerHTML = 
+                config.desc + `<br>当前：${provinceName}省（${code}）· 车牌号：${number || '00000'}<br>字体：Anton（压缩至80%宽度）· 最大化填充`;
+        }
+
+        async function downloadPlate(size) {
+            const elementId = 'plate' + size.charAt(0).toUpperCase() + size.slice(1);
+            const element = document.getElementById(elementId);
+
+            const clone = element.cloneNode(true);
+            clone.style.boxShadow = 'none';
+            clone.style.border = '1px solid #999';
+
+            const wrapper = document.createElement('div');
+            wrapper.style.padding = '20px';
+            wrapper.style.background = 'white';
+            wrapper.style.display = 'inline-block';
+            wrapper.appendChild(clone);
+            document.body.appendChild(wrapper);
+
+            try {
+                const canvas = await html2canvas(wrapper, {
+                    scale: 3,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                const link = document.createElement('a');
+                const type = document.querySelector('input[name="plateType"]:checked').value;
+                const code = document.getElementById('provinceSelect').value;
+                const number = document.getElementById('plateNumber').value || '00000';
+                link.download = `Sutter_${type}_${code}_${number}_${size}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch(err) {
+                console.error(err);
+                alert('下载失败，请重试');
+            }
+            document.body.removeChild(wrapper);
+        }
+
+        updatePlate();
+    </script>
+</body>
+</html>
