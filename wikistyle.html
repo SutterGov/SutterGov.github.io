@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维基百科风格地图生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #1a1a2e;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        .ui-panel {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding: 20px;
+            z-index: 100;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .toolbar {
+            top: 20px;
+            left: 20px;
+            width: 320px;
+        }
+        .instruction {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 90;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+            flex: 1;
+            margin: 0 5px;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .btn-secondary.active {
+            background: #2E7D32;
+            color: white;
+        }
+        .drawing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            border-left: 4px solid #2E7D32;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 95vw;
+            max-height: 95vh;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .export-frame {
+            background: white;
+            border-radius: 50%;
+            display: inline-block;
+            max-width: 100%;
+            max-height: 70vh;
+        }
+        .export-frame canvas {
+            max-width: 100%;
+            max-height: 70vh;
+            width: auto;
+            height: auto;
+            display: block;
+        }
+        .color-indicator {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #2E7D32;
+            border-radius: 3px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 30px 50px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 2000;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div id="loading" class="loading">
+        <div>⏳ 正在加载世界地图...</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- 工具栏 -->
+    <div class="ui-panel toolbar">
+        <h1 style="font-size: 22px; font-weight: bold; margin-bottom: 5px; color: #1f2937;">
+            🌍 维基百科地图生成器
+        </h1>
+        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">创建正射投影风格示意图</p>
+
+        <!-- 标题输入 -->
+        <div style="margin-bottom: 15px;">
+            <label>地图标题</label>
+            <input type="text" id="map-title" placeholder="例：大英帝国鼎盛时期疆域" 
+                   style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;">
+        </div>
+
+        <!-- 模式切换 -->
+        <div style="margin-bottom: 15px;">
+            <label>操作模式</label>
+            <div style="display: flex;">
+                <button id="btn-draw" class="btn-secondary active" onclick="setMode('draw')">✏️ 绘制区域</button>
+                <button id="btn-view" class="btn-secondary" onclick="setMode('view')">👁️ 浏览查看</button>
+            </div>
+        </div>
+
+        <!-- 绘制控制 -->
+        <div id="draw-controls" style="background: #f0fdf4; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #bbf7d0;">
+            <div style="font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 8px;">
+                当前绘制状态
+            </div>
+            <div id="draw-status" style="font-size: 12px; color: #15803d; margin-bottom: 10px;">
+                点击地球表面开始添加边界点...
+            </div>
+            <div style="display: flex; gap: 5px;">
+                <button onclick="finishPolygon()" class="btn-secondary" style="background: #22c55e; color: white; font-size: 12px;">
+                    ✓ 完成绘制
+                </button>
+                <button onclick="undoLastPoint()" class="btn-secondary" style="font-size: 12px;">
+                    ↩ 撤销
+                </button>
+                <button onclick="clearDrawing()" class="btn-secondary" style="color: #dc2626; font-size: 12px;">
+                    ✕ 清除
+                </button>
+            </div>
+        </div>
+
+        <!-- 区域列表 -->
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <label style="margin: 0;">已绘制区域</label>
+                <span id="region-count" style="font-size: 12px; background: #2E7D32; color: white; padding: 2px 8px; border-radius: 10px;">0</span>
+            </div>
+            <div id="region-list"></div>
+        </div>
+
+        <!-- 导出按钮 -->
+        <button onclick="showExportModal()" class="btn-primary" style="margin-top: 15px;">
+            📸 导出维基风格地图
+        </button>
+
+        <p style="font-size: 11px; color: #9ca3af; margin-top: 10px; text-align: center;">
+            基于自定义地图生成
+        </p>
+    </div>
+
+    <!-- 操作提示 -->
+    <div class="instruction">
+        🖱️ 左键拖动旋转 | 滚轮缩放 | 放大时灵敏度自动降低 |
+        <span id="hint-text" style="color: #4ade80;">点击表面添加边界点</span>
+    </div>
+
+    <!-- 导出预览模态框 -->
+    <div id="export-modal" class="modal-overlay" onclick="closeExportOnBackground(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2 style="margin-bottom: 10px; color: #1f2937;">维基百科风格地图预览</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                <span class="color-indicator"></span>
+                绿色区域为您绘制的领土/范围
+            </p>
+
+            <div class="export-frame">
+                <canvas id="export-canvas"></canvas>
+            </div>
+
+            <div id="export-info" style="margin: 15px 0; font-size: 13px; color: #666;"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="downloadMap()" class="btn-primary" style="width: auto; padding: 12px 30px;">
+                    💾 下载 PNG 图片
+                </button>
+                <button onclick="closeExportModal()" class="btn-secondary" style="width: auto;">
+                    返回编辑
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js 全局变量
+        let scene, camera, renderer, controls;
+        let earth, earthMesh;
+        let raycaster, mouse;
+        let drawingPoints = [];
+        let drawingLines = [];
+        let tempLine = null;
+        let polygons = [];
+        let currentMode = 'draw';
+        const sphereRadius = 100;
+
+        // 常量：笔触点在世界空间中的视觉大小（像素）
+        const MARKER_PIXEL_SIZE = 8;
+
+        // 新的地图URL - 已更新为您提供的链接
+        const worldMapUrl = 'https://suttergov.github.io/%E6%9C%AA%E6%A0%87%E9%A2%98-2.png';
+
+        // 初始化
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
+
+            const aspect = window.innerWidth / window.innerHeight;
+            camera = new THREE.PerspectiveCamera(45, aspect, 1, 1000);
+            camera.position.z = 250;
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 105;
+            controls.maxDistance = 500;
+            controls.enablePan = false;
+            controls.rotateSpeed = 0.8;
+
+            controls.addEventListener('change', onControlsChange);
+
+            loadWorldMap();
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('pointerdown', onPointerDown);
+            document.addEventListener('keydown', onKeyDown);
+
+            animate();
+        }
+
+        function onControlsChange() {
+            const distance = camera.position.distanceTo(new THREE.Vector3(0, 0, 0));
+            const sensitivity = Math.max(0.2, (distance - controls.minDistance) / (controls.maxDistance - controls.minDistance) * 0.8 + 0.2);
+            controls.rotateSpeed = 0.8 * sensitivity;
+            updateMarkerSizes();
+        }
+
+        // 加载PNG地图纹理
+        function loadWorldMap() {
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.crossOrigin = 'anonymous';
+
+            textureLoader.load(
+                worldMapUrl,
+                function(texture) {
+                    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                    createEarthWithTexture(texture);
+                    document.getElementById('loading').style.display = 'none';
+                },
+                function(xhr) {
+                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                },
+                function(error) {
+                    console.error('地图加载失败', error);
+                    createFallbackEarth();
+                    document.getElementById('loading').style.display = 'none';
+                }
+            );
+        }
+
+        function createEarthWithTexture(mapTexture) {
+            const geometry = new THREE.SphereGeometry(sphereRadius, 256, 256);
+
+            // 使用标准材质反应光照
+            const material = new THREE.MeshPhongMaterial({
+                map: mapTexture,
+                color: 0xffffff,
+                emissive: 0x000000,
+                emissiveIntensity: 0,
+                shininess: 5  // 轻微光泽
+            });
+
+            earthMesh = new THREE.Mesh(geometry, material);
+            scene.add(earthMesh);
+
+            const atmosGeometry = new THREE.SphereGeometry(sphereRadius * 1.005, 64, 64);
+            const atmosMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.02,
+                side: THREE.BackSide
+            });
+            const atmosphere = new THREE.Mesh(atmosGeometry, atmosMaterial);
+            scene.add(atmosphere);
+
+            // 修复后的光照系统：多光源平衡照明，消除明暗面差异
+            // 1. 环境光提供基础亮度（确保背光面可见）
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            // 2. 主光源 - 从前上方照射
+            const dirLight1 = new THREE.DirectionalLight(0xffffff, 0);
+            dirLight1.position.set(100, 50, 100);
+            scene.add(dirLight1);
+
+            // 3. 补光源 - 从后下方照射，消除阴影
+            const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+            dirLight2.position.set(-50, -30, -50);
+            scene.add(dirLight2);
+
+            // 4. 轮廓光 - 从相机方向照射，确保面向相机的区域明亮
+            const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.25);
+            dirLight3.position.copy(camera.position);
+            scene.add(dirLight3);
+            
+            // 5. 半球光 - 模拟天空和地面反射光，提供均匀的环境照明
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.25);
+            scene.add(hemiLight);
+        }
+
+        function createFallbackEarth() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#E0E0E0';
+            [[0.22,0.35],[0.29,0.65],[0.52,0.32],[0.52,0.55],[0.72,0.35],[0.83,0.72]].forEach(([x,y]) => {
+                ctx.beginPath();
+                ctx.arc(x*canvas.width, y*canvas.height, 80, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            const texture = new THREE.CanvasTexture(canvas);
+            createEarthWithTexture(texture);
+        }
+
+        function getWorldSizeForPixelSize(pixelSize, position) {
+            const distance = camera.position.distanceTo(position);
+            const fov = camera.fov * (Math.PI / 180);
+            const height = 2 * Math.tan(fov / 2) * distance;
+            const worldSize = (pixelSize / window.innerHeight) * height;
+            return worldSize;
+        }
+
+        function updateMarkerSizes() {
+            drawingPoints.forEach(point => {
+                const marker = point.marker;
+                const worldSize = getWorldSizeForPixelSize(MARKER_PIXEL_SIZE, marker.position);
+                const scale = worldSize / 2.4;
+                marker.scale.setScalar(scale);
+            });
+        }
+
+        // 核心修改：创建平面多边形贴合在球面上（限制在二维平面，无3D扭曲）
+        function createFlatPolygonOnSphere(points) {
+            if (points.length < 3) return null;
+
+            // 1. 计算区域的中心点（所有点的平均位置，作为切平面的原点）
+            const center3D = new THREE.Vector3();
+            points.forEach(p => center3D.add(p));
+            center3D.divideScalar(points.length);
+            
+            // 切平面的法线（从球心指向中心点的方向）
+            const normal = center3D.clone().normalize();
+            
+            // 2. 建立局部坐标系（切平面坐标轴）
+            // 选择一个参考上方向量，避免与法线平行
+            const up = new THREE.Vector3(0, 1, 0);
+            if (Math.abs(normal.dot(up)) > 0.99) up.set(0, 0, 1);
+            
+            const right = new THREE.Vector3().crossVectors(normal, up).normalize();
+            const planeUp = new THREE.Vector3().crossVectors(right, normal).normalize();
+            
+            // 3. 将3D球面点投影到切平面上，转换为2D坐标（相对于center3D）
+            const shapePoints2D = [];
+            
+            points.forEach(p => {
+                // 将球面上的点投影到切平面
+                // 向量从球心指向点
+                const toPoint = p.clone().normalize();
+                // 投影到切平面的位置（距离球心为sphereRadius）
+                const projected = toPoint.multiplyScalar(sphereRadius);
+                
+                // 转换为局部2D坐标（相对于center3D在切平面上的投影）
+                const diff = new THREE.Vector3().subVectors(projected, center3D);
+                const x = diff.dot(right);
+                const y = diff.dot(planeUp);
+                shapePoints2D.push(new THREE.Vector2(x, y));
+            });
+            
+            // 4. 使用THREE.Shape在平面上创建多边形（自动闭合）
+            const shape = new THREE.Shape(shapePoints2D);
+            const shapeGeometry = new THREE.ShapeGeometry(shape);
+            
+            // 5. 将2D几何体的每个顶点转换回3D世界坐标（贴附在球面上）
+            const posAttribute = shapeGeometry.attributes.position;
+            const vertices = [];
+            
+            for (let i = 0; i < posAttribute.count; i++) {
+                const x = posAttribute.getX(i);
+                const y = posAttribute.getY(i);
+                
+                // 从局部2D坐标重建3D世界坐标
+                // 中心点 + x*right + y*planeUp，然后归一化到球面半径
+                const worldPos = center3D.clone()
+                    .add(right.clone().multiplyScalar(x))
+                    .add(planeUp.clone().multiplyScalar(y))
+                    .normalize()
+                    .multiplyScalar(sphereRadius * 1.008); // 稍微抬高一点，避免z-fighting
+                
+                vertices.push(worldPos.x, worldPos.y, worldPos.z);
+            }
+            
+            // 6. 创建最终的几何体
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            
+            // 复制索引（ShapeGeometry已经三角化了面）
+            if (shapeGeometry.index) {
+                geometry.setIndex(Array.from(shapeGeometry.index.array));
+            } else {
+                // 如果没有索引，创建简单索引
+                const indices = [];
+                for (let i = 0; i < posAttribute.count; i += 3) {
+                    indices.push(i, i+1, i+2);
+                }
+                geometry.setIndex(indices);
+            }
+            
+            geometry.computeVertexNormals();
+            return geometry;
+        }
+
+        function getGreatCirclePoints(p1, p2, segments = 50) {
+            const points = [];
+            const axis = new THREE.Vector3().crossVectors(p1, p2).normalize();
+            const angle = p1.angleTo(p2);
+
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const rotation = new THREE.Matrix4().makeRotationAxis(axis, angle * t);
+                const point = p1.clone().applyMatrix4(rotation);
+                points.push(point);
+            }
+            return points;
+        }
+
+        function onPointerDown(event) {
+            if (event.button !== 0) return;
+            if (currentMode !== 'draw') return;
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(earthMesh);
+
+            if (intersects.length > 0) {
+                const point = intersects[0].point;
+                addPoint(point);
+            }
+        }
+
+        function addPoint(point) {
+            const worldSize = getWorldSizeForPixelSize(MARKER_PIXEL_SIZE, point);
+            const geometry = new THREE.SphereGeometry(1.2, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x2E7D32,
+                depthTest: false,
+                transparent: true,
+                opacity: 0.9
+            });
+            const marker = new THREE.Mesh(geometry, material);
+            marker.position.copy(point);
+
+            const scale = worldSize / 2.4;
+            marker.scale.setScalar(scale);
+            marker.renderOrder = 999;
+
+            scene.add(marker);
+
+            drawingPoints.push({ position: point.clone(), marker: marker });
+
+            updateLines();
+            updateUI();
+        }
+
+        function updateLines() {
+            if (tempLine) {
+                scene.remove(tempLine);
+                tempLine.geometry.dispose();
+                tempLine.material.dispose();
+                tempLine = null;
+            }
+
+            if (drawingPoints.length < 2) return;
+
+            const allPoints = [];
+
+            for (let i = 0; i < drawingPoints.length - 1; i++) {
+                const p1 = drawingPoints[i].position;
+                const p2 = drawingPoints[i + 1].position;
+                const arcPoints = getGreatCirclePoints(p1, p2, 50);
+                allPoints.push(...arcPoints);
+            }
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(allPoints);
+            const material = new THREE.LineBasicMaterial({ 
+                color: 0x2E7D32, 
+                linewidth: 2,
+                opacity: 0.8,
+                transparent: true,
+                depthTest: false
+            });
+
+            tempLine = new THREE.Line(geometry, material);
+            tempLine.renderOrder = 998;
+            scene.add(tempLine);
+        }
+
+        function finishPolygon() {
+            if (drawingPoints.length < 3) {
+                alert('请至少选择3个点来形成一个闭合区域');
+                return;
+            }
+
+            const points = drawingPoints.map(p => p.position);
+            // 使用新的平面多边形算法替代原来的球面多边形算法
+            const geometry = createFlatPolygonOnSphere(points);
+
+            if (!geometry) return;
+
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x2E7D32,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.75,
+                emissive: 0x1B5E20,
+                emissiveIntensity: 0.2,
+                depthWrite: false,
+                depthTest: true
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.renderOrder = 1;
+            scene.add(mesh);
+
+            const region = {
+                id: Date.now(),
+                mesh: mesh,
+                points: points.map(p => p.clone()),
+                name: `区域 ${polygons.length + 1}`,
+            };
+
+            polygons.push(region);
+            clearDrawing();
+            updateRegionList();
+        }
+
+        function undoLastPoint() {
+            if (drawingPoints.length === 0) return;
+            const last = drawingPoints.pop();
+            scene.remove(last.marker);
+            updateLines();
+            updateUI();
+        }
+
+        function clearDrawing() {
+            drawingPoints.forEach(p => scene.remove(p.marker));
+            drawingPoints = [];
+            if (tempLine) {
+                scene.remove(tempLine);
+                tempLine = null;
+            }
+            updateUI();
+        }
+
+        function deleteRegion(id) {
+            if (!confirm('确定删除这个区域吗？')) return;
+            const idx = polygons.findIndex(p => p.id === id);
+            if (idx > -1) {
+                scene.remove(polygons[idx].mesh);
+                polygons[idx].mesh.geometry.dispose();
+                polygons[idx].mesh.material.dispose();
+                polygons.splice(idx, 1);
+                updateRegionList();
+            }
+        }
+
+        function updateUI() {
+            const status = document.getElementById('draw-status');
+            if (drawingPoints.length === 0) {
+                status.textContent = '点击地球表面开始添加边界点...';
+            } else {
+                status.textContent = `已添加 ${drawingPoints.length} 个边界点，继续点击或点击"完成绘制"`;
+            }
+        }
+
+        function updateRegionList() {
+            document.getElementById('region-count').textContent = polygons.length;
+            const list = document.getElementById('region-list');
+            list.innerHTML = '';
+
+            polygons.forEach((region) => {
+                const div = document.createElement('div');
+                div.className = 'drawing-item';
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600; color: #166534;">${region.name}</div>
+                        <div style="font-size: 11px; color: #666;">${region.points.length} 个边界点</div>
+                    </div>
+                    <button onclick="deleteRegion(${region.id})" style="background: none; border: none; color: #dc2626; cursor: pointer; padding: 5px;">
+                        ✕
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btn-draw').className = mode === 'draw' ? 'btn-secondary active' : 'btn-secondary';
+            document.getElementById('btn-view').className = mode === 'view' ? 'btn-secondary active' : 'btn-secondary';
+            document.getElementById('hint-text').textContent = mode === 'draw' ? '点击表面添加边界点' : '拖动旋转查看地图';
+            controls.enabled = mode === 'view' || drawingPoints.length === 0;
+            document.getElementById('draw-controls').style.opacity = mode === 'draw' ? '1' : '0.5';
+        }
+
+        function onKeyDown(e) {
+            if (e.key === 'Escape') {
+                if (drawingPoints.length > 0) clearDrawing();
+            }
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undoLastPoint();
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            updateMarkerSizes();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function showExportModal() {
+            const title = document.getElementById('map-title').value;
+
+            const size = 600;
+            const exportCanvas = document.getElementById('export-canvas');
+            exportCanvas.width = size;
+            exportCanvas.height = size;
+            const ctx = exportCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+            ctx.clip();
+
+            renderer.render(scene, camera);
+            const imgData = renderer.domElement.toDataURL('image/png');
+
+            const img = new Image();
+            img.onload = () => {
+                const aspect = img.width / img.height;
+                let drawW, drawH;
+                if (aspect > 1) {
+                    drawH = size;
+                    drawW = size * aspect;
+                } else {
+                    drawW = size;
+                    drawH = size / aspect;
+                }
+
+                ctx.drawImage(img, (size - drawW)/2, (size - drawH)/2, drawW, drawH);
+
+                if (title) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                    ctx.fillRect(0, 0, size, 50);
+
+                    ctx.fillStyle = '#1f2937';
+                    ctx.font = 'bold 20px "Microsoft YaHei", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(title, size/2, 32);
+                }
+
+                ctx.restore();
+
+                document.getElementById('export-info').innerHTML = `
+                    图片尺寸: ${size}×${size}px | 绘制区域: ${polygons.length} 个
+                `;
+
+                document.getElementById('export-modal').style.display = 'flex';
+            };
+            img.src = imgData;
+        }
+
+        function closeExportOnBackground(event) {
+            if (event.target === event.currentTarget) {
+                closeExportModal();
+            }
+        }
+
+        function closeExportModal() {
+            document.getElementById('export-modal').style.display = 'none';
+        }
+
+        function downloadMap() {
+            const canvas = document.getElementById('export-canvas');
+            const title = document.getElementById('map-title').value || 'wiki-map';
+            const link = document.createElement('a');
+            link.download = `${title.replace(/[^\w\s-]/g, '')}-${new Date().toISOString().slice(0,10)}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        init();
+    </script>
+</body>
+</html>
