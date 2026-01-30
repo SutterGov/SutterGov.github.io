@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国会席位示意图生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .party-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .party-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        canvas {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .mode-btn {
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .mode-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #764ba2;
+            transform: scale(1.05);
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .mode-btn:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        input[type="color"] {
+            width: 48px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+        }
+        .input-field {
+            background: white;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #764ba2;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="p-4">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-8 pt-4">
+            <h1 class="text-5xl font-bold text-white mb-2">🏛️ 国会席位示意图生成器</h1>
+            <p class="text-white/90 text-lg">生成专业的议会席位分布图，萨特数位发展部维护</p>
+        </header>
+
+        <div class="flex justify-center gap-6 mb-8">
+            <button onclick="setMode('european')" id="european-btn" class="mode-btn active px-8 py-4 rounded-xl shadow-lg text-lg">
+                🇪🇺 欧洲式议会（半圆形点阵）
+            </button>
+            <button onclick="setMode('westminster')" id="westminster-btn" class="mode-btn px-8 py-4 rounded-xl shadow-lg text-lg">
+                🏛️ 西敏制议会（对抗式）
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <div class="party-card p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">📋 图表标题</h2>
+                    <input type="text" id="chart-title" value="第14届蔡徐国立法院议席分布" 
+                           class="w-full input-field rounded-lg px-4 py-3 text-lg" oninput="generateDiagram()">
+                </div>
+
+                <div class="party-card p-6 mb-6 border-2 border-indigo-100">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-2xl">🎛️</span>
+                        <h2 class="text-xl font-bold text-gray-800">图表样式参数</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <div class="slider-label">
+                                <label class="text-sm font-semibold text-gray-700">席位点大小</label>
+                                <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded" id="size-value">10px</span>
+                            </div>
+                            <input type="range" id="seat-size" min="6" max="20" value="10" step="0.5" oninput="updateParams()">
+                        </div>
+
+                        <div>
+                            <div class="slider-label">
+                                <label class="text-sm font-semibold text-gray-700">席位点间距</label>
+                                <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded" id="gap-value">适中</span>
+                            </div>
+                            <input type="range" id="seat-gap" min="0" max="15" value="3" step="0.5" oninput="updateParams()">
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-200">
+                            <label class="text-sm font-semibold text-gray-700 mb-3 block">快速预设样式</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="applyPreset('compact')" class="px-3 py-2 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium transition">
+                                    紧凑型
+                                </button>
+                                <button onclick="applyPreset('balanced')" class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium border-2 border-indigo-300" id="preset-balanced">
+                                    标准型
+                                </button>
+                                <button onclick="applyPreset('spacious')" class="px-3 py-2 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium transition">
+                                    宽松型
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="party-card p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">⚙️ 政党配置</h2>
+                        <span class="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full" id="party-count">已添加 0/25 个政党</span>
+                    </div>
+
+                    <div id="party-list" class="space-y-3 max-h-[400px] overflow-y-auto pr-2"></div>
+
+                    <button onclick="addParty()" id="add-btn" class="mt-6 w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold shadow-lg text-lg transition hover:scale-[1.02]">
+                        + 添加政党
+                    </button>
+                    <p class="text-center text-sm text-gray-500 mt-2" id="limit-hint"></p>
+                </div>
+
+                <div class="party-card p-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-bold text-gray-800">📄 Wikipedia 图例代码</h2>
+                        <button onclick="copyWikiCode()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm font-bold shadow-md">
+                            复制
+                        </button>
+                    </div>
+                    <div id="wiki-code" class="bg-gray-50 p-4 rounded-xl font-mono text-sm text-gray-700 whitespace-pre-wrap min-h-[120px] border border-gray-200"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="party-card p-6 text-center">
+                    <canvas id="parliament-canvas" width="900" height="600" class="w-full max-w-3xl border border-gray-200"></canvas>
+
+                    <div class="mt-6 flex justify-center gap-4 flex-wrap">
+                        <button onclick="generateDiagram()" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg text-lg transition hover:scale-105">
+                            🎨 生成席位图
+                        </button>
+                        <button onclick="downloadPNG()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-lg text-lg transition hover:scale-105">
+                            💾 下载 PNG
+                        </button>
+                    </div>
+
+                    <div class="mt-6 inline-flex items-center gap-2 bg-indigo-50 px-6 py-3 rounded-full">
+                        <span class="text-gray-600 font-semibold">总席位数:</span>
+                        <span class="text-3xl font-bold text-indigo-700" id="total-seats">0</span>
+                    </div>
+                </div>
+
+                <div id="legend-preview" class="mt-6 party-card p-6">
+                    <h3 class="font-bold text-gray-800 mb-4 text-lg">🏷️ 图例</h3>
+                    <div id="legend-content" class="flex flex-wrap gap-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let parties = [];
+        let currentMode = 'european';
+        const MAX_PARTIES = 25;
+
+        let styleParams = {
+            seatSize: 10,
+            seatGap: 3
+        };
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(mode + '-btn').classList.add('active');
+            renderPartyInputs();
+            generateDiagram();
+        }
+
+        function applyPreset(preset) {
+            document.querySelectorAll('[id^="preset-"]').forEach(btn => {
+                btn.className = "px-3 py-2 bg-gray-100 hover:bg-indigo-100 rounded-lg text-sm font-medium transition";
+            });
+            document.getElementById('preset-' + preset).className = "px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium border-2 border-indigo-300";
+
+            const sizeSlider = document.getElementById('seat-size');
+            const gapSlider = document.getElementById('seat-gap');
+
+            switch(preset) {
+                case 'compact':
+                    sizeSlider.value = 7;
+                    gapSlider.value = 1;
+                    break;
+                case 'balanced':
+                    sizeSlider.value = 10;
+                    gapSlider.value = 3;
+                    break;
+                case 'spacious':
+                    sizeSlider.value = 14;
+                    gapSlider.value = 8;
+                    break;
+            }
+            updateParams();
+        }
+
+        function updateParams() {
+            const size = parseFloat(document.getElementById('seat-size').value);
+            const gap = parseFloat(document.getElementById('seat-gap').value);
+
+            styleParams.seatSize = size;
+            styleParams.seatGap = gap;
+
+            document.getElementById('size-value').textContent = size + 'px';
+
+            let gapText = '适中';
+            if (gap < 2) gapText = '紧密';
+            else if (gap > 8) gapText = '宽松';
+            document.getElementById('gap-value').textContent = gapText;
+
+            generateDiagram();
+        }
+
+        function addParty() {
+            if (parties.length >= MAX_PARTIES) {
+                alert('最多只能添加25个政党！');
+                return;
+            }
+            const party = {
+                id: Date.now(),
+                name: `政党 ${parties.length + 1}`,
+                color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
+                seats: 10,
+                side: 'left'
+            };
+            parties.push(party);
+            renderPartyInputs();
+            updatePartyCount();
+            generateDiagram();
+        }
+
+        function removeParty(id) {
+            parties = parties.filter(p => p.id !== id);
+            renderPartyInputs();
+            updatePartyCount();
+            generateDiagram();
+        }
+
+        function updateParty(id, field, value) {
+            const party = parties.find(p => p.id === id);
+            if (party) {
+                if (field === 'seats') {
+                    party[field] = Math.max(1, parseInt(value) || 0);
+                } else {
+                    party[field] = value;
+                }
+                generateDiagram();
+            }
+        }
+
+        function updatePartyCount() {
+            document.getElementById('party-count').textContent = `已添加 ${parties.length}/${MAX_PARTIES} 个政党`;
+            const hint = document.getElementById('limit-hint');
+
+            if (parties.length >= MAX_PARTIES) {
+                document.getElementById('add-btn').classList.add('opacity-50', 'cursor-not-allowed');
+                hint.textContent = '已达到最大政党数量限制';
+            } else {
+                document.getElementById('add-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+                hint.textContent = `${MAX_PARTIES - parties.length} 个空位可用`;
+            }
+        }
+
+        function renderPartyInputs() {
+            const container = document.getElementById('party-list');
+            container.innerHTML = '';
+
+            parties.forEach((party, index) => {
+                const div = document.createElement('div');
+                div.className = 'party-card p-4 border-l-4';
+                div.style.borderLeftColor = party.color;
+
+                let sideSelect = '';
+                if (currentMode === 'westminster') {
+                    sideSelect = `
+                        <div class="mt-3">
+                            <label class="text-sm font-medium text-gray-600 mb-1 block">位置分配</label>
+                            <select onchange="updateParty(${party.id}, 'side', this.value)" class="w-full input-field rounded-lg px-3 py-2 text-sm bg-white">
+                                <option value="left" ${party.side === 'left' ? 'selected' : ''}>⬅️ 左翼席位（左侧）</option>
+                                <option value="right" ${party.side === 'right' ? 'selected' : ''}>➡️ 右翼席位（右侧）</option>
+                                <option value="crossbench" ${party.side === 'crossbench' ? 'selected' : ''}>🔄 跨党派（中间）</option>
+                                <option value="speaker" ${party.side === 'speaker' ? 'selected' : ''}>🎩 首脑/议长（上方）</option>
+                            </select>
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="text-gray-400 font-bold text-sm w-6">#${index + 1}</div>
+                        <input type="color" value="${party.color}" onchange="updateParty(${party.id}, 'color', this.value)" class="flex-shrink-0">
+                        <input type="text" value="${party.name}" onchange="updateParty(${party.id}, 'name', this.value)" placeholder="政党名称" class="input-field flex-1 min-w-[100px] rounded-lg px-3 py-2 text-sm">
+                        <input type="number" value="${party.seats}" min="1" onchange="updateParty(${party.id}, 'seats', this.value)" placeholder="席位" class="input-field w-20 rounded-lg px-3 py-2 text-sm text-center font-semibold">
+                        <button onclick="removeParty(${party.id})" class="text-red-400 hover:text-red-600 font-bold px-2 py-1 rounded hover:bg-red-50 transition">✕</button>
+                    </div>
+                    ${sideSelect}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 修复后的欧洲式生成函数
+        function generateEuropeanSeats(ctx, width, height, parties, totalSeats, title) {
+            const margin = 40; // 边距
+            const titleHeight = title ? 70 : 20; // 标题占用高度
+            const bottomMargin = 60; // 底部留给数字
+
+            // 计算可用空间
+            const availableHeight = height - titleHeight - bottomMargin - margin;
+            const availableWidth = width - 2 * margin;
+
+            // 中心点：水平居中，垂直靠近底部
+            const centerX = width / 2;
+            const centerY = titleHeight + availableHeight;
+
+            // 半圆半径：尽可能填满可用空间
+            const maxRadius = Math.min(availableWidth / 2, availableHeight) * 0.95;
+            const innerRadius = maxRadius * 0.08; // 很小的内圈
+
+            const seatRadius = styleParams.seatSize;
+            const gap = styleParams.seatGap;
+            const effectiveDiameter = seatRadius * 2 + gap;
+
+            // 计算需要的行数（从外向内填充）
+            const rowCount = Math.floor((maxRadius - innerRadius) / (effectiveDiameter * 0.85));
+
+            let currentPartyIdx = 0;
+            let currentSeatInParty = 0;
+
+            function getNextSeat() {
+                while (currentPartyIdx < parties.length) {
+                    const party = parties[currentPartyIdx];
+                    if (currentSeatInParty < party.seats) {
+                        const color = party.color;
+                        currentSeatInParty++;
+                        return { color, party };
+                    }
+                    currentPartyIdx++;
+                    currentSeatInParty = 0;
+                }
+                return null;
+            }
+
+            // 从外向内绘制每一层
+            for (let row = rowCount; row >= 0; row--) {
+                const radius = innerRadius + (maxRadius - innerRadius) * (row / rowCount);
+                const circumference = Math.PI * radius; // 半圆周长
+                const maxSeatsInRow = Math.floor(circumference / effectiveDiameter);
+
+                if (maxSeatsInRow <= 0) continue;
+
+                const actualSeats = Math.min(maxSeatsInRow, totalSeats); // 本层实际点数
+
+                for (let i = 0; i < actualSeats; i++) {
+                    const seat = getNextSeat();
+                    if (!seat) break;
+
+                    // 计算角度：从左(180°)到右(0°)
+                    const angleRad = Math.PI - (Math.PI * i / (actualSeats - 1 || 1));
+
+                    const x = centerX + Math.cos(angleRad) * radius;
+                    const y = centerY - Math.sin(angleRad) * radius * 0.95; // 稍微压扁
+
+                    drawSeatDot(ctx, x, y, seatRadius, seat.color);
+                }
+
+                if (currentPartyIdx >= parties.length) break;
+            }
+
+            // 绘制总席位数（底部中央）
+            ctx.fillStyle = '#333';
+            ctx.font = `bold ${Math.max(48, seatRadius * 5)}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText(totalSeats.toString(), centerX, height - 15);
+        }
+
+        // 修复后的西敏制生成函数
+        function generateWestminsterSeats(ctx, width, height, parties, title) {
+            const seatRadius = styleParams.seatSize;
+            const gap = styleParams.seatGap;
+            const effectiveSize = seatRadius * 2 + gap;
+
+            const marginX = 60;
+            const marginY = title ? 90 : 50;
+            const bottomMargin = 40;
+
+            const chartWidth = width - 2 * marginX;
+            const chartHeight = height - marginY - bottomMargin;
+
+            const leftParties = parties.filter(p => p.side === 'left');
+            const rightParties = parties.filter(p => p.side === 'right');
+            const crossParties = parties.filter(p => p.side === 'crossbench');
+            const speakers = parties.filter(p => p.side === 'speaker');
+
+            const leftTotal = leftParties.reduce((sum, p) => sum + p.seats, 0);
+            const rightTotal = rightParties.reduce((sum, p) => sum + p.seats, 0);
+            const maxSideTotal = Math.max(leftTotal, rightTotal);
+
+            // 计算每侧可用宽度和每行座位数
+            const centerGap = effectiveSize * 4; // 中间过道
+            const sideWidth = (chartWidth - centerGap) / 2;
+            const seatsPerRow = Math.max(5, Math.floor(sideWidth / effectiveSize));
+
+            const rowsNeeded = Math.ceil(maxSideTotal / seatsPerRow);
+            const rowHeight = effectiveSize + 4;
+
+            // 计算起始Y坐标，使其垂直居中
+            const totalHeight = rowsNeeded * rowHeight;
+            const startY = marginY + (chartHeight - totalHeight) / 2;
+
+            const centerX = width / 2;
+            const leftStartX = centerX - centerGap/2 - effectiveSize;
+            const rightStartX = centerX + centerGap/2 + effectiveSize;
+
+            // 绘制左侧（左翼）- 从右向左排列
+            let leftCounter = 0;
+            leftParties.forEach(party => {
+                for (let i = 0; i < party.seats; i++) {
+                    const row = Math.floor(leftCounter / seatsPerRow);
+                    const col = leftCounter % seatsPerRow;
+                    // 从右向左：先绘最靠近中心的
+                    const x = leftStartX - col * effectiveSize;
+                    const y = startY + row * rowHeight;
+
+                    drawSeatDot(ctx, x, y, seatRadius, party.color);
+                    leftCounter++;
+                }
+            });
+
+            // 绘制右侧（右翼）- 从左向右排列
+            let rightCounter = 0;
+            rightParties.forEach(party => {
+                for (let i = 0; i < party.seats; i++) {
+                    const row = Math.floor(rightCounter / seatsPerRow);
+                    const col = rightCounter % seatsPerRow;
+                    const x = rightStartX + col * effectiveSize;
+                    const y = startY + row * rowHeight;
+
+                    drawSeatDot(ctx, x, y, seatRadius, party.color);
+                    rightCounter++;
+                }
+            });
+
+            // 绘制跨党派（中间下方）
+            if (crossParties.length > 0) {
+                const crossTotal = crossParties.reduce((sum, p) => sum + p.seats, 0);
+                const crossWidth = crossTotal * effectiveSize;
+                const crossStartX = centerX - crossWidth / 2 + effectiveSize/2;
+                const crossY = startY + rowsNeeded * rowHeight + 30;
+
+                let crossIdx = 0;
+                crossParties.forEach(party => {
+                    for (let i = 0; i < party.seats; i++) {
+                        const x = crossStartX + crossIdx * effectiveSize;
+                        drawSeatDot(ctx, x, crossY, seatRadius, party.color);
+                        crossIdx++;
+                    }
+                });
+            }
+
+            // 绘制首脑/议长（上方中央）
+            if (speakers.length > 0) {
+                const speakerTotal = speakers.reduce((sum, p) => sum + p.seats, 0);
+                const speakerWidth = speakerTotal * effectiveSize;
+                const speakerStartX = centerX - speakerWidth / 2 + effectiveSize/2;
+                const speakerY = marginY - 30;
+
+                let speakerIdx = 0;
+                speakers.forEach(party => {
+                    for (let i = 0; i < party.seats; i++) {
+                        const x = speakerStartX + speakerIdx * effectiveSize;
+                        drawSeatDot(ctx, x, speakerY, seatRadius, party.color, true);
+                        speakerIdx++;
+                    }
+                });
+            }
+
+            // 绘制中间分界线（虚线）
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(centerX, startY - 20);
+            ctx.lineTo(centerX, startY + rowsNeeded * rowHeight + 10);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawSeatDot(ctx, x, y, radius, color, isSpeaker = false) {
+            // 阴影
+            ctx.beginPath();
+            ctx.arc(x + 1, y + 1, radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.15)';
+            ctx.fill();
+
+            // 主体
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            // 边框
+            ctx.lineWidth = isSpeaker ? 2.5 : 1.2;
+            ctx.strokeStyle = isSpeaker ? '#FFD700' : 'rgba(0,0,0,0.3)';
+            ctx.stroke();
+
+            // 高光
+            ctx.beginPath();
+            ctx.arc(x - radius*0.3, y - radius*0.3, radius*0.35, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fill();
+        }
+
+        function generateDiagram() {
+            const canvas = document.getElementById('parliament-canvas');
+            const ctx = canvas.getContext('2d');
+            const title = document.getElementById('chart-title').value;
+
+            // 白色背景
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制标题
+            if (title) {
+                ctx.fillStyle = '#2d3748';
+                ctx.font = 'bold 26px "Microsoft YaHei", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(title, canvas.width/2, 45);
+
+                ctx.strokeStyle = '#764ba2';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const textWidth = ctx.measureText(title).width;
+                ctx.moveTo(canvas.width/2 - textWidth/2, 55);
+                ctx.lineTo(canvas.width/2 + textWidth/2, 55);
+                ctx.stroke();
+            }
+
+            const totalSeats = parties.reduce((sum, p) => sum + p.seats, 0);
+            document.getElementById('total-seats').textContent = totalSeats;
+
+            if (currentMode === 'european') {
+                generateEuropeanSeats(ctx, canvas.width, canvas.height, parties, totalSeats, title);
+            } else {
+                generateWestminsterSeats(ctx, canvas.width, canvas.height, parties, title);
+            }
+
+            updateLegend();
+            updateWikiCode();
+        }
+
+        function updateLegend() {
+            const container = document.getElementById('legend-content');
+            container.innerHTML = '';
+
+            if (parties.length === 0) {
+                container.innerHTML = '<span class="text-gray-400 italic">暂无政党数据</span>';
+                return;
+            }
+
+            const sorted = [...parties].sort((a, b) => b.seats - a.seats);
+
+            sorted.forEach(party => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2 bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100';
+                item.innerHTML = `
+                    <div style="width: 16px; height: 16px; background-color: ${party.color}; border-radius: 50%; border: 2px solid rgba(0,0,0,0.2);"></div>
+                    <span class="text-sm font-semibold text-gray-700">${party.name}</span>
+                    <span class="text-sm text-gray-500">(${party.seats})</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateWikiCode() {
+            const wikiDiv = document.getElementById('wiki-code');
+            const title = document.getElementById('chart-title').value;
+
+            if (parties.length === 0) {
+                wikiDiv.textContent = '';
+                return;
+            }
+
+            let wikiText = '';
+            if (title) wikiText += `<!-- ${title} -->\n`;
+            wikiText += '<!-- 图例开始 -->\n';
+
+            const sortedParties = [...parties].sort((a, b) => b.seats - a.seats);
+
+            sortedParties.forEach(party => {
+                wikiText += `{{legend|${party.color}|${party.name}: ${party.seats} seats}}\n`;
+            });
+            wikiText += `<!-- 总计: ${parties.reduce((s, p) => s + p.seats, 0)} 席 -->`;
+
+            wikiDiv.textContent = wikiText;
+        }
+
+        function copyWikiCode() {
+            const code = document.getElementById('wiki-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 font-semibold animate-bounce';
+                toast.textContent = '✅ 维基代码已复制！';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2500);
+            });
+        }
+
+        function downloadPNG() {
+            const canvas = document.getElementById('parliament-canvas');
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const title = document.getElementById('chart-title').value || 'parliament';
+            link.download = `${title}-${currentMode}-${timestamp}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 font-semibold animate-bounce';
+            toast.textContent = '✅ 图片已下载！';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // 初始化
+        window.onload = function() {
+            parties = [
+                { id: 1, name: '国民党', color: '#4169E1', seats: 52, side: 'right' },
+                { id: 2, name: '民进党', color: '#32CD32', seats: 51, side: 'left' },
+                { id: 3, name: '民众党', color: '#87CEEB', seats: 8, side: 'crossbench' },
+                { id: 4, name: '无党籍', color: '#999999', seats: 2, side: 'crossbench' }
+            ];
+            renderPartyInputs();
+            updatePartyCount();
+            generateDiagram();
+        };
+    </script>
+</body>
+</html>
