@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政府结构图生成器-萨特数发部开发</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        #canvas-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin: 20px;
+            position: relative;
+            overflow: auto;
+            height: calc(100vh - 200px);
+            cursor: grab;
+        }
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+        canvas {
+            display: block;
+        }
+        .context-menu {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 8px 0;
+            min-width: 160px;
+            z-index: 1000;
+            display: none;
+            border: 1px solid #e0e0e0;
+        }
+        .context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .context-menu-item:hover {
+            background: #f5f5f5;
+        }
+        .context-menu-item.delete {
+            color: #dc2626;
+        }
+        .context-menu-item.delete:hover {
+            background: #fef2f2;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            min-width: 300px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #764ba2;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .node-input {
+            position: absolute;
+            border: 2px solid #764ba2;
+            background: white;
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 4px;
+            outline: none;
+            z-index: 100;
+            text-align: center;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toolbar {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #e0e7ff;
+            color: #764ba2;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- 顶部工具栏 -->
+    <div class="toolbar" style="margin: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #1f2937;">🏛️ 政府结构图生成器</h1>
+            <input type="text" id="chart-title" placeholder="输入结构图标题" 
+                   style="padding: 10px 16px; border: 2px solid #e5e7eb; border-radius: 8px; min-width: 350px; font-size: 14px;">
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div class="slider-container">
+                <span style="font-size: 14px; font-weight: 600; color: #4b5563;">🔍 缩放</span>
+                <input type="range" id="scale-slider" min="0.3" max="3" step="0.1" value="1">
+                <span id="scale-value" style="font-size: 14px; font-weight: 600; color: #764ba2; min-width: 45px;">100%</span>
+            </div>
+            <button onclick="autoLayout()" class="btn-secondary" title="自动排列所有节点">
+                🔄 自动布局
+            </button>
+            <div id="connection-status" class="status-badge" style="display: none;">
+                连线模式：选择第一个节点
+            </div>
+            <button onclick="downloadPNG()" class="btn-primary">
+                💾 下载 PNG
+            </button>
+            <button onclick="clearCanvas()" class="btn-secondary" style="color: #dc2626;">
+                🗑️ 清空
+            </button>
+        </div>
+    </div>
+
+    <!-- 画布容器 -->
+    <div id="canvas-container">
+        <canvas id="main-canvas"></canvas>
+        <input type="text" id="node-input" class="node-input" placeholder="输入单位名称">
+    </div>
+    <div id="tooltip" class="tooltip">拖拽移动 • 点击添加子节点/编辑</div>
+
+    <!-- 右键菜单 -->
+    <div id="context-menu" class="context-menu">
+        <div class="context-menu-item" onclick="startEditText()">
+            <span>✏️</span> 编辑文字
+        </div>
+        <div class="context-menu-item" onclick="changeColor()">
+            <span>🎨</span> 修改颜色
+        </div>
+        <div class="context-menu-item" onclick="addSiblingNode()">
+            <span>➕</span> 添加同级单位
+        </div>
+        <div class="context-menu-item" onclick="startConnection()">
+            <span>🔗</span> 添加连线
+        </div>
+        <div class="context-menu-item delete" onclick="deleteNode()">
+            <span>🗑️</span> 删除此单位
+        </div>
+    </div>
+
+    <!-- 颜色选择器模态框 -->
+    <div id="color-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin: 0 0 16px 0; font-size: 18px;">选择方块颜色</h3>
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px;">
+                <button onclick="applyColor('#FFE4E1')" style="width: 40px; height: 40px; background: #FFE4E1; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#FFD700')" style="width: 40px; height: 40px; background: #FFD700; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#98FB98')" style="width: 40px; height: 40px; background: #98FB98; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#87CEEB')" style="width: 40px; height: 40px; background: #87CEEB; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#DDA0DD')" style="width: 40px; height: 40px; background: #DDA0DD; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#FFF8DC')" style="width: 40px; height: 40px; background: #FFF8DC; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#FF6B6B')" style="width: 40px; height: 40px; background: #FF6B6B; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#4ECDC4')" style="width: 40px; height: 40px; background: #4ECDC4; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#45B7D1')" style="width: 40px; height: 40px; background: #45B7D1; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#96CEB4')" style="width: 40px; height: 40px; background: #96CEB4; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#FFEAA7')" style="width: 40px; height: 40px; background: #FFEAA7; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+                <button onclick="applyColor('#DFE6E9')" style="width: 40px; height: 40px; background: #DFE6E9; border: 2px solid #ddd; border-radius: 6px; cursor: pointer;"></button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <span>自定义:</span>
+                <input type="color" id="custom-color" value="#FFE4E1" style="width: 50px; height: 40px; border: none; cursor: pointer;">
+                <button onclick="applyCustomColor()" class="btn-secondary" style="padding: 8px 16px; font-size: 12px;">应用</button>
+            </div>
+            <button onclick="closeColorModal()" class="btn-secondary" style="width: 100%;">取消</button>
+        </div>
+    </div>
+
+    <!-- 使用说明 -->
+    <div style="position: fixed; bottom: 20px; left: 20px; background: rgba(255,255,255,0.95); padding: 16px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 320px; font-size: 13px; color: #4b5563; line-height: 1.6;">
+        <strong style="color: #1f2937; display: block; margin-bottom: 8px;">📖 操作指南</strong>
+        <div style="display: grid; gap: 4px;">
+            <div>• <strong>点击空白处</strong>：创建一级单位</div>
+            <div>• <strong>点击方块空白处</strong>：添加下级单位</div>
+            <div>• <strong>点击文字</strong>：编辑内容</div>
+            <div>• <strong>拖拽方块</strong>：调整位置</div>
+            <div>• <strong>右键菜单</strong>：改色/连线/删除/加同级</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvas-container');
+        const contextMenu = document.getElementById('context-menu');
+        const nodeInput = document.getElementById('node-input');
+        const colorModal = document.getElementById('color-modal');
+        const connectionStatus = document.getElementById('connection-status');
+        const tooltip = document.getElementById('tooltip');
+
+        let nodes = [];
+        let connections = [];
+        let scale = 1;
+        let nextId = 1;
+        let selectedNode = null;
+        let editingNode = null;
+        let connectingNode = null;
+        let isConnectionMode = false;
+        let dragNode = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let isDragging = false;
+
+        // 设置画布大小
+        function resizeCanvas() {
+            canvas.width = Math.max(container.clientWidth, 1200);
+            canvas.height = Math.max(container.clientHeight, 800);
+            draw();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 节点类
+        class Node {
+            constructor(x, y, text = '', parent = null) {
+                this.id = nextId++;
+                this.x = x;
+                this.y = y;
+                this.text = text || `单位${this.id}`;
+                this.width = 140;
+                this.height = 60;
+                this.color = '#FFE4E1';
+                this.parent = parent;
+                this.level = parent ? parent.level + 1 : 1;
+            }
+
+            draw(ctx) {
+                // 阴影
+                ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                ctx.fillRect(this.x - this.width/2 + 3, this.y - this.height/2 + 3, this.width, this.height);
+
+                // 绘制方块
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+
+                // 边框
+                ctx.strokeStyle = dragNode === this ? '#764ba2' : '#333';
+                ctx.lineWidth = dragNode === this ? 3 : 2;
+                ctx.strokeRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height);
+
+                // 文字区域背景（上半部分）
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(this.x - this.width/2, this.y - this.height/2, this.width, this.height * 0.7);
+
+                // 文字
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 14px "Microsoft YaHei", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // 文字换行处理
+                const maxWidth = this.width - 10;
+                const lineHeight = 18;
+                const lines = this.getLines(ctx, this.text, maxWidth);
+                const startY = this.y - (lines.length - 1) * lineHeight / 2;
+
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, this.x, startY + index * lineHeight);
+                });
+
+                // 如果正在连线，显示标记
+                if (connectingNode === this) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#764ba2';
+                    ctx.fill();
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            getLines(ctx, text, maxWidth) {
+                const chars = text.split('');
+                const lines = [];
+                let currentLine = '';
+
+                for (let char of chars) {
+                    const testLine = currentLine + char;
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && currentLine !== '') {
+                        lines.push(currentLine);
+                        currentLine = char;
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                lines.push(currentLine);
+                return lines.length > 0 ? lines : [''];
+            }
+
+            contains(x, y) {
+                return x >= this.x - this.width/2 && x <= this.x + this.width/2 &&
+                       y >= this.y - this.height/2 && y <= this.y + this.height/2;
+            }
+
+            isTextArea(x, y) {
+                // 上半部分为文字区
+                return y >= this.y - this.height/2 && y <= this.y;
+            }
+        }
+
+        // 绘制连线（贝塞尔曲线）
+        function drawConnections() {
+            connections.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from);
+                const toNode = nodes.find(n => n.id === conn.to);
+                if (!fromNode || !toNode) return;
+
+                ctx.beginPath();
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 2;
+
+                const startX = fromNode.x;
+                const startY = fromNode.y + fromNode.height/2;
+                const endX = toNode.x;
+                const endY = toNode.y - toNode.height/2;
+
+                const dist = Math.abs(endY - startY);
+                const cp1x = startX;
+                const cp1y = startY + dist * 0.5;
+                const cp2x = endX;
+                const cp2y = endY - dist * 0.5;
+
+                ctx.moveTo(startX, startY);
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+                ctx.stroke();
+
+                // 箭头（可选）
+                // ctx.beginPath();
+                // ctx.moveTo(endX, endY);
+                // ctx.lineTo(endX - 5, endY - 8);
+                // ctx.lineTo(endX + 5, endY - 8);
+                // ctx.fillStyle = '#666';
+                // ctx.fill();
+            });
+        }
+
+        // 主绘制函数
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.scale(scale, scale);
+
+            // 绘制标题
+            const title = document.getElementById('chart-title').value;
+            if (title) {
+                ctx.fillStyle = '#1f2937';
+                ctx.font = 'bold 28px "Microsoft YaHei", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(title, canvas.width/(2*scale), 50);
+
+                // 装饰线
+                ctx.strokeStyle = '#764ba2';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                const textWidth = ctx.measureText(title).width;
+                ctx.moveTo(canvas.width/(2*scale) - textWidth/2, 65);
+                ctx.lineTo(canvas.width/(2*scale) + textWidth/2, 65);
+                ctx.stroke();
+            }
+
+            // 绘制连线
+            drawConnections();
+
+            // 绘制节点（按层级排序，先画底层的）
+            const sortedNodes = [...nodes].sort((a, b) => a.level - b.level);
+            sortedNodes.forEach(node => node.draw(ctx));
+
+            ctx.restore();
+        }
+
+        // 坐标转换
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (evt.clientX - rect.left) / scale,
+                y: (evt.clientY - rect.top) / scale
+            };
+        }
+
+        // 鼠标按下
+        canvas.addEventListener('mousedown', function(e) {
+            if (e.button !== 0) return;
+
+            const pos = getMousePos(e);
+            const clickedNode = nodes.find(n => n.contains(pos.x, pos.y));
+
+            if (clickedNode && !isConnectionMode) {
+                dragNode = clickedNode;
+                dragOffsetX = pos.x - clickedNode.x;
+                dragOffsetY = pos.y - clickedNode.y;
+                isDragging = false;
+            }
+        });
+
+        // 鼠标移动
+        canvas.addEventListener('mousemove', function(e) {
+            const pos = getMousePos(e);
+
+            if (dragNode) {
+                isDragging = true;
+                dragNode.x = pos.x - dragOffsetX;
+                dragNode.y = pos.y - dragOffsetY;
+                draw();
+            } else {
+                // 检查 hover
+                const hoveredNode = nodes.find(n => n.contains(pos.x, pos.y));
+                if (hoveredNode) {
+                    canvas.style.cursor = 'move';
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.clientX + 10) + 'px';
+                    tooltip.style.top = (e.clientY + 10) + 'px';
+                } else {
+                    canvas.style.cursor = isConnectionMode ? 'pointer' : 'crosshair';
+                    tooltip.style.display = 'none';
+                }
+            }
+        });
+
+        // 鼠标松开
+        canvas.addEventListener('mouseup', function(e) {
+            if (e.button !== 0) return;
+
+            const pos = getMousePos(e);
+
+            if (dragNode) {
+                if (!isDragging) {
+                    // 点击（非拖拽）
+                    handleNodeClick(dragNode, pos);
+                }
+                dragNode = null;
+            } else {
+                // 点击空白处
+                if (!isConnectionMode) {
+                    addRootNode(pos.x, pos.y);
+                } else {
+                    // 连线模式点击空白，取消
+                    exitConnectionMode();
+                }
+            }
+
+            isDragging = false;
+            draw();
+        });
+
+        // 处理节点点击
+        function handleNodeClick(node, pos) {
+            if (isConnectionMode) {
+                if (!connectingNode) {
+                    connectingNode = node;
+                    connectionStatus.textContent = `从 "${connectingNode.text}" 连线到...`;
+                } else if (connectingNode.id !== node.id) {
+                    const exists = connections.some(c => 
+                        (c.from === connectingNode.id && c.to === node.id) ||
+                        (c.from === node.id && c.to === connectingNode.id)
+                    );
+                    if (!exists) {
+                        connections.push({from: connectingNode.id, to: node.id});
+                    }
+                    exitConnectionMode();
+                }
+            } else {
+                if (node.isTextArea(pos.x, pos.y)) {
+                    editNodeText(node);
+                } else {
+                    addChildNode(node);
+                }
+            }
+        }
+
+        // 添加根节点
+        function addRootNode(x, y) {
+            const node = new Node(x, y, prompt('请输入一级单位名称：', '行政长官'));
+            if (node.text) {
+                node.color = '#FFE4E1'; // 默认粉色（最高层）
+                nodes.push(node);
+                draw();
+            }
+        }
+
+        // 添加子节点
+        function addChildNode(parent) {
+            const text = prompt('请输入下级单位名称：', '新单位');
+            if (!text) return;
+
+            // 自动布局：找到该父节点下方的空位
+            const siblings = nodes.filter(n => n.parent && n.parent.id === parent.id);
+            const index = siblings.length;
+
+            // 计算合适的间距
+            const spacing = 180;
+            const totalWidth = (siblings.length + 1) * spacing;
+            const startX = parent.x - totalWidth/2 + spacing/2;
+
+            const x = startX + (index * spacing);
+            const y = parent.y + 140;
+
+            const node = new Node(x, y, text, parent);
+
+            // 根据层级给默认颜色
+            const colors = ['#FFE4E1', '#FFD700', '#98FB98', '#87CEEB', '#DDA0DD'];
+            node.color = colors[Math.min(node.level - 1, colors.length - 1)];
+
+            nodes.push(node);
+            connections.push({from: parent.id, to: node.id});
+            draw();
+        }
+
+        // 添加同级节点
+        function addSiblingNode() {
+            if (!selectedNode || !selectedNode.parent) {
+                alert('只能为已有父节点的单位添加同级单位');
+                return;
+            }
+
+            const parent = selectedNode.parent;
+            const text = prompt('请输入同级单位名称：', '新单位');
+            if (!text) return;
+
+            const siblings = nodes.filter(n => n.parent && n.parent.id === parent.id);
+            const index = siblings.length;
+            const spacing = 180;
+            const x = parent.x + (index - siblings.length/2) * spacing;
+            const y = parent.y + 140;
+
+            const node = new Node(x, y, text, parent);
+            node.color = selectedNode.color;
+            nodes.push(node);
+            connections.push({from: parent.id, to: node.id});
+            draw();
+            contextMenu.style.display = 'none';
+        }
+
+        // 编辑节点文字
+        function editNodeText(node) {
+            editingNode = node;
+            const rect = canvas.getBoundingClientRect();
+
+            nodeInput.value = node.text;
+            nodeInput.style.display = 'block';
+            nodeInput.style.left = (rect.left + (node.x - node.width/2) * scale) + 'px';
+            nodeInput.style.top = (rect.top + (node.y - 20) * scale) + 'px';
+            nodeInput.style.width = (node.width * scale) + 'px';
+            nodeInput.style.fontSize = (14 * scale) + 'px';
+            nodeInput.focus();
+            nodeInput.select();
+        }
+
+        nodeInput.addEventListener('blur', function() {
+            if (editingNode) {
+                editingNode.text = this.value || '未命名';
+                editingNode = null;
+                this.style.display = 'none';
+                draw();
+            }
+        });
+
+        nodeInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') this.blur();
+        });
+
+        // 右键菜单
+        canvas.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            const pos = getMousePos(e);
+            const clickedNode = nodes.find(n => n.contains(pos.x, pos.y));
+
+            if (clickedNode && !isConnectionMode) {
+                selectedNode = clickedNode;
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = Math.min(e.clientX, window.innerWidth - 160) + 'px';
+                contextMenu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+            } else {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        // 菜单功能
+        function startEditText() {
+            if (selectedNode) editNodeText(selectedNode);
+            contextMenu.style.display = 'none';
+        }
+
+        function changeColor() {
+            colorModal.style.display = 'flex';
+            contextMenu.style.display = 'none';
+        }
+
+        function applyColor(color) {
+            if (selectedNode) {
+                selectedNode.color = color;
+                draw();
+            }
+            closeColorModal();
+        }
+
+        function applyCustomColor() {
+            applyColor(document.getElementById('custom-color').value);
+        }
+
+        function closeColorModal() {
+            colorModal.style.display = 'none';
+            selectedNode = null;
+        }
+
+        function startConnection() {
+            isConnectionMode = true;
+            connectingNode = null;
+            connectionStatus.style.display = 'inline-flex';
+            connectionStatus.textContent = '连线模式：选择起始单位';
+            contextMenu.style.display = 'none';
+            canvas.style.cursor = 'pointer';
+        }
+
+        function exitConnectionMode() {
+            isConnectionMode = false;
+            connectingNode = null;
+            connectionStatus.style.display = 'none';
+            canvas.style.cursor = 'crosshair';
+            draw();
+        }
+
+        function deleteNode() {
+            if (selectedNode) {
+                if (!confirm(`确定删除 "${selectedNode.text}" 吗？其下级单位将变为自由节点。`)) return;
+
+                connections = connections.filter(c => 
+                    c.from !== selectedNode.id && c.to !== selectedNode.id
+                );
+
+                // 断开父子关系，子节点变为根节点
+                nodes.forEach(n => {
+                    if (n.parent && n.parent.id === selectedNode.id) {
+                        n.parent = null;
+                        n.level = 1;
+                    }
+                });
+
+                nodes = nodes.filter(n => n.id !== selectedNode.id);
+                draw();
+            }
+            contextMenu.style.display = 'none';
+        }
+
+        // 自动布局（树形排列）
+        function autoLayout() {
+            if (nodes.length === 0) return;
+
+            // 找到所有根节点
+            const roots = nodes.filter(n => !n.parent);
+            if (roots.length === 0) {
+                // 如果没有根节点，设第一个为根
+                nodes[0].level = 1;
+                roots.push(nodes[0]);
+            }
+
+            const levelHeight = 140;
+            const nodeWidth = 180;
+
+            function layoutNode(node, x, y) {
+                node.x = x;
+                node.y = y;
+
+                const children = nodes.filter(n => n.parent && n.parent.id === node.id);
+                if (children.length > 0) {
+                    const totalWidth = children.length * nodeWidth;
+                    const startX = x - totalWidth/2 + nodeWidth/2;
+
+                    children.forEach((child, index) => {
+                        layoutNode(child, startX + index * nodeWidth, y + levelHeight);
+                    });
+                }
+            }
+
+            // 计算整体偏移使图表居中
+            const rootX = canvas.width / (2 * scale);
+            const rootY = 100;
+
+            // 布局每个根节点（并行政权）
+            const rootSpacing = 400;
+            const totalRootsWidth = roots.length * rootSpacing;
+            const startRootX = rootX - totalRootsWidth/2 + rootSpacing/2;
+
+            roots.forEach((root, index) => {
+                layoutNode(root, startRootX + index * rootSpacing, rootY);
+                updateLevels(root, 1);
+            });
+
+            draw();
+        }
+
+        function updateLevels(node, level) {
+            node.level = level;
+            const children = nodes.filter(n => n.parent && n.parent.id === node.id);
+            children.forEach(child => updateLevels(child, level + 1));
+        }
+
+        // 缩放控制
+        const scaleSlider = document.getElementById('scale-slider');
+        const scaleValue = document.getElementById('scale-value');
+
+        scaleSlider.addEventListener('input', function() {
+            scale = parseFloat(this.value);
+            scaleValue.textContent = Math.round(scale * 100) + '%';
+            draw();
+        });
+
+        // 下载PNG
+        function downloadPNG() {
+            if (nodes.length === 0) {
+                alert('画布为空，请先创建结构图');
+                return;
+            }
+
+            // 计算边界
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                minX = Math.min(minX, n.x - n.width/2);
+                minY = Math.min(minY, n.y - n.height/2);
+                maxX = Math.max(maxX, n.x + n.width/2);
+                maxY = Math.max(maxY, n.y + n.height/2);
+            });
+
+            const padding = 60;
+            const width = maxX - minX + padding * 2;
+            const height = maxY - minY + padding * 2 + (document.getElementById('chart-title').value ? 80 : 0);
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // 白色背景
+            tempCtx.fillStyle = 'white';
+            tempCtx.fillRect(0, 0, width, height);
+
+            tempCtx.save();
+            tempCtx.translate(-minX + padding, -minY + padding + (document.getElementById('chart-title').value ? 60 : 0));
+
+            // 标题
+            const title = document.getElementById('chart-title').value;
+            if (title) {
+                tempCtx.fillStyle = '#1f2937';
+                tempCtx.font = 'bold 28px "Microsoft YaHei", sans-serif';
+                tempCtx.textAlign = 'center';
+                tempCtx.fillText(title, (minX + maxX)/2, minY - 30);
+            }
+
+            // 连线和节点
+            connections.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from);
+                const toNode = nodes.find(n => n.id === conn.to);
+                if (!fromNode || !toNode) return;
+
+                tempCtx.beginPath();
+                tempCtx.strokeStyle = '#666';
+                tempCtx.lineWidth = 2;
+                const dist = Math.abs(toNode.y - fromNode.y);
+                tempCtx.moveTo(fromNode.x, fromNode.y + fromNode.height/2);
+                tempCtx.bezierCurveTo(
+                    fromNode.x, fromNode.y + fromNode.height/2 + dist * 0.5,
+                    toNode.x, toNode.y - toNode.height/2 - dist * 0.5,
+                    toNode.x, toNode.y - toNode.height/2
+                );
+                tempCtx.stroke();
+            });
+
+            nodes.forEach(node => {
+                tempCtx.fillStyle = 'rgba(0,0,0,0.1)';
+                tempCtx.fillRect(node.x - node.width/2 + 3, node.y - node.height/2 + 3, node.width, node.height);
+                tempCtx.fillStyle = node.color;
+                tempCtx.fillRect(node.x - node.width/2, node.y - node.height/2, node.width, node.height);
+                tempCtx.strokeStyle = '#333';
+                tempCtx.lineWidth = 2;
+                tempCtx.strokeRect(node.x - node.width/2, node.y - node.height/2, node.width, node.height);
+                tempCtx.fillStyle = '#333';
+                tempCtx.font = 'bold 14px "Microsoft YaHei", sans-serif';
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'middle';
+                tempCtx.fillText(node.text, node.x, node.y);
+            });
+
+            tempCtx.restore();
+
+            const link = document.createElement('a');
+            link.download = `政府结构图-${new Date().toISOString().slice(0,10)}.png`;
+            link.href = tempCanvas.toDataURL();
+            link.click();
+        }
+
+        function clearCanvas() {
+            if (confirm('确定清空所有内容吗？')) {
+                nodes = [];
+                connections = [];
+                nextId = 1;
+                draw();
+            }
+        }
+
+        // 初始化示例
+        function initExample() {
+            document.getElementById('chart-title').value = '香港特别行政区政府组织架构图（示例）';
+
+            // 创建三司结构
+            const root = new Node(canvas.width/(2*scale), 100, '行政长官');
+            root.color = '#FFE4E1';
+            nodes.push(root);
+
+            const cs = new Node(root.x - 250, 250, '政务司司长');
+            cs.color = '#FFD700';
+            cs.parent = root;
+            nodes.push(cs);
+            connections.push({from: root.id, to: cs.id});
+
+            const fs = new Node(root.x, 250, '财政司司长');
+            fs.color = '#FFD700';
+            fs.parent = root;
+            nodes.push(fs);
+            connections.push({from: root.id, to: fs.id});
+
+            const js = new Node(root.x + 250, 250, '律政司司长');
+            js.color = '#FFD700';
+            js.parent = root;
+            nodes.push(js);
+            connections.push({from: root.id, to: js.id});
+
+            // 下属局示例
+            const edu = new Node(cs.x - 80, 380, '教育局');
+            edu.color = '#98FB98';
+            edu.parent = cs;
+            nodes.push(edu);
+            connections.push({from: cs.id, to: edu.id});
+
+            const env = new Node(cs.x + 80, 380, '环境局');
+            env.color = '#98FB98';
+            env.parent = cs;
+            nodes.push(env);
+            connections.push({from: cs.id, to: env.id});
+
+            draw();
+        }
+
+        window.onload = initExample;
+    </script>
+</body>
+</html>
