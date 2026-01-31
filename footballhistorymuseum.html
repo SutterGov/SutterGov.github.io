@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SRII足球历史数据中心 | Sutter Republic II</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+
+        * {
+            font-family: 'Noto Sans SC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .season-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .season-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .season-card:active {
+            transform: scale(0.98);
+        }
+
+        .detail-modal {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .type-badge {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .scroll-hidden::-webkit-scrollbar {
+            display: none;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        /* 布局模式 */
+        .layout-narrow {
+            max-width: 480px;
+        }
+
+        .layout-wide {
+            max-width: 1400px;
+        }
+
+        .layout-narrow #seasons-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .layout-wide #seasons-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+
+        /* 截图专用样式 */
+        #capture-area {
+            width: 420px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 32px;
+            border-radius: 24px;
+            box-sizing: border-box;
+        }
+
+        .capture-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .capture-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .capture-value {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        .stats-grid-capture {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stats-item-capture {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+
+        .stats-label-capture {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.02em;
+        }
+
+        .stats-value-capture {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e2e8f0;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+
+        /* 详细记录文本 */
+        .detail-text-capture {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #cbd5e1;
+            word-break: break-word;
+        }
+
+        /* 切换按钮 */
+        .layout-toggle {
+            transition: all 0.3s ease;
+        }
+
+        .layout-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        /* 浮动操作按钮 */
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 40;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 6px 30px rgba(59, 130, 246, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .layout-wide #seasons-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="text-white overflow-x-hidden">
+    <!-- Layout Container -->
+    <div id="app-container" class="layout-narrow mx-auto transition-all duration-500">
+
+        <!-- Header -->
+        <header class="sticky top-0 z-40 glass-card border-b border-white/10">
+            <div class="px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                            OFC历史档案
+                        </h1>
+                        <p class="text-xs text-slate-400 mt-0.5">萨特第二共和国足球史</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button id="layout-toggle-desktop" onclick="toggleLayout()" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-xs font-medium">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            <span id="layout-text">宽屏</span>
+                        </button>
+
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-white" id="total-count">194</div>
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider">赛季</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filter Bar -->
+        <div class="sticky top-[73px] z-30 glass-card border-b border-white/5">
+            <div class="px-4 py-3">
+                <div class="flex gap-2 overflow-x-auto scroll-hidden pb-1" id="filter-container">
+                    <button class="filter-btn active px-4 py-1.5 rounded-full text-xs font-medium bg-white text-slate-900 whitespace-nowrap transition-all" data-filter="all">
+                        全部
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="pt-6 pb-24 px-4">
+            <div id="seasons-grid" class="grid gap-3">
+                <!-- 赛季卡片将在这里动态生成 -->
+            </div>
+
+            <div id="empty-state" class="hidden text-center py-20">
+                <div class="text-6xl mb-4">🏆</div>
+                <p class="text-slate-400">暂无数据</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile FAB -->
+    <button onclick="toggleLayout()" class="fab md:hidden" title="切换布局">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+    </button>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="detail-modal bg-[#0f172a] rounded-3xl max-w-lg w-full relative my-auto">
+                <!-- Close Button -->
+                <button onclick="closeModal()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+
+                <div id="capture-area">
+                    <!-- Header -->
+                    <div class="text-center mb-6">
+                        <span id="modal-type" class="type-badge px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-white inline-block mb-3">
+                            实况萨特
+                        </span>
+                        <h2 id="modal-season" class="text-5xl font-black text-white mb-1 leading-tight">S-168</h2>
+                        <p class="text-slate-400 text-sm">赛季详情</p>
+                    </div>
+
+                    <!-- Champions Section -->
+                    <div class="capture-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1)); border-color: rgba(245, 158, 11, 0.3);">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-3xl shadow-lg flex-shrink-0">
+                                👑
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="capture-title text-amber-300">联赛冠军</div>
+                                <div id="modal-champion" class="capture-value text-white">球队名称</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="capture-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1)); border-color: rgba(59, 130, 246, 0.3);">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-3xl shadow-lg flex-shrink-0">
+                                🏆
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="capture-title text-blue-300">杯赛冠军</div>
+                                <div id="modal-cup" class="capture-value text-white">球队名称</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid-capture mb-4">
+                        <div class="stats-item-capture">
+                            <div class="stats-label-capture">联赛亚军</div>
+                            <div id="modal-runner" class="stats-value-capture">-</div>
+                        </div>
+                        <div class="stats-item-capture">
+                            <div class="stats-label-capture">联赛季军</div>
+                            <div id="modal-third" class="stats-value-capture">-</div>
+                        </div>
+                        <div class="stats-item-capture">
+                            <div class="stats-label-capture">第二项杯赛</div>
+                            <div id="modal-cup2" class="stats-value-capture">-</div>
+                        </div>
+                        <div class="stats-item-capture">
+                            <div class="stats-label-capture">第三项杯赛</div>
+                            <div id="modal-cup3" class="stats-value-capture">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div id="modal-note-section" class="capture-card hidden">
+                        <div class="capture-title text-slate-400 mb-2">赛季备注</div>
+                        <p id="modal-note" class="detail-text-capture"></p>
+                    </div>
+
+                    <!-- Detail Text -->
+                    <div id="modal-detail-section" class="capture-card hidden">
+                        <div class="capture-title text-slate-400 mb-3">详细记录</div>
+                        <p id="modal-detail" class="detail-text-capture"></p>
+                    </div>
+                </div>
+
+                <!-- Download Button -->
+                <div class="p-6 pt-2">
+                    <button onclick="downloadPNG()" class="download-btn w-full py-4 rounded-2xl text-white font-bold text-sm uppercase tracking-wider shadow-lg active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        下载赛季卡片 (PNG)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const seasonsData = [{"season": "27", "champion": "索德里克港", "cup_champion": "马恩", "runner_up": "道格拉斯城", "third_place": "皮尔沃尔", "second_cup": "克莱格纳什", "third_cup": "道格拉斯城", "type": "马恩联赛", "note": "1. https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/VSBnTwlc4SaKQy46jNgj/pub/32xqeBJ9yvavlsMmdaPS.png", "detail": "以下是第27賽季球隊名單： 地区 球队 所在联赛级别 历史荣誉 克莱格纳什 克莱格纳什 马恩超 杯赛冠军 圣玛丽港口区 马恩 马恩超 甲级联赛冠军 圣玛丽港口 马恩超 杯赛冠军 埃林港 埃林港 马恩超 甲级联赛冠军 格伦罗素 格伦罗素 马恩超 超级联赛分区冠军 罗素城 马恩甲 乙级联赛冠军 罗素凯尔特人 马恩乙 乙级联赛分区冠军 罗素联 马恩乙 乙级联赛第五 德比 德比海文 马恩甲 乙级联赛冠军 巴拉博格 无 / / 卡斯尔镇 卡斯尔镇 马恩乙 杯赛第三 巴拉萨拉 无 / / 索德里克港 索德里克港 马恩超 杯赛冠军 皇家海军部队 马恩甲 乙级联赛冠军 索德里克灯塔 马恩乙 丙级联赛冠军 索德里克维尔瓦 马恩乙 丙级联赛冠军 索德里克93 马恩丙 地区联赛冠军 穆雷山脉 穆雷山脉 马恩超 / 道格拉斯 道格拉斯城 马恩超 超级联赛冠军 道格拉斯联 马恩超 杯赛亚军 道格拉斯海王星 马恩甲 乙级联赛亚军 道格拉斯盎格鲁 马恩丙 地区联赛殿军 布拉丹 布拉丹联 马恩乙 地区联赛冠军 新城郡 新城 马恩超 甲级联赛冠军 SV克罗斯比 马恩甲 乙级联赛殿军 格伦文 无 / / 圣约翰城 圣约翰斯顿 马恩乙 / 皮尔 皮尔沃尔 马恩超 超级联赛分区冠军 皮尔联合 马恩甲 甲级联赛分区冠军 皮尔凯尔特人 马恩甲 乙级联赛冠军 皮尔城 马恩乙 乙级联赛分区冠军 皮尔绿色雄狮 马恩乙 丙级联赛冠军 皮尔拉格朗日集团 马恩丙 地区联赛冠军 皮尔竞技 马恩丙 地区联赛亚军 因杰布雷克 无 / / 米切尔城 马恩阿斯顿维拉 马恩甲 / 昂灿 无 / / 阿格拉什 阿格拉什联 马恩甲 / 埃尔波因特 埃尔波因特 马恩超 超级联赛分区第四 巴劳赫 马恩皇家舰队 马恩乙 丙级联赛冠军 格伦奥德林 格伦奥德林 马恩超 甲级联赛亚军 基督城 马恩超 超级联赛分区第一 克罗克 克罗克城 马恩甲 乙级联赛冠军 科尔纳 科尔纳 马恩乙 地区联赛冠军 马霍尔德 马霍尔德联合 马恩丙 丙级联赛分区第一 巴略尔 FC巴略尔 马恩丙 / 安德雷斯 安德雷斯国民竞技 马恩乙 / 安德雷斯左翼阵线 马恩乙 / 安德雷斯人民路线 马恩丙 超级联赛九连冠 拉姆塞 拉姆塞 马恩超 杯赛冠军 联赛冠军 斯麦尔城 斯麦尔 马恩丙 地区联赛冠军 布里德 圣城（马恩红牛） 马恩超 甲级联赛殿军"}, {"season": "45", "champion": "塔什干棉农", "cup_champion": "鲍里索夫", "runner_up": "比什凯克", "third_place": "鲍里索夫", "second_cup": "苦盏", "third_cup": "卡拉巴克", "type": "中亚联赛", "note": "", "detail": "第二級別聯賽，文明力量拿到聯賽冠軍，他們力壓喀布爾隊。"}, {"season": "47", "champion": "钢人", "cup_champion": "莫尔斯比港", "runner_up": "莫尔斯比港", "third_place": "戈罗卡", "second_cup": "穆塔纳库奈港", "third_cup": "莱城国家电力", "type": "巴新联赛", "note": "", "detail": "第四十七賽季頂級聯賽，新不列顛鋼人依靠净勝球的優勢領先首都港口，成爲頂級聯賽冠軍。在這個賽季的比賽中，鋼人3-2逆轉戰勝維拉港等比賽都十分扣人心弦。 本賽季的次級聯賽，穆港領先努基尼一分，成功奪冠升級。值得一提的是，鋼人、戈羅卡和努基尼組成了巴新獨立國時代的“前三強”，而拓跋將軍、萊城國家港、穆港則組成了“後三強”。"}, {"season": "48", "champion": "努基尼", "cup_champion": "俾斯麦军", "runner_up": "俾斯麦军", "third_place": "帕特斯拜尔", "second_cup": "布尔根兰岛", "third_cup": "钢人", "type": "巴新联赛", "note": "", "detail": "第48賽季，大陸虛擬國帕斯特拜爾和新加坡虛擬國阿爾卡尼亞均派出球隊參加薩特國内賽事。本賽季努基尼奪得聯賽冠軍，帕斯特拜爾高居聯賽第三位。 第二級別聯賽中，加斯馬塔卡博尼奪得聯賽冠軍，庫城凱爾特人拿到聯賽第二 ，國家電力集團位居聯賽第三。 第三級別聯賽，貝雷納伊拉瓦亞拿到分區A冠軍，聖日耳曼拿到分區B冠軍，阿爾卡尼亞只拿到分區倒數第二。 在第四級別積分榜中，努基尼二隊戰勝大陸虛擬國家瑞士神聖聯邦的球隊草蜢奪得冠軍。"}, {"season": "49", "champion": "努基尼", "cup_champion": "库城凯", "runner_up": "钢人", "third_place": "帕特斯拜尔", "second_cup": "布尔根兰岛", "third_cup": "加斯马塔", "type": "巴新联赛", "note": "", "detail": "本賽尼Noukini在頂級聯賽拉出無人區，成功不敗奪冠，并且領先鋼人11分，拉出無人區。帕斯特拜爾隊持續保持競爭力，奪得頂級聯賽第三名。布爾根蘭島本賽季不幸降級，最終主教練阿維拉多跳海謝罪。 次級別聯賽中，基克利加入聯賽序列，開啓聲名顯赫的“屑基佬時代”（基克利隊玩家因爲長期執教基克利，被稱之爲基佬。而因爲基佬又有男同性戀者之意味，故被稱之爲“屑基佬”） 第三級別聯賽中，Noukini二隊連續兩年升級，創造凱澤斯勞滕奇跡，和一綫隊一起奪冠。 第四級別聯賽中，萊城伊戈納迪烏斯爵士足球俱樂部被俾斯麥卡裏穆易聯合領先9分奪冠，社會主義球隊人民紅旗21分拿到聯賽第三。"}, {"season": "59-A", "champion": "帕加拓荒人", "cup_champion": "山城阿森纳", "runner_up": "普拉纳捍卫者", "third_place": "努基尼", "second_cup": "戈罗卡", "third_cup": "", "type": "巴新联赛", "note": "", "detail": "本賽季聯賽設置兩個級別，26+12隊。其中頂級聯賽分爲兩個分區，每個分區13個球隊。這也是巴布亞新幾内亞階段第一次選擇使用大分區模式。"}, {"season": "59-B", "champion": "库城凯", "cup_champion": "布尔根兰岛", "runner_up": "新不列颠", "third_place": "霍城", "second_cup": "穆塔纳库奈港", "third_cup": "林塔工程师", "type": "巴新联赛", "note": "", "detail": "B分區，庫城凱爾特人奪得聯賽冠軍，繼承鋼人俱樂部的新不列顛英勇少兩分位列第二。本賽季另外一支虛擬國家球隊阿爾卡尼亞因爲國家不在撥款，球隊基本等同於退賽。 在最終的冠軍決戰中，庫皮亞諾凱爾特人1-0戰勝努基尼，奪得頂級聯賽總冠軍。 在第二級別聯賽中，古迪納夫净勝球力壓博爾蓋拉火炬奪得聯賽冠軍。"}, {"season": "69", "champion": "火炬", "cup_champion": 4.25, "runner_up": "小白水", "third_place": "轻工业部", "second_cup": "鸭绿江", "third_cup": "赞同者", "type": "朝鲜联赛", "note": "", "detail": "第六十九賽季的比賽中，在小組賽階段，火炬奪得A組第一，輕工業部 鴨綠江 4.25緊隨其後。B組方面，小白水、機關車、月尾島、鯉明水成功出綫。 淘汰賽中，火炬足球俱樂部最終奪得聯賽冠軍，戰勝小白水。輕工業部點球擊敗月尾島，最終奪得第三名。本賽季聯賽，科莫根特拿下射手王。"}, {"season": "69赛季次级别", "champion": "罗先先锋", "cup_champion": "罗先先锋", "runner_up": "平壤", "third_place": "妙峰山", "second_cup": "开城体育团", "third_cup": "", "type": "朝鲜联赛", "note": "", "detail": "在次級聯賽中，先鋒體育團奪得22分，奪得聯賽冠軍。平壤體育團21分拿到聯賽亞軍，力壓妙峰山體育團、龍南山體育團等球隊成功進入頂級聯賽。本賽季結束後，開城體育團獲得外卡，進入後續賽季的頂級聯賽。"}, {"season": "70", "champion": "火炬", "cup_champion": "鸭绿江", "runner_up": "小白水", "third_place": 4.25, "second_cup": "机关车", "third_cup": "火炬", "type": "朝鲜联赛", "note": "", "detail": "第69-71賽季，薩特足球聯賽使用朝鮮最上級足球聯賽球隊進行模擬，參賽球隊分別爲：平壤火炬、鴨綠江、輕工業部、4.25體育團、海鷗體育團、工人體育團；月尾島、小白水、新義州火車頭（機關車）、贊同者、鯉明水體育團。 小組賽階段，在A組，火炬依靠净勝球力壓鴨綠江成爲小組第一，輕工業部和4.25也獲得出綫進入淘汰賽。B組方面，月尾島、小白水、機關車、贊同者成功出綫。 在淘汰賽第一、二輪中，火炬先戰勝了贊同者，又戰勝了鴨綠江，進軍總決賽。他們縂決賽的對手是小白水，小白水1-0戰勝輕工業部，隨後戰勝4.25體育團。 在決賽和三四名比賽中，火炬4-3反超絕殺小白水，而鴨綠江則1-0戰勝四月二十五日體育團。 在白頭山杯賽中，鴨綠江4-0戰勝了4.25。 在普天堡杯決賽中，機關車常規時間0-0，依靠點球戰勝了鴨綠江。 在觀景臺杯（萬景台杯）足球賽中，火炬體育團0-4戰勝機關車。"}, {"season": "71", "champion": "赞同者", "cup_champion": "罗先先锋", "runner_up": "机关车", "third_place": "罗先先锋", "second_cup": "鲤明水", "third_cup": "咸镜北道", "type": "朝鲜联赛", "note": "", "detail": "第71賽季，缺兵少將的贊同者足球俱樂部創造奇跡，以17勝7平2負得到58分勇奪聯賽冠軍，新義州火車頭奪得聯賽第二，羅先先鋒奪得聯賽第三位。 序号 地区 简称 球队名称 进球 丢球 净胜球 胜场 平场 负场 积分 1 赴战岭 CHAN 赞同者足球俱乐部 26 11 15 17 7 2 58 2 新义州 SIUFC 机关车足球俱乐部 32 20 12 15 4 7 49 3 罗先 SOBO 先锋体育团 60 21 39 16 0 10 48 4 平壤 AMRK 鸭绿江足球俱乐部 42 15 27 14 5 7 47 5 平壤 4.25 4.25足球俱乐部 29 18 11 14 4 8 46 6 元山 JEBI 海鸥足球俱乐部 18 28 -10 13 4 9 43 7 清津 SPFC 哨兵体育团 22 38 -16 13 1 12 40 8 平壤 RIM 李明水足球俱乐部 17 20 -3 9 8 9 35 9 平壤 HWB 火炬足球俱乐部 24 33 -9 10 5 11 35 10 平壤 KGOP 轻工业部足球俱乐部 29 24 5 9 6 11 33 11 咸兴 SKB 咸镜北道体育团 8 24 -16 3 10 13 19 12 平壤 SBEK 小白水足球俱乐部 7 23 -16 3 10 13 19 13 开城 KSFC 开城体育团 10 23 -13 3 6 17 15 14 金策 WOL 月尾岛足球俱乐部 4 29 -25 1 11 14 14"}, {"season": "81", "champion": "四川川雄", "cup_champion": "上海上港", "runner_up": "广州恒大淘宝", "third_place": "河南三峡", "second_cup": "香港足球会", "third_cup": "上海申花", "type": "FIFA中国", "note": "", "detail": "第81賽季的薩特共和國聯賽使用FFIA22進行模擬，球隊為虛擬球隊和現實中的中國球隊。在頂級聯賽中，四川川雄9勝2負3平獲得30分，成爲聯賽冠軍。球隊場均進球2.21個，冠絕全聯盟。廣州恆大23分位列亞軍，河南三峽22分位列季軍。 值得一提的是，河南三峽本賽季投入低於很多二三級別球隊，也創造了奇跡。 本賽季頂級聯賽中，山東魯能泰山、大連人職業直接降級。"}, {"season": "81赛季次级别", "champion": "香港足球会", "cup_champion": "河北谢菲尔德", "runner_up": "黑龙江冰城", "third_place": "上海魔都城", "second_cup": "", "third_cup": "", "type": "FIFA中国", "note": "", "detail": "在次級聯賽中，香港足球會奪得聯賽冠軍，但是場均進球只有1.21個。黑龍江冰城、上海魔都也都進入升級區，天津泰達最後時刻無緣升級。遼寧瑞蘭最後時刻保級成功，河北謝菲爾德、鄒北記不幸降級。"}, {"season": "82", "champion": "上海申花", "cup_champion": "西安外国语", "runner_up": "广州恒大淘宝", "third_place": "四川川雄", "second_cup": "河南三峡", "third_cup": "", "type": "FIFA中国", "note": "", "detail": "第82賽季，場邊上帝帶領的上海申花足球俱樂部捲土重來。他們以0.93個場均丟球的超好成績最終拿到了33分，成功奪得聯賽冠軍。廣州恆大淘寶位列次席，四川川雄名列其后。"}, {"season": "82赛季次级别", "champion": "武汉三镇", "cup_champion": "大连人职业", "runner_up": "上海魔都城", "third_place": "山东鲁能泰山", "second_cup": "台北统一联", "third_cup": "", "type": "FIFA中国", "note": "", "detail": "次級聯賽方面，武漢三鎮成功升級，山東泰山也在意外降級之後迅速殺回頂級聯賽，天津泰達再次未能進入頂級聯賽。臺北統一聯最後時刻保級成功，遼寧瑞蘭沒能延續奇跡，最終掉入第三級別聯賽。"}, {"season": "83", "champion": "上海申花", "cup_champion": "北京北控", "runner_up": "北京北控", "third_place": "山东鲁能泰山", "second_cup": "河南三峡", "third_cup": "", "type": "FIFA中国", "note": "", "detail": "本賽季，鑒於俄羅斯-烏克蘭問題的發生，薩特共和國足球協會將本賽季格言定爲“Stop Invasion 停止入侵”，這招致了部分保守主義球隊的反感。在本賽季中，上海申花再次奪得聯賽冠軍，以净勝球優勢擊敗北京北控。重返頂級聯賽的山東魯能泰山回到頂級聯賽第一賽季就拿出了聯賽第三的成績，而且打進了全頂級聯賽最多的進球。前兩個賽季表現極端搶眼的四川川雄不幸降級，讓人感覺十分讶异。"}, {"season": "86", "champion": "武汉三镇", "cup_champion": "上海海港", "runner_up": "天津津门虎", "third_place": "上海申花", "second_cup": "", "third_cup": "", "type": "实况中国", "note": "", "detail": "第八十六賽季聯賽重新恢復使用實況足球進行模擬。本賽季武漢三鎮拿下64分奪得聯賽冠軍，天津津門虎60分緊隨其後。本賽季山東泰山、浙江職業足球俱樂部降級。"}, {"season": "86赛季次级别", "champion": "平果哈嘹", "cup_champion": "湖南芒果巴", "runner_up": "重庆两江竞技", "third_place": "梅州客家", "second_cup": "", "third_cup": "", "type": "实况中国", "note": "", "detail": "次級別聯賽中，廣西平果領先第二名重慶兩江競技9分順利奪得冠軍，梅州客家進入升降級附加賽，對陣上海海港。大連人職業、北京北體大降入第三級別聯賽。"}, {"season": "86赛季次级别", "champion": "青岛海牛", "cup_champion": "石家庄功夫", "runner_up": "石家庄功夫", "third_place": "辽宁队", "second_cup": "大连读行", "third_cup": "", "type": "实况中国", "note": "", "detail": "在一、二級別升降級附加賽中，梅州客家成功戰勝上海海港，進入頂級聯賽。 第三級別聯賽中，青島海牛、石家莊功夫直接升入第二級別聯賽，遼寧宏運附加賽戰勝湖南隊，也成功進入第二級別聯賽。"}, {"season": "87", "champion": "梅州客家", "cup_champion": "三镇", "runner_up": "申花", "third_place": "辽足", "second_cup": "蓉城", "third_cup": "", "type": "实况中国", "note": "", "detail": "所有人都想不到梅州客家將以升班馬的身份奪得聯賽冠軍。本賽季梅州客家打進29球丟掉17球，拿到34個積分，成功奪得頂級聯賽冠軍。本賽季羅德里格打進5球、黃義助打進10毬，成績十分耀眼。 本賽季上海申花奪得第二名，因爲球隊縮減而直接進入頂級聯賽的遼寧宏運以升班馬身份奪得聯賽第三名。山東魯能泰山、上海海港仍然沒能逆轉頹勢，再一次進入降級區，天津隊、昆山FC直接降級。"}, {"season": "87赛季次级别", "champion": "石家庄功夫", "cup_champion": "", "runner_up": "延边龙鼎", "third_place": "重庆1997", "second_cup": "北京北体大", "third_cup": "大连实德", "type": "实况中国", "note": "", "detail": "在次級別聯賽中，石家莊功夫和延邊龍鼎同時積35分，最終石家莊功夫净勝球更多，拿到聯賽頭名。中國香港東方體育會敬陪末座，成爲第二級別聯賽倒數第一。"}, {"season": "91", "champion": "山東泰山", "cup_champion": "上海海港", "runner_up": "南通隊", "third_place": "廣州恆大", "second_cup": "", "third_cup": "", "type": "实况中国", "note": "", "detail": "第九十一賽季戰況無比激烈。該賽季山東泰山、南通支云、廣州恆大一直戰鬥到了賽程進行到3/4才拉開差距。最終山東泰山42分的成績奪得聯賽冠軍，南通隊31分、廣州恆大31分、上海海港30分，位列2、3、4位。 次級聯賽，廣州城30分奪得聯賽冠軍，丹東騰躍29分位列聯賽第二。深圳佳兆業該賽季一場不贏賽季0分結束，創造歷史。 第三級別聯賽，大連人職業打出第一階段25分+第二階段19分的傲人成績，以44分的超高分成功奪冠，進入第二級別聯賽，並爲未來的連續升級奇跡打下基礎。該賽季深水埗17+13共計30分位列第二，石家莊隊16+10共計26分位列第三。"}, {"season": "92", "champion": "山東泰山", "cup_champion": "深水埗", "runner_up": "南通支云", "third_place": "上海海港", "second_cup": "", "third_cup": "", "type": "实况中国", "note": "", "detail": "第九十二賽季被認爲是93賽季超級大戰的先聲。在第九十二賽季，山東泰山9w6d3l，最終獲得33分奪得聯賽冠軍。而二到四名的南通支云、上海海港、北京國安均爲31分，净勝球分別爲13、11、10個，依靠净勝球才分出了勝負。 該賽季第五名廣州恆大、第六名丹東騰躍都具有一定能力，尤其是丹東騰躍，擁有盧卡斯·萊瓦等優秀球員。儅賽季大慶石油化工足球俱樂部只拿到12分，和拿到15分的上海申花一起降級。 該賽季次級別聯賽，深水埗8w4d2l强勢獲得直接升級名額，拿到28分的他們在賽季結束之後引進了法國中場球員波巴、荷蘭中鋒球員衛霍斯特，進一步增進了自己的實力。在這個賽季的次級聯賽的8支球隊中，7支球隊日後都出現在了頂級聯賽。他們分別是深水埗、萊城、廣州城、天津天海、石家莊功夫、大連人職業、雲南玉昆鋼鐵。本賽季唯一降級球隊為重慶當代力帆，他們只拿到了10個積分。 第三級別聯賽有多達12個球隊參與征戰，天津隊最終以26分的成績成爲冠軍，長沙瀟湘星城隊23分緊隨其後獲得亞軍，第三名是淄博蹴鞠，第四名是延邊龍鼎。 這個賽季頂級聯賽射手王為阿爾諾托維奇，來自上海海港。次級聯賽射手王為索瑪，來自廣州城。第三級別聯賽射手王為戈米斯，來自山西財經大學。"}, {"season": "范1", "champion": "COYI", "cup_champion": "鬼才", "runner_up": "鬼才", "third_place": "高潮", "second_cup": "COYI", "third_cup": "", "type": "范特西", "note": "", "detail": "2023年，薩特共和國組織了范特西聯賽。規則是對現實中的比賽進行競猜，每天競猜10場比賽，對1場將得到三分。競猜的比賽包括足球、籃球、電子競技等。聯賽最終成功進行了兩個賽季。 本賽季月光、COYI、雲龍都曾經刷出賽季聯賽最高分，單個比賽日27分，最終本賽季總冠軍是雲龍，拿到237分，領先亞軍馬爾奎3分。 在第一届競猜者杯中，COYI在決賽比賽日9-15不敵鬼才，鬼才奪得第一届競猜者杯。 第二届競猜者杯中，鬼才在第一輪就慘遭chenzhi12-9淘汰出局，最終在決賽中Chenzhi0-15慘敗COYI，目送上届杯賽亞軍拿到冠軍。"}, {"season": "范2", "champion": "湖南小律", "cup_champion": "湖南小律", "runner_up": "COYI", "third_place": "露风", "second_cup": "雲龍", "third_cup": "", "type": "范特西", "note": "", "detail": "第二賽季孟夫子聯賽參賽陣容空前强大，最終湖南小律以252分超高分奪得冠軍。本賽季小律奪得了雙冠王——在決賽中，他以15-12驚險戰勝雲龍。"}, {"season": "范3", "champion": "COYI", "cup_champion": "云龙", "runner_up": "利特马宁", "third_place": "云龙", "second_cup": "场帝", "third_cup": "", "type": "范特西", "note": "", "detail": "第三賽季孟夫子聯賽，參賽人數大幅度縮水，聯賽也在第八輪結束之後被腰斬。雲龍105分奪得冠軍，獲得生涯第二個冠軍。"}, {"season": "95", "champion": "冠忠南区", "cup_champion": "南华", "runner_up": "东方体育会", "third_place": "富力R&F", "second_cup": "", "third_cup": "", "type": "实况香港", "note": "", "detail": "本賽季，阿謙執教的冠忠南區力壓南華，奪得聯賽冠軍。冠忠南區主帥達利齊獲得最佳教練，冠忠南區球員納英格蘭奪得最佳球員。南華前鋒金鑫煜成爲助攻王，東方體育團恩薩梅成爲射手王，打進了14個進球。"}, {"season": "96", "champion": "冠忠南區", "cup_champion": "愉園", "runner_up": "Kitchee", "third_place": "香港富力", "second_cup": "天水圍飛馬", "third_cup": "", "type": "实况香港", "note": "", "detail": "本賽季冠忠南區艱難衛冕，他們奪得43分，戰勝Kitchee一分。香港富力39分，排在聯賽第三位。天水圍飛馬36分，排在聯賽第四位。雲龍帶領的愉園（也被稱爲歡樂谷）奪得高級組銀牌賽冠軍。"}, {"season": "97", "champion": "Kitchee", "cup_champion": "冠忠南區", "runner_up": "冠忠南區", "third_place": "香港富力", "second_cup": "公民", "third_cup": "", "type": "实况香港", "note": "", "detail": "第九十七賽季，Kitchee終於在最後時刻超越冠忠南區，終結了冠忠南區的連冠。香港富力排在第三位，歡樂谷排在第四位。"}, {"season": "97赛季次级别", "champion": "标准流浪", "cup_champion": "凱景", "runner_up": "凱景", "third_place": "理文化工", "second_cup": "高力北區", "third_cup": "東方體育會", "type": "实况香港", "note": "", "detail": "第二級別聯賽，標準流浪降級之後殺回頂級聯賽，并且拿到第二級別聯賽冠軍。凱景最終拿到聯賽亞軍，理文化工聯賽季軍。高力北區（均業北區）、東方體育會、東區列後三名。"}, {"season": "S-63", "champion": "SWU", "cup_champion": "湾区联合国铁", "runner_up": "湾区联合国铁", "third_place": "锡萨拉火车头", "second_cup": "阿登豪森普鲁士", "third_cup": "琅琊锋翼", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-64", "champion": "阿登豪森普鲁士", "cup_champion": "阿登豪森普鲁士", "runner_up": "湾区联合国铁", "third_place": "湾区联合国铁", "second_cup": "比比利洛塔堡", "third_cup": "铃木爱理FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-65", "champion": "成川中央矿大", "cup_champion": "SWU", "runner_up": "阿登豪森普鲁士", "third_place": "湾区联合国铁", "second_cup": "锡萨拉火车头", "third_cup": "海门南通支云", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-66", "champion": "海门南通支云", "cup_champion": "鲁道夫体育", "runner_up": "SWU", "third_place": "琅琊锋翼", "second_cup": "比比利洛塔堡", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-67", "champion": "鲁道夫体育", "cup_champion": "海门南通支云", "runner_up": "阿登豪森普鲁士", "third_place": "比比利洛塔堡", "second_cup": "特顿捍卫者", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-68", "champion": "海门南通支云", "cup_champion": "锡萨拉火车头", "runner_up": "阿登豪森普鲁士", "third_place": "铃木爱理FC", "second_cup": "鲁道夫体育", "third_cup": "比比利洛塔堡", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-69", "champion": "锡萨拉火车头", "cup_champion": "湾区联合国铁", "runner_up": "海门南通支云", "third_place": "雷克纳拜尔星", "second_cup": "比比利洛塔堡", "third_cup": "铃木爱理FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-70", "champion": "湾区联合国铁", "cup_champion": "圣城信徒", "runner_up": "SWU", "third_place": "阿登豪森普鲁士", "second_cup": "铃木爱理FC", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-71", "champion": "圣城信徒", "cup_champion": "SWU", "runner_up": "湾区联合国铁", "third_place": "阿登豪森普鲁士", "second_cup": "雷克纳拜尔星", "third_cup": "铃木爱理FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-72", "champion": "圣城信徒", "cup_champion": "湾区联合国铁", "runner_up": "SWU", "third_place": "湾区联合国铁", "second_cup": "海门南通支云", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-73", "champion": "SWU", "cup_champion": "湾区联合国铁", "runner_up": "阿登豪森普鲁士", "third_place": "海门南通支云", "second_cup": "铃木爱理FC", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-74", "champion": "比比利洛塔堡", "cup_champion": "琅琊城市", "runner_up": "湾区联合国铁", "third_place": "SWU", "second_cup": "琅琊锋翼", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-75", "champion": "阿登豪森普鲁士", "cup_champion": "比比利洛塔堡", "runner_up": "湾区联合国铁", "third_place": "比比利洛塔堡", "second_cup": "SWU", "third_cup": "琅琊城市", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-76", "champion": "阿登豪森普鲁士", "cup_champion": "阿登豪森普鲁士", "runner_up": "比比利洛塔堡", "third_place": "琅琊锋翼", "second_cup": "雷克纳拜尔星", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-77", "champion": "成川中央矿大", "cup_champion": "成川中央矿大", "runner_up": "SWU", "third_place": "阿登豪森普鲁士", "second_cup": "湾区联合国铁", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-78", "champion": "比比利洛塔堡", "cup_champion": "比比利洛塔堡", "runner_up": "阿登豪森普鲁士", "third_place": "琅琊城市", "second_cup": "SWU", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-79", "champion": "阿登豪森普鲁士", "cup_champion": "成川中央矿大", "runner_up": "SWU", "third_place": "雷克纳拜尔星", "second_cup": "湾区联合国铁", "third_cup": "成川中央矿大", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-80", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "成川中央矿大", "third_place": "SWU", "second_cup": "阿登豪森普鲁士", "third_cup": "琅琊锋翼", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-81", "champion": "SWU", "cup_champion": "琅琊城市", "runner_up": "阿登豪森普鲁士", "third_place": "琅琊锋翼", "second_cup": "海军大学", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-82", "champion": "SWU", "cup_champion": "阿登豪森普鲁士", "runner_up": "成川中央矿大", "third_place": "雷克纳拜尔星", "second_cup": "湾区联合国铁", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-83", "champion": "铃木爱理FC", "cup_champion": "鲁道夫体育", "runner_up": "比比利洛塔堡", "third_place": "湾区联合国铁", "second_cup": "SWU", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-84", "champion": "SWU", "cup_champion": "阿登豪森普鲁士", "runner_up": "卡纳格林姆", "third_place": "人民红旗", "second_cup": "阿登豪森普鲁士", "third_cup": "萨凡纳FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-85", "champion": "阿登豪森普鲁士", "cup_champion": "特顿捍卫者", "runner_up": "湾区联合国铁", "third_place": "维尔图钢管", "second_cup": "锡萨拉火车头", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-86", "champion": "阿登豪森普鲁士", "cup_champion": "SWU", "runner_up": "SWU", "third_place": "比比利洛塔堡", "second_cup": "维尔图钢管", "third_cup": "海军大学", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-87", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "特顿捍卫者", "second_cup": "维尔图钢管", "third_cup": "萨凡纳FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-88", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "维尔图钢管", "third_place": "鲁道夫体育", "second_cup": "锡萨拉火车头", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-89", "champion": "SWU", "cup_champion": "卡纳格林姆", "runner_up": "比比利洛塔堡", "third_place": "阿登豪森普鲁士", "second_cup": "湾区联合国铁", "third_cup": "特顿捍卫者", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-90", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "海门南通支云", "third_place": "鲁道夫体育", "second_cup": "阿登豪森普鲁士", "third_cup": "特顿捍卫者", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-91", "champion": "SWU", "cup_champion": "SWU", "runner_up": "阿登豪森普鲁士", "third_place": "湾区联合国铁", "second_cup": "琅琊锋翼", "third_cup": "萨凡纳FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-92", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "维尔图钢管", "third_place": "海门南通支云", "second_cup": "锡萨拉火车头", "third_cup": "鲁道夫体育", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-93", "champion": "阿登豪森普鲁士", "cup_champion": "SWU", "runner_up": "湾区联合国铁", "third_place": "SWU", "second_cup": "锡萨拉火车头", "third_cup": "萨凡纳FC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-94", "champion": "SWU", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "卡纳格林姆", "second_cup": "锡萨拉火车头", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-95", "champion": "英华斯力", "cup_champion": "阿登豪森普鲁士", "runner_up": "SWU", "third_place": "成川中央矿大", "second_cup": "阿登豪森普鲁士", "third_cup": "特顿捍卫者", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-96", "champion": "锡萨拉火车头", "cup_champion": "锡萨拉火车头", "runner_up": "SWU", "third_place": "成川中央矿大", "second_cup": "特顿捍卫者", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-97", "champion": "锡萨拉火车头", "cup_champion": "湾区联合国铁", "runner_up": "湾区联合国铁", "third_place": "英华斯力", "second_cup": "SWU", "third_cup": "琅琊城市", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-98", "champion": "锡萨拉火车头", "cup_champion": "锡萨拉火车头", "runner_up": "SWU", "third_place": "琅琊城市", "second_cup": "成川中央矿大", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-99", "champion": "湾区联合国铁", "cup_champion": "锡萨拉火车头", "runner_up": "琅琊城市", "third_place": "成川中央矿大", "second_cup": "SWU", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-100", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "成川中央矿大", "third_place": "琅琊锋翼", "second_cup": "阿登豪森普鲁士", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-101", "champion": "湾区联合国铁", "cup_champion": "锡萨拉火车头", "runner_up": "锡萨拉火车头", "third_place": "SWU", "second_cup": "英华斯力", "third_cup": "琅琊锋翼", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-102", "champion": "锡萨拉火车头", "cup_champion": "湾区联合国铁", "runner_up": "SWU", "third_place": "成川中央矿大", "second_cup": "圣城信徒", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-103", "champion": "阿登豪森普鲁士", "cup_champion": "英华斯力", "runner_up": "锡萨拉火车头", "third_place": "成川中央矿大", "second_cup": "雷克纳拜尔星", "third_cup": "圣城信徒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-104", "champion": "格拉菲卡机革", "cup_champion": "成川中央矿大", "runner_up": "阿登豪森普鲁士", "third_place": "成川中央矿大", "second_cup": "SWU", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-105", "champion": "成川中央矿大", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "格拉菲卡机革", "second_cup": "湾区联合国铁", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-106", "champion": "格拉菲卡机革", "cup_champion": "成川中央矿大", "runner_up": "成川中央矿大", "third_place": "湾区联合国铁", "second_cup": "SWU", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-107", "champion": "阿登豪森普鲁士", "cup_champion": "成川中央矿大", "runner_up": "湾区联合国铁", "third_place": "成川中央矿大", "second_cup": "格拉菲卡机革", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-108", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "SWU", "third_place": "成川中央矿大", "second_cup": "雷克纳拜尔星", "third_cup": "卡山克苏鲁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-109", "champion": "阿登豪森普鲁士", "cup_champion": "成川中央矿大", "runner_up": "格拉菲卡机革", "third_place": "成川中央矿大", "second_cup": "湾区联合国铁", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-110", "champion": "湾区联合国铁", "cup_champion": "成川中央矿大", "runner_up": "阿登豪森普鲁士", "third_place": "格拉菲卡机革", "second_cup": "SWU", "third_cup": "成川中央矿大", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-111", "champion": "SWU", "cup_champion": "湾区联合国铁", "runner_up": "湾区联合国铁", "third_place": "雷克纳拜尔星", "second_cup": "阿登豪森普鲁士", "third_cup": "圣城信徒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-112", "champion": "格拉菲卡机革", "cup_champion": "湾区联合国铁", "runner_up": "阿登豪森普鲁士", "third_place": "湾区联合国铁", "second_cup": "SWU", "third_cup": "圣城信徒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-113", "champion": "阿登豪森普鲁士", "cup_champion": "SWU", "runner_up": "格拉菲卡机革", "third_place": "湾区联合国铁", "second_cup": "雷克纳拜尔星", "third_cup": "SPO", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-114", "champion": "湾区联合国铁", "cup_champion": "格拉菲卡机革", "runner_up": "阿登豪森普鲁士", "third_place": "雷克纳拜尔星", "second_cup": "圣城信徒", "third_cup": "1/2耶稣萨尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-115", "champion": "SWU", "cup_champion": "雷克纳拜尔星", "runner_up": "圣城信徒", "third_place": "湾区联合国铁", "second_cup": "格拉菲卡机革", "third_cup": "卡山克苏鲁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-116", "champion": "SWU", "cup_champion": "SWU", "runner_up": "雷克纳拜尔星", "third_place": "圣城信徒", "second_cup": "阿登豪森普鲁士", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-117", "champion": "SWU", "cup_champion": "阿登豪森普鲁士", "runner_up": "圣城信徒", "third_place": "雷克纳拜尔星", "second_cup": "阿登豪森普鲁士", "third_cup": "1/2耶稣萨尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-118", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "雷克纳拜尔星", "second_cup": "卡山克苏鲁", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-119", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "雷克纳拜尔星", "second_cup": "卡山克苏鲁", "third_cup": "五月花", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-120", "champion": "RDP", "cup_champion": "琅琊凤鸣", "runner_up": "琅琊凤鸣", "third_place": "准将城", "second_cup": "雷克纳拜尔星", "third_cup": "雷诺法山口", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-121", "champion": "雷神港基尔", "cup_champion": "琅琊凤鸣", "runner_up": "RDP", "third_place": "KFC", "second_cup": "雷克纳拜尔星", "third_cup": "雷诺法山口", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-122", "champion": "雷神港基尔", "cup_champion": "雷神港基尔", "runner_up": "白鹿职业", "third_place": "雷诺法山口", "second_cup": "雷神港拉面", "third_cup": "格拉菲卡机革", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-123", "champion": "雷克纳拜尔星", "cup_champion": "白鹿职业", "runner_up": "雷神港基尔", "third_place": "格拉菲卡机革", "second_cup": "雷诺法山口", "third_cup": "RDP", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-124", "champion": "海军大学", "cup_champion": "雷神港基尔", "runner_up": "白鹿职业", "third_place": "雷神港基尔", "second_cup": "格拉菲卡机革", "third_cup": "五月花", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-125", "champion": "格拉菲卡机革", "cup_champion": "海军大学", "runner_up": "白鹿职业", "third_place": "海军大学", "second_cup": "雷诺法山口", "third_cup": "雷神港基尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-126", "champion": "阿登豪森普鲁士", "cup_champion": "白鹿职业", "runner_up": "格拉菲卡机革", "third_place": "海军大学", "second_cup": "准将城", "third_cup": "白鹿职业", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-127", "champion": "准将城", "cup_champion": "雷诺法山口", "runner_up": "阿登豪森普鲁士", "third_place": "格拉菲卡机革", "second_cup": "白鹿职业", "third_cup": "海军大学", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-128", "champion": "雷神港拉面", "cup_champion": "阿登豪森普鲁士", "runner_up": "雷诺法山口", "third_place": "海军大学", "second_cup": "阿登豪森普鲁士", "third_cup": "五月花", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-129", "champion": "海军大学", "cup_champion": "海军大学", "runner_up": "白鹿职业", "third_place": "阿登豪森普鲁士", "second_cup": "雷神港拉面", "third_cup": "五月花", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-130", "champion": "阿登豪森普鲁士", "cup_champion": "雷诺法山口", "runner_up": "雷神港拉面", "third_place": "五月花", "second_cup": "KFC", "third_cup": "琅琊凤鸣", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-131", "champion": "RDP", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "SWU", "second_cup": "白鹿职业", "third_cup": "准将城", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-132", "champion": "SWU", "cup_champion": "阿登豪森普鲁士", "runner_up": "RDP", "third_place": "阿登豪森普鲁士", "second_cup": "准将城", "third_cup": "海军大学", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-133", "champion": "RDP", "cup_champion": "准将城", "runner_up": "阿登豪森普鲁士", "third_place": "准将城", "second_cup": "海军大学", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-134", "champion": "RDP", "cup_champion": "阿登豪森普鲁士", "runner_up": "准将城", "third_place": "SWU", "second_cup": "阿登豪森普鲁士", "third_cup": "海军大学", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-135", "champion": "格拉菲卡机革", "cup_champion": "RDP", "runner_up": "阿登豪森普鲁士", "third_place": "RDP", "second_cup": "海军大学", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-136", "champion": "阿登豪森普鲁士", "cup_champion": "格拉菲卡机革", "runner_up": "格拉菲卡机革", "third_place": "雷神港基尔", "second_cup": "RDP", "third_cup": "海军大学", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-137", "champion": "卡山星链", "cup_champion": "阿登豪森普鲁士", "runner_up": "RDP", "third_place": "格拉菲卡机革", "second_cup": "锡萨拉火车头", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-138", "champion": "SWU", "cup_champion": "SWU", "runner_up": "卡山星链", "third_place": "格拉菲卡机革", "second_cup": "锡萨拉火车头", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-139", "champion": "卡山星链", "cup_champion": "SWU", "runner_up": "雷神港基尔", "third_place": "湾区联合国铁", "second_cup": "SWU", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-140", "champion": "圣城信徒", "cup_champion": "湾区联合国铁", "runner_up": "格拉菲卡机革", "third_place": "阿登豪森普鲁士", "second_cup": "湾区联合国铁", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-141", "champion": "湾区联合国铁", "cup_champion": "卡山星链", "runner_up": "阿登豪森普鲁士", "third_place": "SWU", "second_cup": "锡萨拉火车头", "third_cup": "雷神港基尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-142", "champion": "圣城信徒", "cup_champion": "阿登豪森普鲁士", "runner_up": "湾区联合国铁", "third_place": "锡萨拉火车头", "second_cup": "RDP", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-143", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "RDP", "third_place": "阿登豪森普鲁士", "second_cup": "锡萨拉火车头", "third_cup": "圣城信徒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-144", "champion": "阿登豪森普鲁士", "cup_champion": "阿登豪森普鲁士", "runner_up": "雷克纳拜尔星", "third_place": "RDP", "second_cup": "阿登豪森普鲁士", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-145", "champion": "卡山星链", "cup_champion": "雷克纳拜尔星", "runner_up": "雷克纳拜尔星", "third_place": "RDP", "second_cup": "湾区联合国铁", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-146", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "雷克纳拜尔星", "third_place": "锡萨拉火车头", "second_cup": "RDP", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-147", "champion": "阿登豪森普鲁士", "cup_champion": "阿登豪森普鲁士", "runner_up": "RDP", "third_place": "锡萨拉火车头", "second_cup": "雷克纳拜尔星", "third_cup": "1/2耶稣萨尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-148", "champion": "雷克纳拜尔星", "cup_champion": "锡萨拉火车头", "runner_up": "阿登豪森普鲁士", "third_place": "湾区联合国铁", "second_cup": "锡萨拉火车头", "third_cup": "1/2耶稣萨尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-149", "champion": "湾区联合国铁", "cup_champion": "雷克纳拜尔星", "runner_up": "阿登豪森普鲁士", "third_place": "锡萨拉火车头", "second_cup": "雷克纳拜尔星", "third_cup": "琅琊凤鸣", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-150", "champion": "锡萨拉火车头", "cup_champion": "阿登豪森普鲁士", "runner_up": "湾区联合国铁", "third_place": "阿登豪森普鲁士", "second_cup": "雷克纳拜尔星", "third_cup": "琅琊凤鸣", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-151", "champion": "阿登豪森普鲁士", "cup_champion": "锡萨拉火车头", "runner_up": "锡萨拉火车头", "third_place": "雷克纳拜尔星", "second_cup": "1/2耶稣萨尔", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-152", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "锡萨拉火车头", "third_place": "SWU", "second_cup": "雷克纳拜尔星", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-153", "champion": "阿登豪森普鲁士", "cup_champion": "湾区联合国铁", "runner_up": "湾区联合国铁", "third_place": "SWU", "second_cup": "锡萨拉火车头", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-154", "champion": "SWU", "cup_champion": "RDP", "runner_up": "锡萨拉火车头", "third_place": "阿登豪森普鲁士", "second_cup": "RDP", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-155", "champion": "1/2耶稣萨尔", "cup_champion": "SWU", "runner_up": "RDP", "third_place": "湾区联合国铁", "second_cup": "阿登豪森普鲁士", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-156", "champion": "卡山星链", "cup_champion": "SWU", "runner_up": "阿登豪森普鲁士", "third_place": "SWU", "second_cup": "锡萨拉火车头", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-157", "champion": "阿登豪森普鲁士", "cup_champion": "阿登豪森普鲁士", "runner_up": "SWU", "third_place": "阿登豪森普鲁士", "second_cup": "RDP", "third_cup": "湾区联合国铁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-158", "champion": "锡萨拉火车头", "cup_champion": "锡萨拉火车头", "runner_up": "阿登豪森普鲁士", "third_place": "SWU", "second_cup": "卡山克苏鲁", "third_cup": "英华斯力", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-159", "champion": "湾区联合国铁", "cup_champion": "锡萨拉火车头", "runner_up": "SWU", "third_place": "格拉菲卡机革", "second_cup": "卡山星链", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-160", "champion": "湾区联合国铁", "cup_champion": "1/2耶稣萨尔", "runner_up": "格拉菲卡机革", "third_place": "卡山克苏鲁", "second_cup": "湾区联合国铁", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-161", "champion": "锡萨拉火车头", "cup_champion": "格拉菲卡机革", "runner_up": "格拉菲卡机革", "third_place": "湾区联合国铁", "second_cup": "阿登豪森普鲁士", "third_cup": "人民红旗", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-162", "champion": "锡萨拉火车头", "cup_champion": "锡萨拉火车头", "runner_up": "KFC", "third_place": "SPO", "second_cup": "锡萨拉火车头", "third_cup": "圣城信徒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-163", "champion": "RDP", "cup_champion": "阿登豪森普鲁士", "runner_up": "KFC", "third_place": "成川中央矿大", "second_cup": "全州市民", "third_cup": "人民红旗", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-164", "champion": "1/2耶稣萨尔", "cup_champion": "全州市民", "runner_up": "SWU", "third_place": "成川中央矿大", "second_cup": "中央字节跳动", "third_cup": "格拉菲卡机革", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-165", "champion": "SWU", "cup_champion": "穆罗泰之队", "runner_up": "湾区喃咕", "third_place": "锡萨拉火车头", "second_cup": "雷克纳拜尔星", "third_cup": "中央字节跳动", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-166", "champion": "SWU", "cup_champion": "全州市民", "runner_up": "锡萨拉火车头", "third_place": "SPO", "second_cup": "成川中央矿大", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-167", "champion": "圣城信徒", "cup_champion": "KFC", "runner_up": "格拉菲卡机革", "third_place": "全州市民", "second_cup": "SWU", "third_cup": "中央字节跳动", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-168", "champion": "SWU", "cup_champion": "锡萨拉火车头", "runner_up": "格拉菲卡机革", "third_place": "雷克纳拜尔星", "second_cup": "全州龙", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-169", "champion": "阿登豪森普鲁士", "cup_champion": "1/2耶稣萨尔", "runner_up": "格拉菲卡机革", "third_place": "SPO", "second_cup": "湾区联合国铁", "third_cup": "中央字节跳动", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-170", "champion": "RDP", "cup_champion": "格拉菲卡机革", "runner_up": "湾区联合国铁", "third_place": "圣城信徒", "second_cup": "SPO", "third_cup": "中央字节跳动", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-171", "champion": "湾区联合国铁", "cup_champion": "SWU", "runner_up": "格拉菲卡机革", "third_place": "湾区联合国铁", "second_cup": "SPO", "third_cup": "英华斯力", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-172", "champion": "1/2耶稣萨尔", "cup_champion": "卡山克苏鲁", "runner_up": "格拉菲卡机革", "third_place": "RDP", "second_cup": "湾区联合国铁", "third_cup": "湾区喃咕", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-173", "champion": "SWU", "cup_champion": "1/2耶稣萨尔", "runner_up": "卡山克苏鲁", "third_place": "SWU", "second_cup": "格拉菲卡机革", "third_cup": "全州市民", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-174", "champion": "湾区联合国铁", "cup_champion": "格拉菲卡机革", "runner_up": "格拉菲卡机革", "third_place": "湾区喃咕", "second_cup": "RDP", "third_cup": "全州市民", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-175", "champion": "阿登豪森普鲁士", "cup_champion": "SWU", "runner_up": "湾区联合国铁", "third_place": "格拉菲卡机革", "second_cup": "锡萨拉火车头", "third_cup": "RDP", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-176", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "阿登豪森普鲁士", "third_place": "卡山星链", "second_cup": "穆罗泰之队", "third_cup": "格拉菲卡机革", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-177", "champion": "1/2耶稣萨尔", "cup_champion": "SWU", "runner_up": "阿登豪森普鲁士", "third_place": "锡萨拉火车头", "second_cup": "琅琊凤鸣", "third_cup": "海神港", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-178", "champion": "SWU", "cup_champion": "湾区联合国铁", "runner_up": "SWU", "third_place": "英华斯力", "second_cup": "RDP", "third_cup": "卡山星链", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-179", "champion": "锡萨拉火车头", "cup_champion": "SWU", "runner_up": "阿登豪森普鲁士", "third_place": "维尔图钢管", "second_cup": "SWU", "third_cup": "卡山克苏鲁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-180", "champion": "SWU", "cup_champion": "阿登豪森普鲁士", "runner_up": "SWU", "third_place": "锡萨拉火车头", "second_cup": "RDP", "third_cup": "维尔图钢管", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-181", "champion": "锡萨拉火车头", "cup_champion": "阿登豪森普鲁士", "runner_up": "湾区联合国铁", "third_place": "维尔图钢管", "second_cup": "海神港", "third_cup": "哈古尔克力量", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-182", "champion": "SWU", "cup_champion": "湾区联合国铁", "runner_up": "锡萨拉火车头", "third_place": "SWU", "second_cup": "圣天大", "third_cup": "格拉菲卡机革", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-183", "champion": "阿登豪森普鲁士", "cup_champion": "SWU", "runner_up": "SWU", "third_place": "RDP", "second_cup": "卡山克苏鲁", "third_cup": "穆罗泰之队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-184", "champion": "湾区联合国铁", "cup_champion": "SWU", "runner_up": "锡萨拉火车头", "third_place": "格拉菲卡机革", "second_cup": "琅琊凤鸣", "third_cup": "RDP", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-185", "champion": "阿登豪森普鲁士", "cup_champion": "阿登豪森普鲁士", "runner_up": "锡萨拉火车头", "third_place": "格拉菲卡机革", "second_cup": "卡山星链", "third_cup": "卡山克苏鲁", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-186", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "格拉菲卡机革", "third_place": "RDP", "second_cup": "SWU", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-187", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "SWU", "third_place": "锡萨拉火车头", "second_cup": "RDP", "third_cup": "SPO", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-188", "champion": "哈古尔克力量", "cup_champion": "SWU", "runner_up": "锡萨拉火车头", "third_place": "SPO", "second_cup": "卡山克苏鲁", "third_cup": "1/2耶稣萨尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-189", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "锡萨拉火车头", "third_place": "卡山克苏鲁", "second_cup": "卡山星链", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-190", "champion": "湾区联合国铁", "cup_champion": "圣城信徒", "runner_up": "霍纳尔银河", "third_place": "RDP", "second_cup": "东高地之队", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-191", "champion": "SWU", "cup_champion": "成川中央矿大", "runner_up": "RDP", "third_place": "雷克纳拜尔星", "second_cup": "KFC", "third_cup": "雷神港基尔", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-192", "champion": "SWU", "cup_champion": "东高地之队", "runner_up": "穆罗泰之队", "third_place": "RDP", "second_cup": "KFC", "third_cup": "全州市民", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-193", "champion": "阿登豪森普鲁士", "cup_champion": "穆罗泰之队", "runner_up": "格拉菲卡机革", "third_place": "SWU", "second_cup": "锡萨拉火车头", "third_cup": "全州市民", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-194", "champion": "雷神港基尔", "cup_champion": "圣天大", "runner_up": "穆罗泰之队", "third_place": "RDP", "second_cup": "琅琊凤鸣", "third_cup": "东高地之队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-195", "champion": "湾区联合国铁", "cup_champion": "穆罗泰之队", "runner_up": "海神港", "third_place": "雷克纳拜尔星", "second_cup": "全州市民", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-196", "champion": "圣天大", "cup_champion": "RDP", "runner_up": "雷克纳拜尔星", "third_place": "RDP", "second_cup": "锡萨拉火车头", "third_cup": "东高地之队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-197", "champion": "阿登豪森普鲁士", "cup_champion": "圣天大", "runner_up": "湾区联合国铁", "third_place": "RDP", "second_cup": "东高地之队", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-198", "champion": "维尔图钢管", "cup_champion": "格拉菲卡机革", "runner_up": "格拉菲卡机革", "third_place": "卡山克苏鲁", "second_cup": "SWU", "third_cup": "穆罗泰之队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-199", "champion": "湾区联合国铁", "cup_champion": "阿登豪森普鲁士", "runner_up": "雷克纳拜尔星", "third_place": "SWU", "second_cup": "穆罗泰之队", "third_cup": "琅琊凤鸣", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-200", "champion": "格拉菲卡机革", "cup_champion": "阿登豪森普鲁士", "runner_up": "阿登豪森普鲁士", "third_place": "维尔图钢管", "second_cup": "格拉菲卡机革", "third_cup": "汉阳队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-201", "champion": "KFC", "cup_champion": "维尔图钢管", "runner_up": "维尔图钢管", "third_place": "阿登豪森普鲁士", "second_cup": "汉阳队", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-202", "champion": "哈古尔克力量", "cup_champion": "维尔图钢管", "runner_up": "卡山克苏鲁", "third_place": "维尔图钢管", "second_cup": "成川北大荒", "third_cup": "阿登豪森普鲁士", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-203", "champion": "湾区联合国铁", "cup_champion": "中央字节跳动", "runner_up": "SPO", "third_place": "阿登豪森普鲁士", "second_cup": "RDP", "third_cup": "成川中央矿大", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-204", "champion": "中央字节跳动", "cup_champion": "中央字节跳动", "runner_up": "SPO", "third_place": "湾区联合国铁", "second_cup": "SWU", "third_cup": "汉阳队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-205", "champion": "RDP", "cup_champion": "全州龙", "runner_up": "中央字节跳动", "third_place": "湾区联合国铁", "second_cup": "SWU", "third_cup": "SPO", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-206", "champion": "湾区联合国铁", "cup_champion": "RDP", "runner_up": "中央字节跳动", "third_place": "阿登豪森普鲁士", "second_cup": "雷克纳拜尔星", "third_cup": "海神港", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-207", "champion": "湾区联合国铁", "cup_champion": "中央字节跳动", "runner_up": "格拉菲卡机革", "third_place": "穆罗泰之队", "second_cup": "1/2耶稣萨尔", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-208", "champion": "雷神港基尔", "cup_champion": "湾区联合国铁", "runner_up": "阿登豪森普鲁士", "third_place": "SWU", "second_cup": "KFC", "third_cup": "哈古尔克力量", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-209", "champion": "RDP", "cup_champion": "RDP", "runner_up": "阿登豪森普鲁士", "third_place": "1/2耶稣萨尔", "second_cup": "雷神港基尔", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-210", "champion": "RDP", "cup_champion": "RDP", "runner_up": "阿登豪森普鲁士", "third_place": "穆罗泰之队", "second_cup": "格拉菲卡机革", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-211", "champion": "全州市民", "cup_champion": "RDP", "runner_up": "湾区联合国铁", "third_place": "锡萨拉火车头", "second_cup": "雷克纳拜尔星", "third_cup": "成川北大荒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-212", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "阿登豪森普鲁士", "third_place": "锡萨拉火车头", "second_cup": "哈古尔克力量", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-213", "champion": "RDP", "cup_champion": "阿登豪森普鲁士", "runner_up": "湾区联合国铁", "third_place": "成川北大荒", "second_cup": "锡萨拉火车头", "third_cup": "SWU", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-214", "champion": "湾区联合国铁", "cup_champion": "湾区联合国铁", "runner_up": "阿登豪森普鲁士", "third_place": "1/2耶稣萨尔", "second_cup": "SWU", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-215", "champion": "RDP", "cup_champion": "雷神港基尔", "runner_up": "KFC", "third_place": "锡萨拉火车头", "second_cup": "SPO", "third_cup": "成川中央矿大", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-216", "champion": "RDP", "cup_champion": "KFC", "runner_up": "锡萨拉火车头", "third_place": "SPO", "second_cup": "海神港", "third_cup": "穆罗泰之队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-217", "champion": "湾区联合国铁", "cup_champion": "海军大学", "runner_up": "雷克纳拜尔星", "third_place": "KFC", "second_cup": "圣天大", "third_cup": "穆罗泰之队", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-218", "champion": "湾区联合国铁", "cup_champion": "汉阳队", "runner_up": "海军大学", "third_place": "1/2耶稣萨尔", "second_cup": "东高地之队", "third_cup": "圣城信徒", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-219", "champion": "湾区联合国铁", "cup_champion": "海军大学", "runner_up": "雷克纳拜尔星", "third_place": "KFC", "second_cup": "成川中央矿大", "third_cup": "圣天大", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-220", "champion": "阿登豪森普鲁士", "cup_champion": "RDP", "runner_up": "湾区联合国铁", "third_place": "SWU", "second_cup": "阿登豪森普鲁士", "third_cup": "锡萨拉火车头", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-221", "champion": "湾区联合国铁", "cup_champion": "锡萨拉火车头", "runner_up": "SWU", "third_place": "成川北大荒", "second_cup": "阿登豪森普鲁士", "third_cup": "雷克纳拜尔星", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-222", "champion": "湾区联合国铁", "cup_champion": "维尔图钢管", "runner_up": "阿登豪森普鲁士", "third_place": "维尔图钢管", "second_cup": "SWU", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-223", "champion": "锡萨拉火车头", "cup_champion": "维尔图钢管", "runner_up": "维尔图钢管", "third_place": "锡萨拉火车头", "second_cup": "圣城信徒", "third_cup": "KFC", "type": "实况萨特", "note": "", "detail": ""}, {"season": "S-224", "champion": "KFC", "cup_champion": "湾区联合国铁", "runner_up": "SWU", "third_place": "五月花", "second_cup": "圣城信徒", "third_cup": "/", "type": "实况萨特", "note": "", "detail": ""}, {"season": "109", "champion": "流浪者", "cup_champion": "坎布尔新吕伐登", "runner_up": "诺维奇港", "third_place": "坎布尔新吕伐登", "second_cup": "马雷克青春之城", "third_cup": "诺维奇港", "type": "加西亚", "note": "", "detail": ""}, {"season": "110", "champion": "诺维奇港", "cup_champion": "首都守护者", "runner_up": "马雷克青春之城", "third_place": "首都守护者", "second_cup": "东木联合", "third_cup": "马雷克青春之城", "type": "加西亚", "note": "", "detail": ""}];
+
+        const typeColors = {
+            '实况萨特': 'from-blue-500 to-indigo-600',
+            '实况中国': 'from-red-500 to-rose-600',
+            'FIFA中国': 'from-emerald-500 to-teal-600',
+            '巴新联赛': 'from-amber-500 to-orange-600',
+            '朝鲜联赛': 'from-slate-500 to-gray-600',
+            '实况香港': 'from-purple-500 to-violet-600',
+            '范特西': 'from-pink-500 to-rose-600',
+            '加西亚': 'from-cyan-500 to-blue-600',
+            '中亚联赛': 'from-lime-500 to-green-600',
+            '马恩联赛': 'from-amber-400 to-yellow-600'
+        };
+
+        let currentFilter = 'all';
+        let currentSeason = null;
+        let isWideLayout = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLayout = localStorage.getItem('ofc-layout');
+            if (savedLayout === 'wide') {
+                isWideLayout = true;
+                applyLayout();
+            }
+
+            renderFilterButtons();
+            renderSeasons();
+        });
+
+        function toggleLayout() {
+            isWideLayout = !isWideLayout;
+            applyLayout();
+            localStorage.setItem('ofc-layout', isWideLayout ? 'wide' : 'narrow');
+        }
+
+        function applyLayout() {
+            const container = document.getElementById('app-container');
+            const btnText = document.getElementById('layout-text');
+
+            if (isWideLayout) {
+                container.classList.remove('layout-narrow');
+                container.classList.add('layout-wide');
+                if (btnText) btnText.textContent = '竖屏';
+            } else {
+                container.classList.remove('layout-wide');
+                container.classList.add('layout-narrow');
+                if (btnText) btnText.textContent = '宽屏';
+            }
+        }
+
+        function renderFilterButtons() {
+            const types = [...new Set(seasonsData.map(s => s.type))];
+            const container = document.getElementById('filter-container');
+
+            types.forEach(type => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-slate-300 whitespace-nowrap transition-all hover:bg-white/20';
+                btn.textContent = type;
+                btn.dataset.filter = type;
+                btn.onclick = () => setFilter(type);
+                container.appendChild(btn);
+            });
+
+            document.querySelector('[data-filter="all"]').onclick = () => setFilter('all');
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === filter) {
+                    btn.className = 'filter-btn active px-4 py-1.5 rounded-full text-xs font-medium bg-white text-slate-900 whitespace-nowrap transition-all';
+                } else {
+                    btn.className = 'filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-slate-300 whitespace-nowrap transition-all hover:bg-white/20';
+                }
+            });
+            renderSeasons();
+        }
+
+        function renderSeasons() {
+            const grid = document.getElementById('seasons-grid');
+            const empty = document.getElementById('empty-state');
+            grid.innerHTML = '';
+
+            const filtered = currentFilter === 'all' 
+                ? seasonsData 
+                : seasonsData.filter(s => s.type === currentFilter);
+
+            if (filtered.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            } else {
+                empty.classList.add('hidden');
+            }
+
+            filtered.forEach(season => {
+                const card = createSeasonCard(season);
+                grid.appendChild(card);
+            });
+        }
+
+        function createSeasonCard(season) {
+            const div = document.createElement('div');
+            div.className = 'season-card glass-card rounded-2xl p-4 cursor-pointer relative overflow-hidden';
+            div.onclick = () => openModal(season);
+
+            const gradient = typeColors[season.type] || 'from-slate-500 to-gray-600';
+
+            div.innerHTML = `
+                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${gradient} opacity-20 blur-2xl rounded-full -mr-10 -mt-10"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r ${gradient} text-white">
+                            ${season.type}
+                        </span>
+                    </div>
+                    <div class="text-xl font-black text-white mb-3 leading-tight">${season.season}</div>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs">👑</span>
+                            <span class="text-xs text-slate-300 truncate flex-1">${season.champion || '-'}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs">🏆</span>
+                            <span class="text-xs text-slate-400 truncate flex-1">${season.cup_champion || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function openModal(season) {
+            currentSeason = season;
+            document.getElementById('modal-season').textContent = season.season;
+            document.getElementById('modal-type').textContent = season.type;
+            document.getElementById('modal-champion').textContent = season.champion || '未记录';
+            document.getElementById('modal-cup').textContent = season.cup_champion || '未记录';
+            document.getElementById('modal-runner').textContent = season.runner_up || '-';
+            document.getElementById('modal-third').textContent = season.third_place || '-';
+            document.getElementById('modal-cup2').textContent = season.second_cup || '-';
+            document.getElementById('modal-cup3').textContent = season.third_cup || '-';
+
+            const noteSection = document.getElementById('modal-note-section');
+            if (season.note && season.note.trim()) {
+                document.getElementById('modal-note').textContent = season.note;
+                noteSection.classList.remove('hidden');
+            } else {
+                noteSection.classList.add('hidden');
+            }
+
+            const detailSection = document.getElementById('modal-detail-section');
+            if (season.detail && season.detail.trim()) {
+                document.getElementById('modal-detail').textContent = season.detail;
+                detailSection.classList.remove('hidden');
+            } else {
+                detailSection.classList.add('hidden');
+            }
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        async function downloadPNG() {
+            const element = document.getElementById('capture-area');
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+
+            try {
+                downloadBtn.innerHTML = '<span class="animate-spin">⏳</span> 生成中...';
+                downloadBtn.disabled = true;
+
+                // 使用原生CSS尺寸，让html2canvas自动计算高度
+                const canvas = await html2canvas(element, {
+                    scale: 3,
+                    backgroundColor: '#0f172a',
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true,
+                    // 不设置固定宽高，让html2canvas根据内容自动计算
+                    width: element.offsetWidth,
+                    height: element.offsetHeight,
+                    windowWidth: element.offsetWidth,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0,
+                    // 确保捕获所有内容
+                    onclone: function(clonedDoc) {
+                        const clonedEl = clonedDoc.getElementById('capture-area');
+                        clonedEl.style.maxHeight = 'none';
+                        clonedEl.style.height = 'auto';
+                        clonedEl.style.overflow = 'visible';
+                    }
+                });
+
+                const link = document.createElement('a');
+                link.download = `OFC-${currentSeason.season}-${currentSeason.type}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+
+            } catch (err) {
+                console.error('生成图片失败:', err);
+                alert('生成图片失败，请重试');
+            } finally {
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            }
+        }
+
+        document.querySelector('.detail-modal').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html>
