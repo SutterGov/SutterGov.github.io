@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>萨特足球数据库 - 球队信息卡生成器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0a0e1a;
+            --card-bg: rgba(16, 20, 35, 0.98);
+            --accent-gold: #d4af37;
+            --accent-blue: #1e3a5f;
+            --growth-green: #4ade80;
+            --text-primary: #f0f0f0;
+            --text-secondary: #8b92a8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(30, 58, 95, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.08) 0%, transparent 40%);
+        }
+
+        /* 控制栏 */
+        .control-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 1rem 0.8rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            text-align: center;
+            letter-spacing: 3px;
+            font-weight: 600;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+        }
+
+        .file-label {
+            display: block;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, rgba(30, 58, 95, 0.8), rgba(10, 14, 26, 0.9));
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            text-align: center;
+            color: var(--accent-gold);
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* 黑底白字下拉框 */
+        .team-selector {
+            width: 100%;
+            padding: 0.8rem;
+            background: #000;
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23d4af37' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.8rem center;
+            padding-right: 2.2rem;
+        }
+
+        .team-selector option {
+            background: #000;
+            color: #fff;
+            padding: 0.5rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, var(--accent-gold), #b8941f);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+            padding-bottom: 100px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* 球队卡片 */
+        .team-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(30, 58, 95, 0.9), rgba(10, 14, 26, 0.95));
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
+        .team-name {
+            font-family: 'Noto Serif SC', 'SimSun', serif;
+            font-size: 2rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+            letter-spacing: 4px;
+            margin-bottom: 0.6rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.3;
+        }
+
+        .team-manager {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.2rem 0.6rem;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+        }
+
+        /* 统计网格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-item {
+            background: rgba(16, 20, 35, 0.8);
+            padding: 1rem 0.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.3rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 球员列表 */
+        .squad-section {
+            padding: 1rem 0;
+        }
+
+        .section-header {
+            padding: 0.5rem 1rem 1rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .section-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .player-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .player-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-item {
+            display: grid;
+            grid-template-columns: 65px 1fr auto;
+            gap: 0.6rem;
+            padding: 0.7rem 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            align-items: center;
+            min-height: 75px;
+        }
+
+        .player-item:nth-child(even) {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* 位置与潜力标记 */
+        .player-position {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .potential-star {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            margin-bottom: 0.15rem;
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+            line-height: 1;
+        }
+
+        .pos-main {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            line-height: 1.2;
+        }
+
+        .pos-sub {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            line-height: 1.2;
+            max-width: 65px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 0.1rem;
+        }
+
+        /* 球员信息中部 */
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            overflow: hidden;
+        }
+
+        .player-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.5px;
+        }
+
+        .player-meta {
+            display: flex;
+            gap: 0.6rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* 合同与能力值区域 */
+        .player-contracts {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.15rem;
+            font-size: 0.65rem;
+            min-width: 90px;
+        }
+
+        .ca-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .next-ca {
+            color: var(--growth-green);
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Noto Serif SC', serif;
+            display: flex;
+            align-items: center;
+            gap: 0.1rem;
+        }
+
+        .next-ca::before {
+            content: '▲';
+            font-size: 0.6rem;
+        }
+
+        .ca-badge {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        .pa-text {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+
+        .contract-row {
+            display: flex;
+            gap: 0.4rem;
+            align-items: baseline;
+            justify-content: flex-end;
+        }
+
+        .money-tag {
+            color: #7ec8e3;
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 500;
+        }
+
+        .clause-tag {
+            color: #ff9f43;
+            font-size: 0.6rem;
+        }
+
+        .date-tag {
+            color: #a8a8a8;
+            font-size: 0.6rem;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            text-align: center;
+            background: rgba(0,0,0,0.9);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--accent-gold);
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(212, 175, 55, 0.3);
+            border-top-color: var(--accent-gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 导出层 */
+        .export-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 300;
+            overflow-y: auto;
+        }
+
+        .export-overlay.active {
+            display: block;
+        }
+
+        .export-container {
+            padding: 20px;
+            min-height: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .export-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem;
+            background: rgba(10, 14, 26, 0.95);
+            border-top: 1px solid var(--accent-gold);
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    
+    <div class="control-header">
+        <div class="header-content">
+            <h1>萨特共和国足球数据库</h1>
+            <div class="file-input-wrapper">
+                <input type="file" id="fileInput" accept=".xlsx,.xls" />
+                <label for="fileInput" class="file-label" id="fileLabel">
+                    📁 上传 GarciaDatabase26.xlsx
+                </label>
+            </div>
+            <select id="teamSelect" class="team-selector" disabled>
+                <option value="">请选择球队查看详情...</option>
+            </select>
+            <button id="downloadBtn" class="action-btn" disabled>
+                📸 生成完整球队卡 (PNG)
+            </button>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div style="color: var(--accent-gold); font-size: 0.9rem;">正在解析数据库...</div>
+    </div>
+
+    <div class="main-container" id="mainContainer">
+        <div class="empty-state" id="emptyState">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;"><请上传Excel文件并选择球队/></p>
+            <p style="font-size: 0.75rem; opacity: 0.6;">系统将自动合并球员与球队数据</p>
+        </div>
+        <div id="cardContainer" style="display: none;"></div>
+    </div>
+
+    <div class="export-overlay" id="exportOverlay">
+        <div class="export-container" id="exportContainer"></div>
+        <div class="export-actions">
+            <button class="action-btn btn-secondary" style="flex: 1; max-width: 120px;" onclick="closeExport()">取消</button>
+            <button class="action-btn" style="flex: 2; max-width: 200px;" onclick="confirmDownload()">保存到相册</button>
+        </div>
+    </div>
+
+    <script>
+        let workbookData = null;
+        let teamsData = {};
+        let currentTeam = null;
+
+        document.getElementById('fileInput').addEventListener('change', handleFile);
+        
+        async function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('fileLabel').textContent = `📄 ${file.name}`;
+            
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                workbookData = XLSX.read(arrayBuffer, { type: 'array' });
+                
+                parseData();
+                
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('teamSelect').disabled = false;
+                document.getElementById('fileLabel').textContent = `✅ ${file.name} 已加载`;
+            } catch (err) {
+                console.error('文件解析错误:', err);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('fileLabel').textContent = `❌ 文件解析失败，请重试`;
+                alert('Excel文件解析失败，请确保上传的是有效的.xlsx文件');
+            }
+        }
+
+        function parseData() {
+            // 获取Sheet - 第一个假设是球员，第二个是球队
+            const playerSheetName = workbookData.SheetNames.find(name => name.includes('球员')) || workbookData.SheetNames[0];
+            const teamSheetName = workbookData.SheetNames.find(name => name.includes('球队')) || workbookData.SheetNames[1] || workbookData.SheetNames[0];
+            
+            const playerSheet = workbookData.Sheets[playerSheetName];
+            const teamSheet = workbookData.Sheets[teamSheetName];
+            
+            if (!playerSheet) {
+                throw new Error('找不到球员数据表');
+            }
+            
+            const players = XLSX.utils.sheet_to_json(playerSheet, { header: 1 });
+            const teams = teamSheet ? XLSX.utils.sheet_to_json(teamSheet, { header: 1 }) : [];
+            
+            // 解析球队信息
+            const teamInfoMap = {};
+            if (teams.length > 0) {
+                for (let i = 2; i < teams.length; i++) {
+                    const row = teams[i];
+                    if (row[0] && row[0] !== '球队名') {
+                        const teamName = row[0].toString().trim();
+                        if (teamName) {
+                            teamInfoMap[teamName] = {
+                                name: teamName,
+                                manager: row[2] || '未知',
+                                home: row[3] || '-',
+                                capacity: parseNumber(row[4]),
+                                avgAttendance: parseNumber(row[5]),
+                                attendanceRate: parseNumber(row[6]),
+                                revenue: parseNumber(row[7]),
+                                funds: parseNumber(row[8]),
+                                sponsor1: row[9] || '-',
+                                sponsor2: row[10] || '-',
+                                youth: row[11] || '-',
+                                notes: row[12] || ''
+                            };
+                        }
+                    }
+                }
+            }
+            
+            // 解析球员数据
+            const playerTeamMap = {};
+            
+            for (let i = 2; i < players.length; i++) {
+                const row = players[i];
+                if (!row[0] || row[0] === '球员名称') continue;
+                
+                const positionStr = row[7] ? row[7].toString() : '-';
+                const positions = positionStr.split(/[,，、]/).map(p => p.trim()).filter(p => p);
+                
+                const player = {
+                    name: row[0],
+                    age: parseNumber(row[1]),
+                    nationality: row[2] || '-',
+                    height: parseNumber(row[3]),
+                    weight: parseNumber(row[4]),
+                    ca: parseNumber(row[5]),
+                    pa: parseNumber(row[6]),
+                    mainPosition: positions[0] || '-',
+                    subPositions: positions.slice(1),
+                    salary: parseNumber(row[8]),
+                    contractEnd: formatContractDate(row[10]),
+                    clause: parseNumber(row[11])
+                };
+                
+                const teamName = row[9] ? row[9].toString().trim() : '自由球员';
+                if (!playerTeamMap[teamName]) {
+                    playerTeamMap[teamName] = [];
+                }
+                playerTeamMap[teamName].push(player);
+            }
+            
+            // 合并球队信息和球员数据
+            const allTeamNames = new Set([...Object.keys(teamInfoMap), ...Object.keys(playerTeamMap)]);
+            teamsData = {};
+            
+            allTeamNames.forEach(name => {
+                const teamPlayers = playerTeamMap[name] || [];
+                const info = teamInfoMap[name] || {
+                    name: name,
+                    manager: '-',
+                    home: '-',
+                    capacity: 0,
+                    funds: 0,
+                    avgAttendance: 0,
+                    attendanceRate: 0,
+                    revenue: 0
+                };
+                
+                // 计算统计数据
+                const avgCA = teamPlayers.length ? Math.round(teamPlayers.reduce((a, b) => a + b.ca, 0) / teamPlayers.length) : 0;
+                const avgPA = teamPlayers.length ? Math.round(teamPlayers.reduce((a, b) => a + b.pa, 0) / teamPlayers.length) : 0;
+                const avgAge = teamPlayers.length ? (teamPlayers.reduce((a, b) => a + b.age, 0) / teamPlayers.length).toFixed(1) : 0;
+                const totalSalary = teamPlayers.reduce((a, b) => a + b.salary, 0);
+                
+                teamsData[name] = {
+                    ...info,
+                    players: teamPlayers.sort((a, b) => b.ca - a.ca),
+                    stats: {
+                        playerCount: teamPlayers.length,
+                        avgCA,
+                        avgPA,
+                        avgAge,
+                        totalSalary
+                    }
+                };
+            });
+            
+            // 填充下拉选择器
+            const select = document.getElementById('teamSelect');
+            select.innerHTML = '<option value="">请选择球队查看详情...</option>';
+            Object.keys(teamsData).sort().forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = `${name} (${teamsData[name].players.length}人)`;
+                select.appendChild(option);
+            });
+        }
+
+        function parseNumber(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            const clean = val.toString().replace(/[^\d.-]/g, '');
+            const num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function formatContractDate(val) {
+            if (!val) return '-';
+            const str = val.toString();
+            if (str.includes('.') && str.length <= 4) return `S${str}`;
+            return str;
+        }
+
+        // 精确工资显示，不四舍五入，保留所有小数
+        function formatMoneyExact(num) {
+            if (num === 0) return '€0';
+            if (num >= 10000) {
+                const val = num / 10000;
+                return '€' + val + 'w';
+            }
+            if (num >= 1000) {
+                const val = num / 1000;
+                return '€' + val + 'k';
+            }
+            return '€' + num;
+        }
+
+        document.getElementById('teamSelect').addEventListener('change', function(e) {
+            const teamName = e.target.value;
+            if (teamName && teamsData[teamName]) {
+                currentTeam = teamsData[teamName];
+                renderTeamCard(currentTeam);
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('cardContainer').style.display = 'block';
+                document.getElementById('downloadBtn').disabled = false;
+            } else {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('cardContainer').style.display = 'none';
+                document.getElementById('downloadBtn').disabled = true;
+            }
+        });
+
+        function renderTeamCard(team) {
+            const playersHtml = team.players.map(p => {
+                const subPosText = p.subPositions.join('、');
+                const hasClause = p.clause > 0;
+                
+                // 判断是否为潜力新星：27岁以下(不含27)且CA < PA
+                const isPotential = p.age < 27 && p.ca < p.pa;
+                const nextCA = isPotential ? Math.min(p.ca + 10, p.pa) : null;
+                
+                return `
+                    <div class="player-item">
+                        <div class="player-position">
+                            ${isPotential ? '<div class="potential-star">★</div>' : ''}
+                            <div class="pos-main">${p.mainPosition}</div>
+                            ${subPosText ? `<div class="pos-sub" title="${subPosText}">${subPosText}</div>` : '<div class="pos-sub">-</div>'}
+                        </div>
+                        <div class="player-info">
+                            <div class="player-name">${p.name}</div>
+                            <div class="player-meta">
+                                <span>${p.nationality}</span>
+                                <span>${p.age}岁</span>
+                                <span>${p.height}cm</span>
+                            </div>
+                        </div>
+                        <div class="player-contracts">
+                            <div class="ca-row">
+                                ${isPotential ? `<span class="next-ca" title="预计下赛季CA">${nextCA}</span>` : ''}
+                                <span class="ca-badge">${p.ca}</span>
+                                <span class="pa-text">/ ${p.pa}</span>
+                            </div>
+                            <div class="contract-row">
+                                <span class="money-tag">${formatMoneyExact(p.salary)}/年</span>
+                            </div>
+                            <div class="contract-row">
+                                <span class="clause-tag">违约金:${hasClause ? formatMoneyExact(p.clause) : '-'}</span>
+                                <span class="date-tag">${p.contractEnd}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const html = `
+                <div class="team-card" id="captureCard">
+                    <div class="card-header">
+                        <div class="team-name">${team.name}</div>
+                        <div class="team-manager">
+                            <span>主教练: ${team.manager}</span>
+                            <span class="badge">${team.home}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">${team.stats.playerCount}</div>
+                            <div class="stat-label">阵容人数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${team.stats.avgCA || '-'}</div>
+                            <div class="stat-label">平均CA</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${team.stats.avgPA || '-'}</div>
+                            <div class="stat-label">平均PA</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${team.stats.avgAge}</div>
+                            <div class="stat-label">平均年龄</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${team.capacity ? (team.capacity/10000).toFixed(1)+'w' : '-'}</div>
+                            <div class="stat-label">球场容量</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${formatMoneyExact(team.stats.totalSalary)}</div>
+                            <div class="stat-label">工资总额</div>
+                        </div>
+                    </div>
+
+                    <div class="squad-section">
+                        <div class="section-header">
+                            <div class="section-title">一线队阵容</div>
+                            <div class="player-count">共 ${team.players.length} 人 | ★标记为潜力新星</div>
+                        </div>
+                        <div class="player-list">
+                            ${playersHtml}
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 1rem; text-align: center; font-size: 0.7rem; color: var(--text-secondary); border-top: 1px solid rgba(212, 175, 55, 0.1); background: rgba(0,0,0,0.2);">
+                        萨特第二共和国足协官方数据 · SUTTER REPUBLIC II
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('cardContainer').innerHTML = html;
+        }
+
+        // 下载功能
+        document.getElementById('downloadBtn').addEventListener('click', async function() {
+            if (!currentTeam) return;
+            
+            this.disabled = true;
+            this.textContent = '生成中...';
+            
+            const exportContainer = document.getElementById('exportContainer');
+            exportContainer.innerHTML = '';
+            
+            const original = document.getElementById('captureCard');
+            const clone = original.cloneNode(true);
+            clone.style.width = '480px';
+            clone.style.margin = '0 auto';
+            exportContainer.appendChild(clone);
+            
+            document.getElementById('exportOverlay').classList.add('active');
+            
+            this.disabled = false;
+            this.textContent = '📸 生成完整球队卡 (PNG)';
+        });
+
+        function closeExport() {
+            document.getElementById('exportOverlay').classList.remove('active');
+        }
+
+        async function confirmDownload() {
+            const element = document.querySelector('#exportContainer .team-card');
+            if (!element) return;
+            
+            const btn = document.querySelector('.export-actions .action-btn:not(.btn-secondary)');
+            const originalText = btn.textContent;
+            btn.textContent = '处理中...';
+            btn.disabled = true;
+            
+            try {
+                const canvas = await html2canvas(element, {
+                    backgroundColor: '#0a0e1a',
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    height: element.scrollHeight,
+                    width: element.scrollWidth
+                });
+                
+                const link = document.createElement('a');
+                const timestamp = new Date().toLocaleDateString().replace(/\//g, '-');
+                link.download = `${currentTeam.name}_球队阵容卡_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                
+                closeExport();
+            } catch (err) {
+                console.error('Export failed:', err);
+                alert('生成失败，请重试');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
