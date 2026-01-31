@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特数位发展部导航站 | SUTTER DIGITAL NAVIGATION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0a1628;
+            --secondary-dark: #1a2a3e;
+            --accent-gold: #c9a227;
+            --accent-blue: #2563eb;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: rgba(201, 162, 39, 0.3);
+            --card-bg: rgba(26, 42, 62, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Serif SC', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, #0f172a 50%, var(--secondary-dark) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 顶部装饰条 */
+        .gov-header {
+            background: linear-gradient(90deg, var(--accent-gold) 0%, #d4af37 50%, var(--accent-gold) 100%);
+            height: 4px;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* 头部区域 */
+        header {
+            padding: 80px 20px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(201, 162, 39, 0.15) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .emblem {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--accent-gold), #d4af37);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 0 30px rgba(201, 162, 39, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* 搜索框 */
+        .search-container {
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(201, 162, 39, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 35px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 分类标题 */
+        .category {
+            margin-bottom: 40px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .category-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            position: relative;
+            padding-bottom: 5px;
+        }
+
+        .category-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-gold), transparent);
+        }
+
+        /* 网格布局 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            display: block;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-blue));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(201, 162, 39, 0.1);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(201, 162, 39, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            border: 1px solid rgba(201, 162, 39, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
+        .card-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            background: rgba(37, 99, 235, 0.2);
+            color: #60a5fa;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .footer-links {
+            margin-top: 10px;
+        }
+
+        .footer-links a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            margin: 0 10px;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* 无结果提示 */
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="gov-header"></div>
+
+    <header>
+        <div class="emblem">⚜️</div>
+        <h1>萨特数位发展部导航站</h1>
+        <div class="subtitle">SUTTER REPUBLIC II · DIGITAL GOVERNMENT PORTAL</div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="搜索政务系统、服务或文档...">
+            <span class="search-icon">🔍</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="noResults" class="no-results">
+            <p>未找到匹配的政务系统</p>
+        </div>
+
+        <!-- 公民身份与证件 -->
+        <div class="category" data-category="citizen">
+            <div class="category-header">
+                <span class="category-icon">🪪</span>
+                <h2 class="category-title">公民身份与证件服务</h2>
+            </div>
+            <div class="grid">
+                <a href="https://suttergov.github.io/passport.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🛂</div>
+                        <h3 class="card-title">萨特护照申领系统</h3>
+                    </div>
+                    <div class="card-desc">公民出国旅行证件申请、换发与补发在线办理</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>民籍司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/idcard.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🆔</div>
+                        <h3 class="card-title">萨特身份证申领系统</h3>
+                    </div>
+                    <div class="card-desc">国民身份证电子化申领、信息更新与挂失补办</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>民籍司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/citizenship.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">📜</div>
+                        <h3 class="card-title">萨特入籍证申领系统</h3>
+                    </div>
+                    <div class="card-desc">归化入籍申请、资格审查与证书签发</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>内政部</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/travelisence.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">✈️</div>
+                        <h3 class="card-title">萨特旅行证申领系统</h3>
+                    </div>
+                    <div class="card-desc">紧急情况旅行证件、难民旅行证等特殊证件申请</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>外交部</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 政府管理与外交 -->
+        <div class="category" data-category="government">
+            <div class="category-header">
+                <span class="category-icon">🏛️</span>
+                <h2 class="category-title">政府管理与外交事务</h2>
+            </div>
+            <div class="grid">
+                <a href="https://suttergov.github.io/Documentsystem.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">📋</div>
+                        <h3 class="card-title">萨特公文系统</h3>
+                    </div>
+                    <div class="card-desc">政府公文流转、审批与电子签章系统</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>文务司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/govgenerator.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🏗️</div>
+                        <h3 class="card-title">政府结构图生成器</h3>
+                    </div>
+                    <div class="card-desc">可视化政府机构组织图、部门架构设计工具</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>编修司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/congressgenerator.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">⚖️</div>
+                        <h3 class="card-title">国会席位示意图生成器</h3>
+                    </div>
+                    <div class="card-desc">议会席位分布图、政党比例可视化生成工具</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>议会司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/foreignaffair.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🤝</div>
+                        <h3 class="card-title">萨特建交国书生成器</h3>
+                    </div>
+                    <div class="card-desc">外交关系建立文书、国书格式生成与管理系统</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>外交司</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 交通与税务 -->
+        <div class="category" data-category="transport">
+            <div class="category-header">
+                <span class="category-icon">🚗</span>
+                <h2 class="category-title">交通与票务系统</h2>
+            </div>
+            <div class="grid">
+                <a href="https://suttergov.github.io/licenseplate.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🔢</div>
+                        <h3 class="card-title">萨特车牌申领系统</h3>
+                    </div>
+                    <div class="card-desc">机动车号牌申请、选号与登记注册服务</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>交管司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/busplate.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🚌</div>
+                        <h3 class="card-title">萨特汽车客运发票申报系统</h3>
+                    </div>
+                    <div class="card-desc">公共交通票据管理、报销凭证电子化申报</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>交通司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/newtrainbill.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🚄</div>
+                        <h3 class="card-title">萨特国铁报销系统</h3>
+                    </div>
+                    <div class="card-desc">国家铁路电子客票、差旅报销凭证生成</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>铁道司</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 足球与体育 -->
+        <div class="category" data-category="sports">
+            <div class="category-header">
+                <span class="category-icon">⚽</span>
+                <h2 class="category-title">足球与体育产业</h2>
+            </div>
+            <div class="grid">
+                <a href="https://suttergov.github.io/clubcard.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🏟️</div>
+                        <h3 class="card-title">球队信息卡生成系统</h3>
+                    </div>
+                    <div class="card-desc">职业足球俱乐部信息卡、球员资料可视化生成</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>足协</span>
+                    </div>
+                </a>
+
+                <a href="https://v6qt2crvgbsxo.ok.kimi.link/" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🎮</div>
+                        <h3 class="card-title">萨特足球经理模拟器</h3>
+                    </div>
+                    <div class="card-desc">足球俱乐部经营模拟、战术策略与球员管理系统</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>体育司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/footballhistorymuseum.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🏛️</div>
+                        <h3 class="card-title">萨特足球史线上博物馆</h3>
+                    </div>
+                    <div class="card-desc">足球历史档案、经典赛事回顾与数字展览馆</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>文资司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/leaguecalculator.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">📊</div>
+                        <h3 class="card-title">萨特球队声望计算器</h3>
+                    </div>
+                    <div class="card-desc">俱乐部声望评分、联赛系数计算与排名系统</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>足协</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 地图与地理 -->
+        <div class="category" data-category="maps">
+            <div class="category-header">
+                <span class="category-icon">🗺️</span>
+                <h2 class="category-title">地图与地理信息</h2>
+            </div>
+            <div class="grid">
+                <a href="https://suttergov.github.io/mappress.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🌍</div>
+                        <h3 class="card-title">世界地图系统</h3>
+                    </div>
+                    <div class="card-desc">超高质量世界地图查看、地理信息查询与打印</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>测绘司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/wikistyle.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">📍</div>
+                        <h3 class="card-title">维基风格地图生成器</h3>
+                    </div>
+                    <div class="card-desc">维基百科风格地图绘制、行政区划分与标注工具</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>编修司</span>
+                    </div>
+                </a>
+
+                <a href="https://suttergov.github.io/navigation.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">🌐</div>
+                        <h3 class="card-title">港澳台虚拟国导航</h3>
+                    </div>
+                    <div class="card-desc">虚拟国家社区导航、微国家项目目录与资源索引</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>外联司</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- 金融与经济 -->
+        <div class="category" data-category="finance">
+            <div class="category-header">
+                <span class="category-icon">💹</span>
+                <h2 class="category-title">金融与经济系统</h2>
+            </div>
+            <div class="grid">
+                <a href="https://suttergov.github.io/testchaugu.html" class="card" target="_blank">
+                    <div class="card-header">
+                        <div class="card-icon">📈</div>
+                        <h3 class="card-title">萨特炒股系统</h3>
+                    </div>
+                    <div class="card-desc">股票市场模拟、K线分析与投资组合管理</div>
+                    <div class="card-footer">
+                        <span class="status-badge">在线</span>
+                        <span>金管司</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 萨特第二共和国 · 数位发展部 | Sutter Republic II Ministry of Digital Development</p>
+        <div class="footer-links">
+            <a href="https://suttergov.github.io">政府主站</a>
+            <a href="#">隐私政策</a>
+            <a href="#">使用条款</a>
+            <a href="#">联系支持</a>
+        </div>
+    </footer>
+
+    <script>
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.card');
+            const categories = document.querySelectorAll('.category');
+            let hasResults = false;
+
+            cards.forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const desc = card.querySelector('.card-desc').textContent.toLowerCase();
+
+                if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                    card.style.display = 'block';
+                    hasResults = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // 如果没有匹配的分类，隐藏分类标题
+            categories.forEach(category => {
+                const visibleCards = category.querySelectorAll('.card[style*="block"]').length;
+                if (visibleCards === 0 && searchTerm !== '') {
+                    category.style.display = 'none';
+                } else {
+                    category.style.display = 'block';
+                }
+            });
+
+            // 显示/隐藏无结果提示
+            const noResults = document.getElementById('noResults');
+            if (!hasResults && searchTerm !== '') {
+                noResults.classList.add('show');
+            } else {
+                noResults.classList.remove('show');
+            }
+        });
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '/' && document.activeElement.id !== 'searchInput') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+    </script>
+</body>
+</html>
