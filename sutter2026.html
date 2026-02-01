@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特共和国综合介绍 | Sutter Republic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans SC', 'sans-serif'],
+                        serif: ['Noto Serif SC', 'serif'],
+                    },
+                    colors: {
+                        sutter: {
+                            red: '#dc2626',
+                            darkred: '#991b1b',
+                            blue: '#1e40af',
+                            gold: '#f59e0b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-primary: #fafaf9;
+            --bg-secondary: #f5f5f4;
+            --bg-card: #ffffff;
+            --text-primary: #1c1917;
+            --text-secondary: #57534e;
+            --accent: #dc2626;
+            --border: #e7e5e4;
+        }
+        
+        .dark {
+            --bg-primary: #0c0a09;
+            --bg-secondary: #1c1917;
+            --bg-card: #1c1917;
+            --text-primary: #fafaf9;
+            --text-secondary: #a8a29e;
+            --accent: #f87171;
+            --border: #292524;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -15px rgba(220, 38, 38, 0.15);
+        }
+        
+        .dark .card-hover:hover {
+            box-shadow: 0 20px 40px -15px rgba(220, 38, 38, 0.3);
+        }
+        
+        .text-secondary-custom {
+            color: var(--text-secondary);
+        }
+        
+        .accent-text {
+            color: var(--accent);
+        }
+        
+        .sutter-gradient {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #dc2626;
+            transition: width 0.3s;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .timeline-line {
+            background: linear-gradient(to bottom, #dc2626, #f59e0b);
+        }
+        
+        .province-tag {
+            transition: all 0.2s;
+        }
+        
+        .province-tag:hover {
+            transform: scale(1.05);
+        }
+        
+        .holiday-table th {
+            background-color: rgba(220, 38, 38, 0.1);
+        }
+        
+        .dark .holiday-table th {
+            background-color: rgba(220, 38, 38, 0.2);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+        }
+        
+        .flag-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .emblem-glow {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        .dark .emblem-glow {
+            filter: drop-shadow(0 4px 6px rgba(255, 255, 255, 0.1));
+        }
+        
+        @media (max-width: 768px) {
+            .nav-hidden {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-md border-b border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-950/90 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <!-- 国徽 -->
+                    <div class="relative group">
+                        <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-lg emblem-glow transition-transform group-hover:scale-105">
+                            <img src="https://suttergov.github.io/%E5%8D%81%E5%91%A8%E5%B9%B4%E7%BA%AA%E5%BF%B5.png" 
+                                 alt="萨特共和国国徽" 
+                                 class="w-full h-full object-cover"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="hidden w-full h-full items-center justify-center bg-stone-100 dark:bg-stone-800 text-red-600 font-bold text-lg">S</div>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full overflow-hidden border-2 border-white dark:border-stone-900 shadow-sm">
+                            <img src="https://suttergov.github.io/1500px-Naval_Flag_of_the_Kingdom_of_France_(Civil_Ensign).svg.png" 
+                                 alt="" 
+                                 class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold tracking-tight" data-zh="萨特共和国" data-zht="薩特共和國">萨特共和国</h1>
+                        <p class="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+                            Sutter Republic
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium overflow-x-auto">
+                    <a href="#overview" class="nav-link whitespace-nowrap" data-zh="国家概况" data-zht="國家概況">国家概况</a>
+                    <a href="#symbols" class="nav-link whitespace-nowrap" data-zh="国家象征" data-zht="國家象徵">国家象征</a>
+                    <a href="#provinces" class="nav-link whitespace-nowrap" data-zh="行政区划" data-zht="行政區劃">行政区划</a>
+                    <a href="#politics" class="nav-link whitespace-nowrap" data-zh="政治体制" data-zht="政治體制">政治体制</a>
+                    <a href="#diplomacy" class="nav-link whitespace-nowrap" data-zh="外交关系" data-zht="外交關係">外交关系</a>
+                    <a href="#citizens" class="nav-link whitespace-nowrap" data-zh="公民名录" data-zht="公民名錄">公民名录</a>
+                    <a href="#holidays" class="nav-link whitespace-nowrap" data-zh="法定假期" data-zht="法定假期">法定假期</a>
+                </nav>
+                
+                <div class="flex items-center gap-3">
+                    <!-- Language Toggle -->
+                    <button onclick="toggleLanguage()" class="flex items-center gap-2 px-4 py-2 rounded-full bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors text-sm font-medium">
+                        <span id="langText">简 / 繁</span>
+                    </button>
+                    
+                    <!-- Theme Toggle -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-full bg-stone-200 dark:bg-stone-800 hover:bg-stone-300 dark:hover:bg-stone-700 transition-colors">
+                        <svg class="w-5 h-5 hidden dark:block text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <svg class="w-5 h-5 block dark:hidden text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 24.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section with Flag -->
+    <section id="overview" class="relative overflow-hidden">
+        <div class="absolute inset-0 sutter-gradient opacity-5"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 relative">
+            <div class="grid lg:grid-cols-5 gap-8 items-center">
+                <!-- Left Content -->
+                <div class="lg:col-span-3 order-2 lg:order-1">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-xs font-bold mb-6">
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span data-zh="微型国家 · 2016年建国 · 2020年正式推演" data-zht="微型國家 · 2016年建國 · 2020年正式推演">微型国家 · 2016年建国 · 2020年正式推演</span>
+                    </div>
+                    <h2 class="text-4xl lg:text-5xl font-serif font-bold mb-6 leading-tight" data-zh="位于欧洲的微型国家" data-zht="位于歐洲的微型國家">
+                        位于欧洲的<br>微型国家
+                    </h2>
+                    <p class="text-lg text-secondary-custom mb-6 leading-relaxed" data-zh="萨特共和国，正式名称为萨特共和国，是宣称领土范围位于欧洲的微型国家。位于大不列颠及北爱尔兰联合王国南部、法国西部、里森堡西北部，为岛国。主要属于温带海洋性气候。" data-zht="薩特共和國，正式名稱為薩特共和國，是宣稱領土範圍位於歐洲的微型國家。位於大不列顛及北愛爾蘭聯合王國南部、法國西部、里森堡西北部，為島國。主要屬於溫帶海洋性氣候。">
+                        萨特共和国是宣称领土范围位于欧洲的微型国家。位于大不列颠及北爱尔兰联合王国南部、法国西部、里森堡西北部，主要属于温带海洋性气候。透过网络进行活动，使用AI进行推演。
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 text-sm font-medium border border-red-100 dark:border-red-800">
+                            <span class="mr-1">🏛️</span><span data-zh="联合微国家组织成员" data-zht="聯合微國家組織成員">联合微国家组织成员</span>
+                        </span>
+                        <span class="px-4 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium border border-blue-100 dark:border-blue-800">
+                            <span class="mr-1">🤝</span>I.M.C.A.成员
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Right Side - National Symbols -->
+                <div class="lg:col-span-2 order-1 lg:order-2 flex flex-col items-center justify-center">
+                    <!-- Flag Display -->
+                    <div class="relative w-full max-w-sm mb-6">
+                        <div class="aspect-[3/2] rounded-lg overflow-hidden flag-shadow border-4 border-white dark:border-stone-800 bg-white">
+                            <img src="https://suttergov.github.io/1500px-Naval_Flag_of_the_Kingdom_of_France_(Civil_Ensign).svg.png" 
+                                 alt="萨特共和国国旗" 
+                                 class="w-full h-full object-cover"
+                                 id="nationalFlag"
+                                 onerror="this.src=''; this.parentElement.classList.add('bg-red-600'); this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full text-white font-bold text-2xl\'>SUTTER</div>';">
+                        </div>
+                        <div class="absolute -bottom-3 left-1/2 transform -translate-x-1/2 px-4 py-1 bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-xs font-bold rounded-full shadow-lg whitespace-nowrap" data-zh="萨特共和国国旗" data-zht="薩特共和國國旗">
+                            萨特共和国国旗
+                        </div>
+                    </div>
+                    
+                    <!-- Emblem Display -->
+                    <div class="relative mt-4">
+                        <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-stone-800 shadow-xl bg-white">
+                            <img src="https://suttergov.github.io/%E5%8D%81%E5%91%A8%E5%B9%B4%E7%BA%AA%E5%BF%B5.png" 
+                                 alt="萨特共和国国徽" 
+                                 class="w-full h-full object-cover"
+                                 id="nationalEmblem"
+                                 onerror="this.style.display='none'; this.parentElement.classList.add('bg-red-600'); this.parentElement.innerHTML='<span class=\'flex items-center justify-center h-full text-white font-bold text-xl\'>S</span>';">
+                        </div>
+                        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 px-3 py-0.5 bg-red-600 text-white text-[10px] font-bold rounded-full whitespace-nowrap" data-zh="国徽" data-zht="國徽">
+                            国徽
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- National Symbols Detail Section -->
+    <section id="symbols" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-stone-50/50 dark:bg-stone-900/20">
+        <div class="text-center mb-10">
+            <h3 class="text-2xl font-serif font-bold mb-2" data-zh="国家象征" data-zht="國家象徵">国家象征</h3>
+            <p class="text-secondary-custom" data-zh="国旗与国徽" data-zht="國旗與國徽">国旗与国徽</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+            <!-- Flag Detail -->
+            <div class="card rounded-2xl p-8 text-center">
+                <div class="aspect-[3/2] rounded-lg overflow-hidden shadow-lg mb-6 bg-white">
+                    <img src="https://suttergov.github.io/1500px-Naval_Flag_of_the_Kingdom_of_France_(Civil_Ensign).svg.png" 
+                         alt="萨特共和国国旗" 
+                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                </div>
+                <h4 class="text-xl font-bold mb-2" data-zh="萨特共和国国旗" data-zht="薩特共和國國旗">萨特共和国国旗</h4>
+                <p class="text-sm text-secondary-custom" data-zh="采用历史风格设计，象征萨特深厚的历史渊源与海洋传统" data-zht="採用歷史風格設計，象徵薩特深厚的歷史淵源與海洋傳統">
+                    采用历史风格设计，象征萨特深厚的历史渊源与海洋传统
+                </p>
+            </div>
+            
+            <!-- Emblem Detail -->
+            <div class="card rounded-2xl p-8 text-center">
+                <div class="w-48 h-48 mx-auto rounded-full overflow-hidden shadow-lg mb-6 bg-white border-4 border-white dark:border-stone-700">
+                    <img src="https://suttergov.github.io/%E5%8D%81%E5%91%A8%E5%B9%B4%E7%BA%AA%E5%BF%B5.png" 
+                         alt="萨特共和国国徽" 
+                         class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                </div>
+                <h4 class="text-xl font-bold mb-2" data-zh="萨特共和国国徽" data-zht="薩特共和國國徽">萨特共和国国徽</h4>
+                <p class="text-sm text-secondary-custom" data-zh="十周年纪念徽章，象征萨特建国十周年（2016-2026）的荣耀与传承" data-zht="十周年紀念徽章，象徵薩特建國十周年（2016-2026）的榮耀與傳承">
+                    十周年纪念徽章，象征萨特建国十周年（2016-2026）的荣耀与传承
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- History Timeline -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h3 class="text-2xl font-serif font-bold mb-8 text-center" data-zh="历史沿革" data-zht="歷史沿革">历史沿革</h3>
+        <div class="relative">
+            <div class="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 timeline-line transform md:-translate-x-1/2"></div>
+            
+            <div class="space-y-8">
+                <div class="relative flex flex-col md:flex-row items-start md:items-center">
+                    <div class="absolute left-4 md:left-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-stone-900 transform -translate-x-1/2 mt-1.5"></div>
+                    <div class="ml-12 md:ml-0 md:w-1/2 md:pr-8 md:text-right">
+                        <div class="card rounded-xl p-4 inline-block">
+                            <div class="font-bold text-red-600 dark:text-red-400">2016</div>
+                            <div class="text-sm text-secondary-custom mt-1" data-zh="前身建立" data-zht="前身建立">前身建立</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative flex flex-col md:flex-row items-start md:items-center">
+                    <div class="absolute left-4 md:left-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-stone-900 transform -translate-x-1/2 mt-1.5"></div>
+                    <div class="ml-12 md:ml-0 md:w-1/2 md:pl-8 md:ml-auto">
+                        <div class="card rounded-xl p-4 inline-block">
+                            <div class="font-bold text-red-600 dark:text-red-400">2020</div>
+                            <div class="text-sm text-secondary-custom mt-1" data-zh="实际政治推演开始" data-zht="實際政治推演開始">实际政治推演开始</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative flex flex-col md:flex-row items-start md:items-center">
+                    <div class="absolute left-4 md:left-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-stone-900 transform -translate-x-1/2 mt-1.5"></div>
+                    <div class="ml-12 md:ml-0 md:w-1/2 md:pr-8 md:text-right">
+                        <div class="card rounded-xl p-4 inline-block">
+                            <div class="font-bold text-red-600 dark:text-red-400">2024.04</div>
+                            <div class="text-sm text-secondary-custom mt-1" data-zh="加入I.M.C.A.组织" data-zht="加入I.M.C.A.組織">加入I.M.C.A.组织</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative flex flex-col md:flex-row items-start md:items-center">
+                    <div class="absolute left-4 md:left-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-stone-900 transform -translate-x-1/2 mt-1.5"></div>
+                    <div class="ml-12 md:ml-0 md:w-1/2 md:pl-8 md:ml-auto">
+                        <div class="card rounded-xl p-4 inline-block">
+                            <div class="font-bold text-red-600 dark:text-red-400">2024.11</div>
+                            <div class="text-sm text-secondary-custom mt-1" data-zh="退出并重新加入联合微国家组织" data-zht="退出並重新加入聯合微國家組織">退出并重新加入联合微国家组织</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relative flex flex-col md:flex-row items-start md:items-center">
+                    <div class="absolute left-4 md:left-1/2 w-4 h-4 bg-red-600 rounded-full border-4 border-white dark:border-stone-900 transform -translate-x-1/2 mt-1 shadow-lg"></div>
+                    <div class="ml-12 md:ml-0 md:w-1/2 md:pr-8 md:text-right">
+                        <div class="card rounded-xl p-4 inline-block border-2 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20">
+                            <div class="font-bold text-red-700 dark:text-red-400 text-lg" data-zh="2026.02.26" data-zht="2026.02.26">2026.02.26</div>
+                            <div class="text-sm font-bold mt-1" data-zh="十周年纪念日" data-zht="十周年紀念日">十周年纪念日</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Provinces Section -->
+    <section id="provinces" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-stone-50/50 dark:bg-stone-900/20">
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-serif font-bold mb-2" data-zh="行政区划" data-zht="行政區劃">行政区划</h3>
+            <p class="text-secondary-custom" data-zh="十七个省和一个特别地区" data-zht="十七個省和一個特別地區">十七个省和一个特别地区</p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3" id="provincesGrid">
+            <!-- Provinces will be inserted here -->
+        </div>
+        
+        <div class="mt-8 p-6 card rounded-2xl border-l-4 border-red-500">
+            <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                    <span class="text-2xl">🏝️</span>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-2 text-lg" data-zh="加西亚地区" data-zht="加西亞地區">加西亚地区</h4>
+                    <p class="text-sm text-secondary-custom leading-relaxed" data-zh="2025年9月曾决议以'加西亚群岛共和国'国号回归，后被推迟。该地区目前有52名登记公民，不重复计入主要省份统计。" data-zht="2025年9月曾決議以'加西亞群島共和國'國號回歸，後被推遲。該地區目前有52名登記公民，不重複計入主要省份統計。">
+                        2025年9月曾决议以"加西亚群岛共和国"国号回归，后被推迟。该地区目前有52名登记公民，不重复计入主要省份统计。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Politics & Football -->
+    <section id="politics" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Political System -->
+            <div>
+                <h3 class="text-2xl font-serif font-bold mb-6" data-zh="政治体制" data-zht="政治體制">政治体制</h3>
+                <div class="card rounded-2xl p-6 mb-4">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-lg" data-zh="集体决策制度" data-zht="集體決策制度">集体决策制度</h4>
+                    </div>
+                    <p class="text-sm text-secondary-custom leading-relaxed" data-zh="萨特共和国目前实行集体决策制度，通过部长会议（国防委员会）进行国家管理。2025年11月完成第十九届部长会议选举。" data-zht="薩特共和國目前實行集體決策制度，通過部長會議（國防委員會）進行國家管理。2025年11月完成第十九屆部長會議選舉。">
+                        萨特共和国目前实行集体决策制度，通过部长会议（国防委员会）进行国家管理。2025年11月完成第十九届部长会议选举。
+                    </p>
+                </div>
+                
+                <div class="card rounded-2xl p-6">
+                    <h4 class="font-bold mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <span data-zh="三大政治阵营" data-zht="三大政治陣營">三大政治阵营</span>
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800">
+                            <div class="w-2 h-12 bg-red-600 rounded-full"></div>
+                            <div>
+                                <div class="font-bold text-red-700 dark:text-red-400" data-zh="泛共阵营" data-zht="汎共陣營">泛共阵营</div>
+                                <div class="text-xs text-secondary-custom" data-zh="代表政党：萨特共产党" data-zht="代表政黨：薩特共產黨">代表政党：萨特共产党</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800">
+                            <div class="w-2 h-12 bg-green-600 rounded-full"></div>
+                            <div>
+                                <div class="font-bold text-green-700 dark:text-green-400" data-zh="泛绿阵营" data-zht="汎綠陣營">泛绿阵营</div>
+                                <div class="text-xs text-secondary-custom" data-zh="代表政党：全萨特穆斯林阵线" data-zht="代表政黨：全薩特穆斯林陣綫">代表政党：全萨特穆斯林阵线</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800">
+                            <div class="w-2 h-12 bg-blue-600 rounded-full"></div>
+                            <div>
+                                <div class="font-bold text-blue-700 dark:text-blue-400" data-zh="泛右翼阵营" data-zht="汎右翼陣營">泛右翼阵营</div>
+                                <div class="text-xs text-secondary-custom" data-zh="代表政党：五月花党" data-zht="代表政黨：五月花黨">代表政党：五月花党</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Football Nation -->
+            <div>
+                <h3 class="text-2xl font-serif font-bold mb-6" data-zh="足球立国" data-zht="足球立國">足球立国</h3>
+                <div class="card rounded-2xl p-6 h-full border-2 border-red-100 dark:border-red-900/30 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full text-red-600">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+                            <circle cx="12" cy="12" r="2"/>
+                        </svg>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-2xl">
+                            ⚽
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg" data-zh="国家核心战略" data-zht="國家核心戰略">国家核心战略</h4>
+                            <p class="text-xs text-secondary-custom" data-zh="在最艰难时刻也要坚持足球运动" data-zht="在最艱難時刻也要堅持足球運動">在最艰难时刻也要坚持足球运动</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 text-sm text-secondary-custom leading-relaxed">
+                        <p data-zh="萨特奉行'足球立国'策略，足球不仅是国家文化的重要组成部分，也是外交的重要工具。" data-zht="薩特奉行'足球立國'策略，足球不僅是國家文化的重要組成部分，也是外交的重要工具。">
+                            萨特奉行"足球立国"策略，足球不仅是国家文化的重要组成部分，也是外交的重要工具。
+                        </p>
+                        
+                        <div class="p-4 rounded-lg bg-white dark:bg-stone-800 shadow-sm border border-stone-200 dark:border-stone-700">
+                            <div class="font-bold text-stone-900 dark:text-stone-100 mb-2 flex items-center gap-2">
+                                <span class="text-red-500">★</span>
+                                <span data-zh="对外足球外交" data-zht="對外足球外交">对外足球外交</span>
+                            </div>
+                            <p data-zh="官方宣称的'全天候全时段战略合作伙伴'是波什卡尼亚国，分析认为这是因为两国都十分重视足球运动的开展。" data-zht="官方宣稱的'全天候全時段戰略合作夥伴'是波什卡尼亞國，分析認為這是因為兩國都十分重視足球運動的開展。">
+                                官方宣称的"全天候全时段战略合作伙伴"是波什卡尼亚国，分析认为这是因为两国都十分重视足球运动的开展。
+                            </p>
+                        </div>
+                        
+                        <div class="p-4 rounded-lg bg-white dark:bg-stone-800 shadow-sm border border-stone-200 dark:border-stone-700">
+                            <div class="font-bold text-stone-900 dark:text-stone-100 mb-2 flex items-center gap-2">
+                                <span class="text-blue-500">🏆</span>
+                                <span data-zh="国内联赛体系" data-zht="國內聯賽體系">国内联赛体系</span>
+                            </div>
+                            <p data-zh="每年12月某日举办萨特足球联赛总决赛，为国家重要节日。全国各省设有足球俱乐部。" data-zht="每年12月某日舉辦薩特足球聯賽總決賽，為國家重要節日。全國各省設有足球俱樂部。">
+                                每年12月某日举办萨特足球联赛总决赛，为国家重要节日。全国各省设有足球俱乐部。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diplomacy -->
+    <section id="diplomacy" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-stone-50/50 dark:bg-stone-900/20">
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-serif font-bold mb-2" data-zh="外交关系" data-zht="外交關係">外交关系</h3>
+            <p class="text-secondary-custom" data-zh="30个协作国家和组织" data-zht="30個協作國家和組織">30个协作国家和组织</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6">
+            <div class="card rounded-2xl p-6 border-t-4 border-red-500 relative overflow-hidden">
+                <div class="absolute top-4 right-4 text-3xl opacity-20">🤝</div>
+                <h4 class="font-bold text-lg mb-3" data-zh="全天候战略合作伙伴" data-zht="全天候戰略合作夥伴">全天候战略合作伙伴</h4>
+                <div class="text-2xl font-bold text-red-600 dark:text-red-400 mb-2" data-zh="波什卡尼亚国" data-zht="波什卡尼亞國">波什卡尼亚国</div>
+                <p class="text-xs text-secondary-custom" data-zh="基于共同的足球文化建立的战略伙伴关系" data-zht="基於共同的足球文化建立的戰略夥伴關係">基于共同的足球文化建立的战略伙伴关系</p>
+            </div>
+            
+            <div class="card rounded-2xl p-6 border-t-4 border-amber-500">
+                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                    <span>🌐</span>
+                    <span data-zh="合作伙伴级" data-zht="合作夥伴級">合作伙伴级</span>
+                </h4>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span data-zh="黄名帝国" data-zht="黃名帝國">黄名帝国</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span data-zh="拉纳卡共和国" data-zht="拉納卡共和國">拉纳卡共和国</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span data-zh="北格兰共和国" data-zht="北格蘭共和國">北格兰共和国</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 rounded bg-amber-50 dark:bg-amber-900/20">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span data-zh="迷路园国" data-zht="迷路園國">迷路园国</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card rounded-2xl p-6 border-t-4 border-blue-500">
+                <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+                    <span>🏛️</span>
+                    <span data-zh="国际组织成员" data-zht="國際組織成員">国际组织成员</span>
+                </h4>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-center gap-2 p-2 rounded bg-blue-50 dark:bg-blue-900/20">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span data-zh="联合微国家组织" data-zht="聯合微國家組織">联合微国家组织</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 rounded bg-blue-50 dark:bg-blue-900/20">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span>I.M.C.A.</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 rounded bg-blue-50 dark:bg-blue-900/20">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span data-zh="八国公约组织" data-zht="八國公約組織">八国公约组织</span>
+                    </li>
+                    <li class="flex items-center gap-2 p-2 rounded bg-blue-50 dark:bg-blue-900/20">
+                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span>F.U.M.O.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="mt-6 text-center text-sm text-secondary-custom p-4 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <span data-zh="目前同波什卡尼亚国、拉纳卡共和国维持规律性外交活动" data-zht="目前同波什卡尼亞國、拉納卡共和國維持規律性外交活動">
+                目前同波什卡尼亚国、拉纳卡共和国维持规律性外交活动
+            </span>
+        </div>
+    </section>
+
+    <!-- Citizens Census -->
+    <section id="citizens" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div>
+                <h3 class="text-2xl font-serif font-bold" data-zh="公民名录与人口普查" data-zht="公民名錄與人口普查">公民名录与人口普查</h3>
+                <p class="text-sm text-secondary-custom mt-1 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span data-zh="数据截止至 2026年1月31日" data-zht="數據截止至 2026年1月31日">数据截止至 2026年1月31日</span>
+                </p>
+            </div>
+            
+            <div class="flex flex-wrap gap-2">
+                <input type="text" id="searchInput" placeholder="搜索公民..." data-placeholder-zh="搜索公民..." data-placeholder-zht="搜索公民..."
+                    class="px-4 py-2 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 text-sm outline-none focus:ring-2 focus:ring-red-500 w-48">
+                <button onclick="filterCitizens('all')" class="filter-btn active px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm transition-all" data-filter="all">
+                    <span data-zh="全部" data-zht="全部">全部</span>
+                </button>
+                <button onclick="filterCitizens('official')" class="filter-btn px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm transition-all" data-filter="official">
+                    <span data-zh="高级官员" data-zht="高級官員">高级官员</span>
+                </button>
+                <button onclick="filterCitizens('foreign')" class="filter-btn px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 text-sm transition-all" data-filter="foreign">
+                    <span data-zh="外籍议员" data-zht="外籍議員">外籍议员</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="card rounded-xl p-4 text-center border-l-4 border-red-500">
+                <div class="text-2xl font-bold accent-text" id="totalCount">0</div>
+                <div class="text-xs text-secondary-custom" data-zh="本土登记公民" data-zht="本土登記公民">本土登记公民</div>
+            </div>
+            <div class="card rounded-xl p-4 text-center border-l-4 border-amber-500">
+                <div class="text-2xl font-bold text-amber-600 dark:text-amber-400">52</div>
+                <div class="text-xs text-secondary-custom" data-zh="加西亚地区公民" data-zht="加西亞地區公民">加西亚地区公民</div>
+            </div>
+            <div class="card rounded-xl p-4 text-center border-l-4 border-blue-500">
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="officialCount">0</div>
+                <div class="text-xs text-secondary-custom" data-zh="现任官员" data-zht="現任官員">现任官员</div>
+            </div>
+            <div class="card rounded-xl p-4 text-center border-l-4 border-emerald-500">
+                <div class="text-2xl font-bold text-emerald-600 dark:text-emerald-400" id="foreignCount">0</div>
+                <div class="text-xs text-secondary-custom" data-zh="外籍议员" data-zht="外籍議員">外籍议员</div>
+            </div>
+        </div>
+        
+        <div id="citizensGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Citizen cards will be inserted here -->
+        </div>
+    </section>
+
+    <!-- Holidays Section -->
+    <section id="holidays" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-stone-50/50 dark:bg-stone-900/20">
+        <div class="text-center mb-8">
+            <h3 class="text-2xl font-serif font-bold mb-2" data-zh="法定节假日" data-zht="法定節假日">法定节假日</h3>
+            <p class="text-secondary-custom text-sm" data-zh="包含全国假期与地方性假期" data-zht="包含全國假期與地方性假期">包含全国假期与地方性假期</p>
+        </div>
+        
+        <div class="overflow-x-auto rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+            <table class="w-full text-sm holiday-table">
+                <thead>
+                    <tr class="border-b-2 border-red-200 dark:border-red-900">
+                        <th class="text-left p-4 font-bold" data-zh="日期" data-zht="日期">日期</th>
+                        <th class="text-left p-4 font-bold" data-zh="节日名称" data-zht="節日名稱">节日名称</th>
+                        <th class="text-left p-4 font-bold" data-zh="过节地区" data-zht="過節地區">过节地区</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-stone-200 dark:divide-stone-800" id="holidaysTable">
+                    <!-- Holidays will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-6 p-4 card rounded-xl text-xs text-secondary-custom leading-relaxed border-l-4 border-amber-400">
+            <p data-zh="注：部分节日按农历（新年、中秋等）或伊斯兰历（贵夜、开斋节、宰牲节、男人启示日等）计算，具体日期每年不同。超级选举日、夏至、足球联赛总决赛日等日期视具体情况而定。" data-zht="注：部分節日按農曆（新年、中秋等）或伊斯蘭曆（貴夜、開齋節、宰牲節、男人啟示日等）計算，具體日期每年不同。超級選舉日、夏至、足球聯賽總決賽日等日期視具體情況而定。">
+                注：部分节日按农历（新年、中秋等）或伊斯兰历（贵夜、开斋节、宰牲节、男人启示日等）计算，具体日期每年不同。超级选举日、夏至、足球联赛总决赛日等日期视具体情况而定。
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid md:grid-cols-4 gap-6 text-sm">
+                <div class="col-span-2">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-full overflow-hidden border border-stone-300 dark:border-stone-700">
+                            <img src="https://suttergov.github.io/%E5%8D%81%E5%91%A8%E5%B9%B4%E7%BA%AA%E5%BF%B5.png" alt="" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <div class="font-bold">Sutter Republic</div>
+                            <div class="text-xs text-secondary-custom">Est. 2016</div>
+                        </div>
+                    </div>
+                    <p class="text-secondary-custom text-xs" data-zh="萨特第二共和国 数位发展部制" data-zht="薩特第二共和國 數位發展部製">萨特第二共和国 数位发展部制</p>
+                </div>
+                <div>
+                    <h5 class="font-bold mb-2 text-xs uppercase tracking-wider" data-zh="快速链接" data-zht="快速鏈接">快速链接</h5>
+                    <ul class="space-y-1 text-xs text-secondary-custom">
+                        <li><a href="#overview" class="hover:text-red-500 transition-colors" data-zh="国家概况" data-zht="國家概況">国家概况</a></li>
+                        <li><a href="#symbols" class="hover:text-red-500 transition-colors" data-zh="国家象征" data-zht="國家象徵">国家象征</a></li>
+                        <li><a href="#citizens" class="hover:text-red-500 transition-colors" data-zh="公民名录" data-zht="公民名錄">公民名录</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold mb-2 text-xs uppercase tracking-wider" data-zh="版权声明" data-zht="版權聲明">版权声明</h5>
+                    <p class="text-xs text-secondary-custom">© 2026 Sutter Republic.</p>
+                    <p class="text-xs text-secondary-custom mt-1" data-zh="保留所有权利" data-zht="保留所有權利">保留所有权利</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Data Definitions
+        const citizensData = [
+            { name: "Schnekov", nameZht: "Schnekov", current: "萨特首席负责人，萨特部长会议主席", currentZht: "薩特首席負責人，薩特部長會議主席", past: "", pastZht: "", joined: 2016, type: ["official"] },
+            { name: "哈宝", nameZht: "哈寶", current: "萨特国家铁路集团主席、萨特交通部长、湾区联合萨特国铁俱乐部主席、湾区省主席", currentZht: "薩特國家鐵路集團主席、薩特交通部長、灣區聯合薩特國鐵俱樂部主席、灣區省主席", past: "", pastZht: "", joined: 2022, type: ["official", "provincial"] },
+            { name: "阿谦", nameZht: "阿謙", current: "民治学社党主席、萨特数位发展部长", currentZht: "民治學社黨主席、薩特數位發展部長", past: "群岛省主席、萨特物联网集团总裁、卡山航空航天大学校长", pastZht: "群島省主席、薩特物聯網集團總裁、卡山航空航天大學校長", joined: 2021, type: ["official", "provincial"] },
+            { name: "肖冰祷", nameZht: "肖冰禱", current: "萨特共产党研究院院长", currentZht: "薩特共產黨研究院院長", past: "西格尔基省主席、萨特部长会议副主席、萨特共产党党的第一书记、萨特哲学院院长、萨特社会科学院院长、雷克纳拜尔艺术大学校长", pastZht: "西格爾基省主席、薩特部長會議副主席、薩特共產黨黨的第一書記、薩特哲學院院長、薩特社會科學院院長、雷克納拜爾藝術大學校長", joined: 2017, type: ["official", "provincial"] },
+            { name: "小律", nameZht: "小律", current: "萨特议员", currentZht: "薩特議員", past: "", pastZht: "", joined: 2021, type: [] },
+            { name: "曾国华", nameZht: "曾國華", current: "萨特外籍议员", currentZht: "薩特外籍議員", past: "", pastZht: "", joined: 2024, type: ["foreign"] },
+            { name: "云龙", nameZht: "雲龍", current: "斯卡拉尔省主席", currentZht: "斯卡拉爾省主席", past: "萨特共产党（毛派）第一书记、霍利省主席、萨特核工业大学总裁、波多利斯克足球俱乐部主席", pastZht: "薩特共產黨（毛派）第一書記、霍利省主席、薩特核工業大學總裁、波多利斯克足球俱樂部主席", joined: 2017, type: ["official", "provincial"] },
+            { name: "Hanks", nameZht: "Hanks", current: "萨特足球协会主席、萨特卫生和健康委员会主任委员", currentZht: "薩特足球協會主席、薩特衛生和健康委員會主任委員", past: "群岛省主席、卡妈尔山省主席", pastZht: "群島省主席、卡媽爾山省主席", joined: 2023, type: ["official", "provincial"] },
+            { name: "老黄", nameZht: "老黃", current: "萨特驻马来西亚大使、北大荒集团总裁", currentZht: "薩特駐馬來西亞大使、北大荒集團總裁", past: "中央省主席、火车头党主席、湾区省副主席", pastZht: "中央省主席、火車頭黨主席、灣區省副主席", joined: 2020, type: ["official", "provincial"] },
+            { name: "迈尔", nameZht: "邁爾", current: "五月花党主席、萨特内政部长", currentZht: "五月花黨主席、薩特內政部長", past: "萨特总统、萨特外交部长、慕德兰省主席、超级小海湾集团董事会主席、萨特德意志协会主席", pastZht: "薩特總統、薩特外交部長、慕德蘭省主席、超級小海灣集團董事會主席、薩特德意志協會主席", joined: 2021, type: ["official", "provincial"] },
+            { name: "吊仔", nameZht: "吊仔", current: "萨特赛马会骑手、萨特议员、萨特赛马娘协会副主席", currentZht: "薩特賽馬會騎手、薩特議員、薩特賽馬娘協會副主席", past: "萨特足协副主席、萨特州际贸易局副局长", pastZht: "薩特足協副主席、薩特州際貿易局副局長", joined: 2018, type: [] },
+            { name: "鬼才", nameZht: "鬼才", current: "萨特部长会议副主席、西格尔基省主席", currentZht: "薩特部長會議副主席、西格爾基省主席", past: "斯卡拉尔西部联合足球俱乐部主席、萨特内政部长、萨特复兴党党的第一书记、萨特共产党党的第二书记、斯卡拉尔省主席、西霍省主席", pastZht: "斯卡拉爾西部聯合足球俱樂部主席、薩特內政部長、薩特復興黨黨的第一書記、薩特共產黨黨的第二書記、斯卡拉爾省主席、西霍省主席", joined: 2016, type: ["official", "provincial"] },
+            { name: "炉温仪", nameZht: "爐溫儀", current: "萨特北京球迷协会会长", currentZht: "薩特北京球迷協會會長", past: "成川中央矿业大学足球俱乐部主席、成川市萨特中央矿业大学校长", pastZht: "成川中央礦業大學足球俱樂部主席、成川市薩特中央礦業大學校長", joined: 2022, type: [] },
+            { name: "Lars", nameZht: "Lars", current: "萨特德意志协会会长、萨特外籍议员", currentZht: "薩特德意志協會會長、薩特外籍議員", past: "", pastZht: "", joined: 2024, type: ["foreign"] },
+            { name: "达达", nameZht: "達達", current: "圣巴廷省主席、萨特海军上将", currentZht: "聖巴廷省主席、薩特海軍上將", past: "推斯韦加斯媒体集团总裁、萨特海军大将，海军领袖、青山省主席、青山省军区司令、萨特副总统、萨特总统、柯西比省主席、汉阳省主席", pastZht: "推斯韋加斯媒體集團總裁、薩特海軍大將，海軍領袖、青山省主席、青山省軍區司令、薩特副總統、薩特總統、柯西比省主席、漢陽省主席", joined: 2018, type: ["official", "provincial"] },
+            { name: "琛止", nameZht: "琛止", current: "萨特国家钢铁集团总裁、帕梅拉集团总裁、霍纳尔省主席", currentZht: "薩特國家鋼鐵集團總裁、帕梅拉集團總裁、霍納爾省主席", past: "霍纳尔功夫足球俱乐部主席、萨特企业家协会总裁、萨特工业部长、萨特副总统", pastZht: "霍納爾功夫足球俱樂部主席、薩特企業家協會總裁、薩特工業部長、薩特副總統", joined: 2018, type: ["official", "provincial"] },
+            { name: "却苟弹", nameZht: "卻苟彈", current: "青山省主席、银河集团总裁", currentZht: "青山省主席、銀河集團總裁", past: "DOGEDOI集团总裁、萨特副总统", pastZht: "DOGEDOI集團總裁、薩特副總統", joined: 2018, type: ["official", "provincial"] },
+            { name: "Kanada", nameZht: "Kanada", current: "外籍议员", currentZht: "外籍議員", past: "", pastZht: "", joined: 2024, type: ["foreign"] },
+            { name: "阿古", nameZht: "阿古", current: "霍利省主席、萨特赛马会集团主席、萨特赛马娘协会主席、萨特申花球迷协会主席", currentZht: "霍利省主席、薩特賽馬會集團主席、薩特賽馬娘協會主席、薩特申花球迷協會主席", past: "萨特国家总统、萨特副总统、萨特部长会议主席、萨特议长、萨特过渡时期代总统、西霍省主席、机械革命集团总裁、萨特共产党党的第一书记、萨特共产党党的第二书记、萨特共产党中央书记处书记、布尔根兰岛足球俱乐部主席", pastZht: "薩特國家總統、薩特副總統、薩特部長會議主席、薩特議長、薩特過渡時期代總統、西霍省主席、機械革命集團總裁、薩特共產黨黨的第一書記、薩特共產黨黨的第二書記、薩特共產黨中央書記處書記、布爾根蘭島足球俱樂部主席", joined: 2016, type: ["official", "provincial"] },
+            { name: "罗智", nameZht: "羅智", current: "外籍议员", currentZht: "外籍議員", past: "外骨骼机械制造集团（慕德兰）总裁", pastZht: "外骨骼機械製造集團（慕德蘭）總裁", joined: 2024, type: ["foreign"] },
+            { name: "快乐小狗（狗子）", nameZht: "快樂小狗（狗子）", current: "东高地省主席、东高地农产集团主席", currentZht: "東高地省主席、東高地農產集團主席", past: "萨特副总统", pastZht: "薩特副總統", joined: 2019, type: ["official", "provincial"] },
+            { name: "岑胖胖", nameZht: "岑胖胖", current: "萨特新滇军负责人", currentZht: "薩特新滇軍負責人", past: "萨特副总统", pastZht: "薩特副總統", joined: 2021, type: ["official"] },
+            { name: "阿鸡", nameZht: "阿雞", current: "萨特足球博物馆馆长", currentZht: "薩特足球博物館館長", past: "深水埗足球俱乐部主席", pastZht: "深水埗足球俱樂部主席", joined: 2022, type: [] },
+            { name: "COYI", nameZht: "COYI", current: "锡萨拉省主席、国家油气集团总裁", currentZht: "錫薩拉省主席、國家油氣集團總裁", past: "天定党总裁、天土力集团总裁", pastZht: "天定黨總裁、天土力集團總裁", joined: 2018, type: ["official", "provincial"] },
+            { name: "墩子", nameZht: "墩子", current: "萨特铜梁龙协会主席", currentZht: "薩特銅梁龍協會主席", past: "柯西比省主席", pastZht: "柯西比省主席", joined: 2018, type: ["provincial"] },
+            { name: "屑基佬", nameZht: "屑基佬", current: "斯卡蒂市委书记", currentZht: "斯卡蒂市委書記", past: "萨特共产党党的第二书记、多巴尔省主席、多巴尔东亚足球俱乐部主席、斯卡拉尔省主席、西格尔基省主席、哈古尔克省主席、全州省主席、青山省主席、帕基特省主席、锡萨拉省主席、皇家多巴尔港足球俱乐部主席", pastZht: "薩特共產黨黨的第二書記、多巴爾省主席、多巴爾東亞足球俱樂部主席、斯卡拉爾省主席、西格爾基省主席、哈古爾克省主席、全州省主席、青山省主席、帕基特省主席、錫薩拉省主席、皇家多巴爾港足球俱樂部主席", joined: 2018, type: ["official", "provincial"] },
+            { name: "林姐姐", nameZht: "林姐姐", current: "萨特议员", currentZht: "薩特議員", past: "萨特州际贸易局局长", pastZht: "薩特州際貿易局局長", joined: 2018, type: [] },
+            { name: "肖钢毕", nameZht: "肖鋼畢", current: "萨特泰克马联合足球俱乐部主席", currentZht: "薩特泰克馬聯合足球俱樂部主席", past: "", pastZht: "", joined: 2025, type: [] },
+            { name: "巴峰", nameZht: "巴峰", current: "朝鲜人在萨特总会会长", currentZht: "朝鮮人在薩特總會會長", past: "萨特总统", pastZht: "薩特總統", joined: 2021, type: ["official"] }
+        ];
+
+        const provinces = [
+            { name: "斯卡拉尔省", nameZht: "斯卡拉爾省" },
+            { name: "慕德兰省", nameZht: "慕德蘭省" },
+            { name: "西格尔基省", nameZht: "西格爾基省" },
+            { name: "霍利哈布斯堡省", nameZht: "霍利哈布斯堡省" },
+            { name: "汉阳省", nameZht: "漢陽省" },
+            { name: "全州省", nameZht: "全州省" },
+            { name: "帕基特省", nameZht: "帕基特省" },
+            { name: "霍纳尔省", nameZht: "霍納爾省" },
+            { name: "东高地省", nameZht: "東高地省" },
+            { name: "多巴尔省", nameZht: "多巴爾省" },
+            { name: "锡萨拉省", nameZht: "錫薩拉省" },
+            { name: "柯西比省", nameZht: "柯西比省" },
+            { name: "湾区省", nameZht: "灣區省" },
+            { name: "卡马尔山省", nameZht: "卡瑪爾山省" },
+            { name: "青山省", nameZht: "青山省" },
+            { name: "群岛省", nameZht: "群島省" },
+            { name: "圣巴廷省", nameZht: "聖巴廷省" },
+            { name: "中央省", nameZht: "中央省" }
+        ];
+
+        const holidays = [
+            { date: "1月1日", dateZht: "1月1日", name: "元旦", nameZht: "元旦", region: "全国", regionZht: "全國" },
+            { date: "正月初一", dateZht: "正月初一", name: "新年", nameZht: "新年", region: "全国", regionZht: "全國" },
+            { date: "1月18日", dateZht: "1月18日", name: "转型正义纪念日", nameZht: "轉型正義紀念日", region: "慕德兰", regionZht: "慕德蘭" },
+            { date: "1月20日", dateZht: "1月20日", name: "陆军节", nameZht: "陸軍節", region: "全国", regionZht: "全國" },
+            { date: "3月8日", dateZht: "3月8日", name: "国际妇女节", nameZht: "國際婦女節", region: "除霍纳尔之外的全部省份", regionZht: "除霍納爾之外的全部省份" },
+            { date: "4月2日", dateZht: "4月2日", name: "复活节", nameZht: "復活節", region: "慕德兰", regionZht: "慕德蘭" },
+            { date: "4月15日", dateZht: "4月15日", name: "太阳节（四月节日）", nameZht: "太陽節（四月節日）", region: "汉阳省", regionZht: "漢陽省" },
+            { date: "4月25日", dateZht: "4月25日", name: "武装力量节", nameZht: "武裝力量節", region: "汉阳省", regionZht: "漢陽省" },
+            { date: "4月某日", dateZht: "4月某日", name: "超级选举日", nameZht: "超級選舉日", region: "全国", regionZht: "全國" },
+            { date: "伊斯兰历斋月第27日夜晚", dateZht: "伊斯蘭曆齋月第27日夜晚", name: "贵夜", nameZht: "貴夜", region: "柯西比、慕德兰穆斯林地区、霍纳尔、多巴尔西部", regionZht: "柯西比、慕德蘭穆斯林地區、霍納爾、多巴爾西部" },
+            { date: "伊斯兰历山瓦鲁日第一天", dateZht: "伊斯蘭曆山瓦魯日第一天", name: "开斋节", nameZht: "開齋節", region: "同上", regionZht: "同上" },
+            { date: "5月1日", dateZht: "5月1日", name: "国际劳动节", nameZht: "國際勞動節", region: "西格尔基、霍利、多巴尔、东高地、青山、柯西比、湾区、卡玛尔山、中央省、斯卡拉尔、全州、汉阳、圣巴廷", regionZht: "西格爾基、霍利、多巴爾、東高地、青山、柯西比、灣區、卡瑪爾山、中央省、斯卡拉爾、全州、漢陽、聖巴廷" },
+            { date: "5月5日", dateZht: "5月5日", name: "内战纪念日", nameZht: "內戰紀念日", region: "慕德兰", regionZht: "慕德蘭" },
+            { date: "5月7日", dateZht: "5月7日", name: "西格尔基政变纪念日", nameZht: "西格爾基政變紀念日", region: "西格尔基（中央省为5月8日）", regionZht: "西格爾基（中央省為5月8日）" },
+            { date: "5月3日", dateZht: "5月3日", name: "新闻自由日", nameZht: "新聞自由日", region: "卡达托姆、慕德兰", regionZht: "卡達托姆、慕德蘭" },
+            { date: "6月1日", dateZht: "6月1日", name: "儿童节", nameZht: "兒童節", region: "西格尔基、多巴尔", regionZht: "西格爾基、多巴爾" },
+            { date: "6月2日", dateZht: "6月2日", name: "铁路日", nameZht: "鐵路日", region: "湾区省", regionZht: "灣區省" },
+            { date: "6月22日", dateZht: "6月22日", name: "萨博尼斯诞辰", nameZht: "薩博尼斯誕辰", region: "全国", regionZht: "全國" },
+            { date: "7月3日", dateZht: "7月3日", name: "拉萨尔诞辰", nameZht: "拉薩爾誕辰", region: "除湾区省外全部省份", regionZht: "除灣區省外全部省份" },
+            { date: "7月4日", dateZht: "7月4日", name: "去他妈的拉萨尔日", nameZht: "去他媽的拉薩爾日", region: "湾区省", regionZht: "灣區省" },
+            { date: "7月某日", dateZht: "7月某日", name: "夏至", nameZht: "夏至", region: "西格尔基、汉阳、全州、青山、东高地、湾区、圣巴廷、柯西比", regionZht: "西格爾基、漢陽、全州、青山、東高地、灣區、聖巴廷、柯西比" },
+            { date: "沙班15日", dateZht: "沙班15日", name: "男人启示日", nameZht: "男人啟示日", region: "霍纳尔、柯西比", regionZht: "霍納爾、柯西比" },
+            { date: "8月1日", dateZht: "8月1日", name: "海军空军与战略支援部队节", nameZht: "海軍空軍與戰略支援部隊節", region: "全国", regionZht: "全國" },
+            { date: "农历8月15日", dateZht: "農曆8月15日", name: "中秋节", nameZht: "中秋節", region: "西格尔基、湾区、柯西比", regionZht: "西格爾基、灣區、柯西比" },
+            { date: "8月10日", dateZht: "8月10日", name: "丰收节", nameZht: "豐收節", region: "全国", regionZht: "全國" },
+            { date: "8月14日", dateZht: "8月14日", name: "秋季工人节", nameZht: "秋季工人節", region: "西格尔基", regionZht: "西格爾基" },
+            { date: "9月1日", dateZht: "9月1日", name: "教师节", nameZht: "教師節", region: "全国", regionZht: "全國" },
+            { date: "10月31日", dateZht: "10月31日", name: "万圣节", nameZht: "萬聖節", region: "除西格尔基、湾区、柯西比、霍纳尔、圣巴廷外", regionZht: "除西格爾基、灣區、柯西比、霍納爾、聖巴廷外" },
+            { date: "11月7日", dateZht: "11月7日", name: "建党节", nameZht: "建黨節", region: "萨特共产党执政的地方", regionZht: "薩特共產黨執政的地方" },
+            { date: "12月5日", dateZht: "12月5日", name: "圣尼古拉斯日", nameZht: "聖尼古拉斯日", region: "除西格尔基、湾区、柯西比、霍纳尔、圣巴廷外", regionZht: "除西格爾基、灣區、柯西比、霍納爾、聖巴廷外" },
+            { date: "12月某日", dateZht: "12月某日", name: "萨特足球联赛总决赛比赛日", nameZht: "薩特足球聯賽總決賽比賽日", region: "全国", regionZht: "全國" },
+            { date: "伊斯兰历12月10日", dateZht: "伊斯蘭曆12月10日", name: "宰牲节", nameZht: "宰牲節", region: "同开斋节", regionZht: "同開齋節" },
+            { date: "12月24-30日", dateZht: "12月24-30日", name: "圣诞节假期", nameZht: "聖誕節假期", region: "慕德兰、卡达托姆、霍利、青山", regionZht: "慕德蘭、卡達托姆、霍利、青山" }
+        ];
+
+        let isTraditional = false;
+        let currentFilter = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProvinces();
+            renderHolidays();
+            renderCitizens();
+            updateStats();
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                renderCitizens(e.target.value);
+            });
+        });
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function toggleLanguage() {
+            isTraditional = !isTraditional;
+            document.getElementById('langText').textContent = isTraditional ? '繁 / 简' : '简 / 繁';
+            
+            // Update all elements with data attributes
+            document.querySelectorAll('[data-zh]').forEach(el => {
+                el.textContent = isTraditional ? el.getAttribute('data-zht') : el.getAttribute('data-zh');
+            });
+            
+            document.querySelectorAll('[data-placeholder-zh]').forEach(el => {
+                el.placeholder = isTraditional ? el.getAttribute('data-placeholder-zht') : el.getAttribute('data-placeholder-zh');
+            });
+            
+            renderProvinces();
+            renderHolidays();
+            renderCitizens(document.getElementById('searchInput').value);
+        }
+
+        function renderProvinces() {
+            const grid = document.getElementById('provincesGrid');
+            grid.innerHTML = provinces.map(prov => `
+                <div class="province-tag card rounded-lg p-3 text-center cursor-pointer hover:border-red-300 dark:hover:border-red-700 hover:shadow-md">
+                    <div class="font-medium text-sm">${isTraditional ? prov.nameZht : prov.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderHolidays() {
+            const tbody = document.getElementById('holidaysTable');
+            tbody.innerHTML = holidays.map((holiday, index) => `
+                <tr class="hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors ${index % 2 === 0 ? 'bg-white dark:bg-stone-900' : 'bg-stone-50/50 dark:bg-stone-800/30'}">
+                    <td class="p-4 whitespace-nowrap font-medium text-red-600 dark:text-red-400">${isTraditional ? holiday.dateZht : holiday.date}</td>
+                    <td class="p-4 font-bold">${isTraditional ? holiday.nameZht : holiday.name}</td>
+                    <td class="p-4 text-secondary-custom text-xs">${isTraditional ? holiday.regionZht : holiday.region}</td>
+                </tr>
+            `).join('');
+        }
+
+        function getYearsOfService(joinedYear) {
+            return 2026 - joinedYear;
+        }
+
+        function filterCitizens(type) {
+            currentFilter = type;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === type) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            renderCitizens(document.getElementById('searchInput').value);
+        }
+
+        function renderCitizens(searchTerm = '') {
+            const grid = document.getElementById('citizensGrid');
+            grid.innerHTML = '';
+            
+            const filtered = citizensData.filter(citizen => {
+                const searchMatch = !searchTerm || 
+                    citizen.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    citizen.current.includes(searchTerm);
+                
+                let typeMatch = true;
+                if (currentFilter === 'official') {
+                    typeMatch = citizen.type.includes('official');
+                } else if (currentFilter === 'foreign') {
+                    typeMatch = citizen.type.includes('foreign');
+                }
+                
+                return searchMatch && typeMatch;
+            });
+            
+            filtered.forEach((citizen, index) => {
+                const card = document.createElement('div');
+                card.className = 'card card-hover rounded-2xl p-6 relative overflow-hidden';
+                card.style.animationDelay = `${index * 0.05}s`;
+                
+                const displayName = isTraditional ? citizen.nameZht : citizen.name;
+                const displayCurrent = isTraditional ? citizen.currentZht : citizen.current;
+                const displayPast = isTraditional ? citizen.pastZht : citizen.past;
+                const years = getYearsOfService(citizen.joined);
+                
+                let badgeColor = 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400';
+                if (citizen.type.includes('official')) {
+                    badgeColor = 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+                } else if (citizen.type.includes('foreign')) {
+                    badgeColor = 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+                }
+                
+                const pastPositionsHtml = displayPast ? `
+                    <div class="mt-4 pt-4 border-t border-stone-200 dark:border-stone-700">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                            <span class="text-xs font-medium text-secondary-custom uppercase tracking-wider">${isTraditional ? '歷任' : '历任'}</span>
+                        </div>
+                        <p class="text-sm text-secondary-custom leading-relaxed">${displayPast}</p>
+                    </div>
+                ` : '';
+                
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-transparent rounded-bl-full -mr-8 -mt-8"></div>
+                    
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-stone-200 to-stone-300 dark:from-stone-700 dark:to-stone-600 flex items-center justify-center text-lg font-bold text-stone-600 dark:text-stone-300 shadow-inner">
+                                ${citizen.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">${displayName}</h3>
+                                <span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${badgeColor} mt-1">
+                                    ${citizen.joined} ${isTraditional ? '年加入' : '年加入'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold accent-text">${years}</div>
+                            <div class="text-xs text-secondary-custom">${isTraditional ? '年資' : '年资'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 mt-1 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <div>
+                                <div class="text-xs text-secondary-custom uppercase tracking-wider mb-0.5">${isTraditional ? '現任職位' : '现任职位'}</div>
+                                <p class="text-sm font-medium leading-relaxed">${displayCurrent}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${pastPositionsHtml}
+                    
+                    <div class="mt-4 flex flex-wrap gap-1">
+                        ${citizen.type.map(t => {
+                            let label = '', tlabel = '';
+                            if (t === 'official') { label = '高级官员'; tlabel = '高級官員'; }
+                            else if (t === 'foreign') { label = '外籍'; tlabel = '外籍'; }
+                            else if (t === 'provincial') { label = '省主席'; tlabel = '省主席'; }
+                            return `<span class="px-2 py-1 rounded-md bg-stone-100 dark:bg-stone-800 text-xs text-secondary-custom">${isTraditional ? tlabel : label}</span>`;
+                        }).join('')}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16 text-secondary-custom">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <p>${isTraditional ? '未找到匹配的公民' : '未找到匹配的公民'}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = citizensData.length;
+            document.getElementById('officialCount').textContent = citizensData.filter(c => c.type.includes('official')).length;
+            document.getElementById('foreignCount').textContent = citizensData.filter(c => c.type.includes('foreign')).length;
+        }
+    </script>
+</body>
+</html>
