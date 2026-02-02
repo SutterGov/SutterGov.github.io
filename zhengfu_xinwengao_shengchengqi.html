@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萨特第二共和国政府新闻稿生成器 | Sutter Republic II Press Release Generator</title>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* 左侧控制面板 */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            height: fit-content;
+            border-top: 4px solid #00b4db;
+            position: sticky;
+            top: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.4rem;
+            color: #0f2027;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #203a43;
+            font-size: 0.85rem;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            font-family: "Noto Sans SC", sans-serif;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #00b4db;
+            box-shadow: 0 0 0 3px rgba(0,180,219,0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,180,219,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,180,219,0.4);
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border-left: 4px solid #00b4db;
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        /* 右侧预览区 */
+        .preview-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* A4 新闻稿容器 */
+        .document-container {
+            width: 210mm;
+            min-height: 297mm;
+            height: auto;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        }
+
+        @media (max-width: 900px) {
+            .document-container {
+                width: 100%;
+                transform: scale(0.85);
+                transform-origin: top center;
+            }
+        }
+
+        /* 顶部装饰条 */
+        .header-decoration {
+            width: 100%;
+            height: 15mm;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 50%, #00d2ff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-decoration::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: white;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+
+        /* 头部内容区 */
+        .header-content {
+            padding: 20mm 25mm 10mm;
+            text-align: center;
+            position: relative;
+        }
+
+        .emblem {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: url('https://i.imgs.ovh/2026/01/28/y9gXK9.png') center/contain no-repeat;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .gov-name {
+            font-size: 14pt;
+            color: #555;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .ministry-name {
+            font-size: 24pt;
+            font-weight: 700;
+            color: #0f2027;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            border-bottom: 3px solid #00b4db;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        .department-name {
+            font-size: 12pt;
+            color: #666;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .address {
+            font-size: 10pt;
+            color: #777;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .release-label {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 40px;
+            font-size: 14pt;
+            font-weight: 700;
+            letter-spacing: 8px;
+            margin: 15px 0;
+            border-radius: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .release-date {
+            text-align: right;
+            font-size: 12pt;
+            color: #333;
+            font-weight: 600;
+            margin: 10px 25mm 20px;
+            font-family: "Times New Roman", serif;
+        }
+
+        /* 正文区域 */
+        .body-content {
+            padding: 0 25mm;
+            flex: 1;
+            font-size: 12pt;
+            line-height: 1.8;
+            color: #222;
+            text-align: justify;
+        }
+
+        .news-title {
+            font-size: 20pt;
+            font-weight: 700;
+            color: #0f2027;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            text-decoration: underline;
+            text-decoration-color: #00b4db;
+            text-decoration-thickness: 3px;
+            text-underline-offset: 8px;
+            font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+        }
+
+        .news-body {
+            margin-bottom: 20px;
+        }
+
+        .news-body p {
+            margin-bottom: 1.2em;
+            text-indent: 0;
+        }
+
+        .lead-paragraph {
+            font-weight: 600;
+            font-size: 12.5pt;
+        }
+
+        .location-date {
+            font-weight: 700;
+            color: #0f2027;
+        }
+
+        /* 签名区 */
+        .signature-section {
+            margin-top: 40px;
+            padding: 0 25mm;
+            page-break-inside: avoid;
+        }
+
+        .sign-off {
+            font-size: 11pt;
+            color: #555;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        .signature-block {
+            margin-left: 50%;
+            text-align: left;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            width: 200px;
+            margin-bottom: 5px;
+            height: 30px;
+        }
+
+        .signature-name {
+            font-weight: 700;
+            font-size: 12pt;
+            color: #0f2027;
+        }
+
+        .signature-title {
+            font-size: 10pt;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        /* 底部联系信息栏 */
+        .footer-bar {
+            margin-top: auto;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            padding: 15mm 25mm;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 9pt;
+            flex: 1;
+        }
+
+        .contact-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .contact-text {
+            line-height: 1.4;
+        }
+
+        .contact-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* 时间戳 */
+        .timestamp {
+            position: absolute;
+            bottom: 5mm;
+            right: 5mm;
+            font-size: 8pt;
+            color: rgba(255,255,255,0.7);
+            font-family: "Consolas", monospace;
+        }
+
+        /* 下载按钮 */
+        .download-section {
+            position: sticky;
+            bottom: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 210mm;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.5);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #00b4db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+        <div>正在生成新闻稿...</div>
+    </div>
+
+    <div class="container">
+        <div class="control-panel">
+            <div class="panel-title">
+                <span>🎙️</span>
+                <span>新闻稿信息录入</span>
+            </div>
+
+            <div class="form-group">
+                <label>政府部门</label>
+                <input type="text" id="ministry" placeholder="如：外交部" value="外交部">
+            </div>
+
+            <div class="form-group">
+                <label>下属单位/司局</label>
+                <input type="text" id="department" placeholder="如：新闻司" value="新闻司">
+            </div>
+
+            <div class="form-group">
+                <label>办公地址</label>
+                <input type="text" id="address" placeholder="如：新萨特市中央大道1号" value="新萨特市中央大道1号政府大楼">
+            </div>
+
+            <div class="form-group">
+                <label>发布日期</label>
+                <input type="text" id="releaseDate" placeholder="如：2026年1月28日" value="">
+            </div>
+
+            <div class="form-group">
+                <label>新闻标题</label>
+                <input type="text" id="title" placeholder="请输入新闻标题" value="萨特第二共和国与联合国开发计划署签署合作备忘录">
+            </div>
+
+            <div class="form-group">
+                <label>导语/首段（可加粗）</label>
+                <textarea id="lead" rows="3" placeholder="新闻导语...">新萨特市，2026年1月28日 —— 萨特第二共和国外交部今日宣布，我国已与联合国开发计划署（UNDP）正式签署为期五年的战略合作备忘录，旨在推动可持续发展目标（SDGs）在萨特地区的全面落实。</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>正文内容</label>
+                <textarea id="body" rows="8" placeholder="请输入正文内容...">根据该备忘录，联合国开发计划署将在未来五年内向萨特第二共和国提供技术援助和资金支持，重点聚焦于气候变化适应、数字化治理以及青年就业三大领域。
+
+外交部长Schnekov在签署仪式上表示："此次合作标志着萨特第二共和国深度参与全球治理体系的重要里程碑。我们期待通过与UNDP的紧密协作，将我国的发展经验与联合国2030年可持续发展议程有机结合。"
+
+据悉，首批合作项目将于今年第二季度正式启动，包括建立萨特数字创新中心以及实施"绿色青年就业计划"。联合国开发计划署署长对此表示高度赞赏，称萨特第二共和国在区域合作中展现了卓越的领导力。
+
+该备忘录的签署也得到了国会两院的一致支持。参议院外交关系委员会主席表示，这将有助于提升萨特第二共和国在国际发展领域的影响力，并为其他国家提供可复制的合作模式。</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>发文人姓名</label>
+                <input type="text" id="issuer" placeholder="如：Schnekov" value="Schnekov">
+            </div>
+
+            <div class="form-group">
+                <label>发文人职务</label>
+                <input type="text" id="issuerTitle" placeholder="如：外交部长" value="外交部长">
+            </div>
+
+            <div class="form-group">
+                <label>联系电话</label>
+                <input type="text" id="phone" placeholder="如：+1 (868) 627-1047" value="+86 10-8888-8888">
+            </div>
+
+            <div class="form-group">
+                <label>官方网站</label>
+                <input type="text" id="website" placeholder="如：www.mfa.gov.sr" value="www.mfa.gov.sr">
+            </div>
+
+            <div class="form-group">
+                <label>电子邮箱</label>
+                <input type="text" id="email" placeholder="如：press@mfa.gov.sr" value="press@mfa.gov.sr">
+            </div>
+
+            <button class="btn btn-primary" onclick="updateDocument()">🔄 更新预览</button>
+            
+            <div class="info-box">
+                <strong>💡 提示：</strong><br>
+                • 顶部蓝绿色渐变条模仿参考图设计<br>
+                • 正文支持自适应高度，自动延长页面<br>
+                • 底部联系栏彩色设计增强视觉识别<br>
+                • 建议首段包含地点和日期（如参考图格式）
+            </div>
+        </div>
+
+        <div class="preview-area">
+            <div class="document-container" id="document">
+                <!-- 顶部装饰 -->
+                <div class="header-decoration"></div>
+                
+                <!-- 头部内容 -->
+                <div class="header-content">
+                    <div class="emblem"></div>
+                    <div class="gov-name">Government of Sutter Republic II</div>
+                    <div class="ministry-name" id="dispMinistry">外交部</div>
+                    <div class="department-name" id="dispDept">新闻司</div>
+                    <div class="address" id="dispAddress">新萨特市中央大道1号政府大楼</div>
+                    <div class="release-label">MEDIA RELEASE</div>
+                </div>
+
+                <!-- 日期 -->
+                <div class="release-date" id="dispDate">January 28, 2026</div>
+
+                <!-- 正文 -->
+                <div class="body-content">
+                    <div class="news-title" id="dispTitle">萨特第二共和国与联合国开发计划署签署合作备忘录</div>
+                    
+                    <div class="news-body" id="dispBody">
+                        <p class="lead-paragraph"><span class="location-date">新萨特市，2026年1月28日</span> —— 萨特第二共和国外交部今日宣布，我国已与联合国开发计划署（UNDP）正式签署为期五年的战略合作备忘录，旨在推动可持续发展目标（SDGs）在萨特地区的全面落实。</p>
+                        <p>根据该备忘录，联合国开发计划署将在未来五年内向萨特第二共和国提供技术援助和资金支持，重点聚焦于气候变化适应、数字化治理以及青年就业三大领域。</p>
+                        <p>外交部长Schnekov在签署仪式上表示："此次合作标志着萨特第二共和国深度参与全球治理体系的重要里程碑。我们期待通过与UNDP的紧密协作，将我国的发展经验与联合国2030年可持续发展议程有机结合。"</p>
+                        <p>据悉，首批合作项目将于今年第二季度正式启动，包括建立萨特数字创新中心以及实施"绿色青年就业计划"。联合国开发计划署署长对此表示高度赞赏，称萨特第二共和国在区域合作中展现了卓越的领导力。</p>
+                    </div>
+                </div>
+
+                <!-- 签名区 -->
+                <div class="signature-section">
+                    <div class="sign-off">-END-</div>
+                    <div class="signature-block">
+                        <div class="signature-line"></div>
+                        <div class="signature-name" id="dispIssuer">Schnekov</div>
+                        <div class="signature-title" id="dispIssuerTitle">外交部长</div>
+                    </div>
+                </div>
+
+                <!-- 底部联系栏 -->
+                <div class="footer-bar">
+                    <div class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-text">
+                            <span class="contact-label">媒体联络</span>
+                            <span id="dispPhone">+86 10-8888-8888</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">🌐</div>
+                        <div class="contact-text">
+                            <span class="contact-label">官方网站</span>
+                            <span id="dispWebsite">www.mfa.gov.sr</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">✉️</div>
+                        <div class="contact-text">
+                            <span class="contact-label">新闻邮箱</span>
+                            <span id="dispEmail">press@mfa.gov.sr</span>
+                        </div>
+                    </div>
+                    <div class="timestamp" id="timestamp">Generated: 2026-01-28 14:32:18</div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <button class="btn-download" onclick="downloadDocument()">📥 下载新闻稿图片 (PNG)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 自动设置默认日期为今天
+        function setDefaultDate() {
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('zh-CN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('releaseDate').value = dateStr;
+            
+            // 同时更新英文日期显示
+            const enDateStr = today.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            document.getElementById('dispDate').textContent = enDateStr;
+        }
+        setDefaultDate();
+
+        // 更新时间戳
+        function updateTimestamp() {
+            const now = new Date();
+            const timestamp = now.getFullYear() + '-' + 
+                            String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                            String(now.getDate()).padStart(2, '0') + ' ' + 
+                            String(now.getHours()).padStart(2, '0') + ':' + 
+                            String(now.getMinutes()).padStart(2, '0') + ':' + 
+                            String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('timestamp').textContent = 'Generated: ' + timestamp;
+        }
+        setInterval(updateTimestamp, 1000);
+        updateTimestamp();
+
+        function updateDocument() {
+            // 获取表单值
+            const ministry = document.getElementById('ministry').value || '外交部';
+            const department = document.getElementById('department').value || '';
+            const address = document.getElementById('address').value || '';
+            const date = document.getElementById('releaseDate').value || '';
+            const title = document.getElementById('title').value || '新闻标题';
+            const lead = document.getElementById('lead').value || '';
+            const body = document.getElementById('body').value || '';
+            const issuer = document.getElementById('issuer').value || '';
+            const issuerTitle = document.getElementById('issuerTitle').value || '';
+            const phone = document.getElementById('phone').value || '';
+            const website = document.getElementById('website').value || '';
+            const email = document.getElementById('email').value || '';
+
+            // 更新显示
+            document.getElementById('dispMinistry').textContent = ministry;
+            document.getElementById('dispDept').textContent = department;
+            document.getElementById('dispAddress').textContent = address;
+            document.getElementById('dispTitle').textContent = title;
+            document.getElementById('dispIssuer').textContent = issuer;
+            document.getElementById('dispIssuerTitle').textContent = issuerTitle;
+            document.getElementById('dispPhone').textContent = phone;
+            document.getElementById('dispWebsite').textContent = website;
+            document.getElementById('dispEmail').textContent = email;
+
+            // 处理日期（中文输入转英文显示，或保持原样）
+            if (date) {
+                // 尝试转换为英文格式显示，如果用户输入的是中文日期
+                document.getElementById('dispDate').textContent = date;
+            }
+
+            // 处理正文（合并导语和正文）
+            const bodyDiv = document.getElementById('dispBody');
+            let html = '';
+            
+            if (lead) {
+                // 自动为首段添加样式，如果包含日期地点格式
+                let leadText = lead;
+                if (!leadText.includes('</span>') && (leadText.includes('市') || leadText.includes('日'))) {
+                    // 尝试自动识别地点日期格式（如：新萨特市，2026年1月28日）
+                    leadText = leadText.replace(/^(.*?)(?=——)/, '<span class="location-date">$1</span>');
+                }
+                html += `<p class="lead-paragraph">${leadText}</p>`;
+            }
+            
+            if (body) {
+                const paragraphs = body.split('\n').filter(p => p.trim());
+                html += paragraphs.map(p => `<p>${p}</p>`).join('');
+            }
+            
+            bodyDiv.innerHTML = html || '<p>（暂无内容）</p>';
+        }
+
+        async function downloadDocument() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'flex';
+
+            await document.fonts.ready;
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const element = document.getElementById('document');
+            
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    height: element.scrollHeight,
+                    windowHeight: element.scrollHeight,
+                    x: 0,
+                    y: 0,
+                    scrollX: 0,
+                    scrollY: 0
+                });
+
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0,10);
+                const title = document.getElementById('title').value || 'PressRelease';
+                const safeTitle = title.replace(/[^\w\u4e00-\u9fa5]/g, '_').substring(0, 20);
+                link.download = `SUTTER_PressRelease_${safeTitle}_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                loading.style.display = 'none';
+                
+                const btn = document.querySelector('.btn-download');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 下载成功';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            } catch(err) {
+                console.error(err);
+                loading.style.display = 'none';
+                alert('生成失败，请重试');
+            }
+        }
+
+        // 初始化
+        updateDocument();
+    </script>
+</body>
+</html>
