@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>加西亚足球数据库 - 球队信息卡生成器</title>
+    <title>萨特足球数据库 - 球队信息卡生成器</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,6 +14,7 @@
             --accent-gold: #d4af37;
             --accent-blue: #1e3a5f;
             --growth-green: #4ade80;
+            --danger-red: #ef4444;
             --text-primary: #f0f0f0;
             --text-secondary: #8b92a8;
         }
@@ -120,6 +121,32 @@
             padding: 0.5rem;
         }
 
+        /* 视图切换标签 */
+        .view-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.7rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .tab-btn.active {
+            background: rgba(212, 175, 55, 0.2);
+            color: var(--accent-gold);
+            border-color: var(--accent-gold);
+        }
+
         .action-btn {
             width: 100%;
             padding: 0.9rem;
@@ -133,6 +160,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            margin-top: 0.5rem;
         }
 
         .action-btn:disabled {
@@ -201,6 +229,52 @@
             color: var(--accent-gold);
         }
 
+        /* 财务信息行 - 放在统计网格之前 */
+        .finance-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            background: rgba(16, 20, 35, 0.95);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            gap: 0.5rem;
+        }
+
+        .finance-item-inline {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            flex: 1;
+        }
+
+        .finance-label-inline {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .finance-value-inline {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .finance-value-inline.negative {
+            color: var(--danger-red);
+            font-weight: 700;
+        }
+
+        .finance-risk {
+            font-size: 0.55rem;
+            color: var(--danger-red);
+            text-align: center;
+            margin-top: 0.1rem;
+            font-weight: 500;
+        }
+
         /* 统计网格 */
         .stats-grid {
             display: grid;
@@ -229,6 +303,153 @@
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* 联赛总览样式 */
+        .league-overview {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            padding: 1rem;
+        }
+
+        .overview-header {
+            text-align: center;
+            padding: 1rem 0;
+            border-bottom: 2px solid var(--accent-gold);
+            margin-bottom: 1rem;
+        }
+
+        .overview-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            letter-spacing: 3px;
+        }
+
+        .overview-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+
+        .ranking-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .ranking-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            overflow: hidden;
+        }
+
+        .ranking-header {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 0.8rem;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.95rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ranking-icon {
+            font-size: 1.2rem;
+        }
+
+        .ranking-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .ranking-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .ranking-item.top3 {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        .rank-number {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-right: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .rank-number.gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .rank-number.silver {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            color: #000;
+        }
+
+        .rank-number.bronze {
+            background: linear-gradient(135deg, #cd7f32, #daa520);
+            color: #fff;
+        }
+
+        .rank-number.normal {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-secondary);
+        }
+
+        .rank-team-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-primary);
+        }
+
+        .rank-value {
+            font-family: 'Noto Serif SC', serif;
+            color: var(--accent-gold);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .rank-value-bar {
+            width: 60px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-left: 0.5rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .rank-value-bar-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            border-radius: 2px;
         }
 
         /* 球员列表 */
@@ -277,7 +498,6 @@
             background: rgba(255,255,255,0.02);
         }
 
-        /* 位置与潜力标记 */
         .player-position {
             display: flex;
             flex-direction: column;
@@ -314,7 +534,6 @@
             margin-top: 0.1rem;
         }
 
-        /* 球员信息中部 */
         .player-info {
             display: flex;
             flex-direction: column;
@@ -341,7 +560,6 @@
             align-items: center;
         }
 
-        /* 合同与能力值区域 */
         .player-contracts {
             display: flex;
             flex-direction: column;
@@ -409,7 +627,6 @@
             font-size: 0.6rem;
         }
 
-        /* 加载动画 */
         .loading {
             display: none;
             position: fixed;
@@ -442,7 +659,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* 导出层 */
         .export-overlay {
             display: none;
             position: fixed;
@@ -484,6 +700,10 @@
             border: 1px solid var(--accent-gold);
             color: var(--accent-gold);
         }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -501,8 +721,15 @@
             <select id="teamSelect" class="team-selector" disabled>
                 <option value="">请选择球队查看详情...</option>
             </select>
+            
+            <!-- 视图切换标签 -->
+            <div class="view-tabs" id="viewTabs" style="display: none;">
+                <button class="tab-btn active" onclick="switchView('team')">球队详情</button>
+                <button class="tab-btn" onclick="switchView('league')">联赛总览</button>
+            </div>
+            
             <button id="downloadBtn" class="action-btn" disabled>
-                📸 生成完整球队卡 (PNG)
+                📸 生成球队信息卡 (PNG)
             </button>
         </div>
     </div>
@@ -515,10 +742,15 @@
     <div class="main-container" id="mainContainer">
         <div class="empty-state" id="emptyState">
             <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
-            <p style="font-size: 1rem; margin-bottom: 0.5rem;"><请上传Excel文件并选择球队/></p>
+            <p style="font-size: 1rem; margin-bottom: 0.5rem;">请上传Excel文件并选择球队</p>
             <p style="font-size: 0.75rem; opacity: 0.6;">系统将自动合并球员与球队数据</p>
         </div>
-        <div id="cardContainer" style="display: none;"></div>
+        
+        <!-- 球队详情视图 -->
+        <div id="teamView" style="display: none;"></div>
+        
+        <!-- 联赛总览视图 -->
+        <div id="leagueView" class="league-overview hidden"></div>
     </div>
 
     <div class="export-overlay" id="exportOverlay">
@@ -533,6 +765,7 @@
         let workbookData = null;
         let teamsData = {};
         let currentTeam = null;
+        let currentView = 'team';
 
         document.getElementById('fileInput').addEventListener('change', handleFile);
         
@@ -551,7 +784,11 @@
                 
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('teamSelect').disabled = false;
+                document.getElementById('viewTabs').style.display = 'flex';
                 document.getElementById('fileLabel').textContent = `✅ ${file.name} 已加载`;
+                
+                // 自动渲染联赛总览（因为不需要选择特定球队）
+                renderLeagueOverview();
             } catch (err) {
                 console.error('文件解析错误:', err);
                 document.getElementById('loading').classList.remove('active');
@@ -561,7 +798,6 @@
         }
 
         function parseData() {
-            // 获取Sheet - 第一个假设是球员，第二个是球队
             const playerSheetName = workbookData.SheetNames.find(name => name.includes('球员')) || workbookData.SheetNames[0];
             const teamSheetName = workbookData.SheetNames.find(name => name.includes('球队')) || workbookData.SheetNames[1] || workbookData.SheetNames[0];
             
@@ -575,30 +811,45 @@
             const players = XLSX.utils.sheet_to_json(playerSheet, { header: 1 });
             const teams = teamSheet ? XLSX.utils.sheet_to_json(teamSheet, { header: 1 }) : [];
             
-            // 解析球队信息
+            // 解析球队信息 - 修正字段映射，使用表格实际列
             const teamInfoMap = {};
             if (teams.length > 0) {
-                for (let i = 2; i < teams.length; i++) {
-                    const row = teams[i];
-                    if (row[0] && row[0] !== '球队名') {
-                        const teamName = row[0].toString().trim();
-                        if (teamName) {
-                            teamInfoMap[teamName] = {
-                                name: teamName,
-                                manager: row[2] || '未知',
-                                home: row[3] || '-',
-                                capacity: parseNumber(row[4]),
-                                avgAttendance: parseNumber(row[5]),
-                                attendanceRate: parseNumber(row[6]),
-                                revenue: parseNumber(row[7]),
-                                funds: parseNumber(row[8]),
-                                sponsor1: row[9] || '-',
-                                sponsor2: row[10] || '-',
-                                youth: row[11] || '-',
-                                notes: row[12] || ''
-                            };
-                        }
+                // 找到表头行（通常是第2行，索引1）
+                let headerRowIndex = 1;
+                for (let i = 0; i < teams.length; i++) {
+                    if (teams[i][0] === '球队名' || teams[i][0] === '球队名称') {
+                        headerRowIndex = i;
+                        break;
                     }
+                }
+                
+                // 遍历数据行（从表头下一行开始）
+                for (let i = headerRowIndex + 1; i < teams.length; i++) {
+                    const row = teams[i];
+                    if (!row[0]) continue;
+                    
+                    const teamName = row[0].toString().trim();
+                    if (!teamName || teamName === '球队名') continue;
+                    
+                    // 根据Excel实际列索引映射
+                    // 0:球队名, 1:玩家, 2:教练组, 3:主场, 4:座席数, 5:场均上座, 6:上座率, 7:收入, 8:球队资金, 
+                    // 9:赞助商1, 10:赞助商2, 11:青训, 12:其他, 13:年薪总和, 14:球队赛季末剩余资金
+                    teamInfoMap[teamName] = {
+                        name: teamName,
+                        manager: row[2] || '未知',
+                        home: row[3] || '-',
+                        capacity: parseNumber(row[4]),
+                        avgAttendance: parseNumber(row[5]),
+                        attendanceRate: parseNumber(row[6]),
+                        revenue: parseNumber(row[7]),
+                        funds: parseNumber(row[8]), // 球队资金（第9列，索引8）
+                        sponsor1: row[9] || '-',
+                        sponsor2: row[10] || '-',
+                        youth: parseNumber(row[11]), // 青训等级
+                        notes: row[12] || '',
+                        salarySum: parseNumber(row[13]), // 年薪总和（第14列，索引13）
+                        remainingFunds: parseNumber(row[14]) // 球队赛季末剩余资金（第15列，索引14）
+                    };
                 }
             }
             
@@ -648,14 +899,22 @@
                     funds: 0,
                     avgAttendance: 0,
                     attendanceRate: 0,
-                    revenue: 0
+                    revenue: 0,
+                    youth: 0,
+                    salarySum: 0,
+                    remainingFunds: 0
                 };
                 
-                // 计算统计数据
                 const avgCA = teamPlayers.length ? Math.round(teamPlayers.reduce((a, b) => a + b.ca, 0) / teamPlayers.length) : 0;
                 const avgPA = teamPlayers.length ? Math.round(teamPlayers.reduce((a, b) => a + b.pa, 0) / teamPlayers.length) : 0;
                 const avgAge = teamPlayers.length ? (teamPlayers.reduce((a, b) => a + b.age, 0) / teamPlayers.length).toFixed(1) : 0;
                 const totalSalary = teamPlayers.reduce((a, b) => a + b.salary, 0);
+                
+                // 计算赛季末剩余资金：如果表格中有就直接用，否则用球队资金 - 年薪总和
+                let remainingFunds = info.remainingFunds;
+                if (remainingFunds === 0 && info.funds > 0) {
+                    remainingFunds = info.funds - (info.salarySum || totalSalary);
+                }
                 
                 teamsData[name] = {
                     ...info,
@@ -666,7 +925,11 @@
                         avgPA,
                         avgAge,
                         totalSalary
-                    }
+                    },
+                    // 确保使用表格中的资金数据，并计算剩余资金
+                    funds: info.funds,
+                    salarySum: info.salarySum || totalSalary,
+                    remainingFunds: remainingFunds
                 };
             });
             
@@ -696,11 +959,11 @@
             return str;
         }
 
-        // 精确工资显示，不四舍五入，保留所有小数
         function formatMoneyExact(num) {
             if (num === 0) return '€0';
             if (num >= 10000) {
                 const val = num / 10000;
+                // 不四舍五入，保留所有小数位
                 return '€' + val + 'w';
             }
             if (num >= 1000) {
@@ -710,18 +973,45 @@
             return '€' + num;
         }
 
+        // 视图切换
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'team') {
+                document.getElementById('teamView').style.display = 'block';
+                document.getElementById('leagueView').classList.add('hidden');
+                document.getElementById('downloadBtn').style.display = currentTeam ? 'block' : 'none';
+            } else {
+                document.getElementById('teamView').style.display = 'none';
+                document.getElementById('leagueView').classList.remove('hidden');
+                document.getElementById('downloadBtn').style.display = 'none';
+                renderLeagueOverview();
+            }
+        }
+
         document.getElementById('teamSelect').addEventListener('change', function(e) {
             const teamName = e.target.value;
             if (teamName && teamsData[teamName]) {
                 currentTeam = teamsData[teamName];
                 renderTeamCard(currentTeam);
                 document.getElementById('emptyState').style.display = 'none';
-                document.getElementById('cardContainer').style.display = 'block';
-                document.getElementById('downloadBtn').disabled = false;
+                document.getElementById('teamView').style.display = 'block';
+                document.getElementById('leagueView').classList.add('hidden');
+                
+                // 切换到球队标签
+                document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                    btn.classList.toggle('active', idx === 0);
+                });
+                
+                if (currentView === 'team') {
+                    document.getElementById('downloadBtn').style.display = 'block';
+                }
             } else {
                 document.getElementById('emptyState').style.display = 'block';
-                document.getElementById('cardContainer').style.display = 'none';
-                document.getElementById('downloadBtn').disabled = true;
+                document.getElementById('teamView').style.display = 'none';
+                document.getElementById('downloadBtn').style.display = 'none';
             }
         });
 
@@ -729,8 +1019,6 @@
             const playersHtml = team.players.map(p => {
                 const subPosText = p.subPositions.join('、');
                 const hasClause = p.clause > 0;
-                
-                // 判断是否为潜力新星：27岁以下(不含27)且CA < PA
                 const isPotential = p.age < 27 && p.ca < p.pa;
                 const nextCA = isPotential ? Math.min(p.ca + 10, p.pa) : null;
                 
@@ -767,6 +1055,30 @@
                 `;
             }).join('');
 
+            // 计算赛季末剩余资金（如果表格中没有，则实时计算）
+            const salarySum = team.salarySum || team.stats.totalSalary;
+            const remainingFunds = team.remainingFunds || (team.funds - salarySum);
+            const isNegative = remainingFunds < 0;
+
+            // 财务信息行 - 放在统计网格之前，更紧凑的设计
+            const financeHtml = `
+                <div class="finance-row">
+                    <div class="finance-item-inline">
+                        <span class="finance-label-inline">球队资金</span>
+                        <span class="finance-value-inline">${formatMoneyExact(team.funds)}</span>
+                    </div>
+                    <div class="finance-item-inline">
+                        <span class="finance-label-inline">年薪总和</span>
+                        <span class="finance-value-inline">${formatMoneyExact(salarySum)}</span>
+                    </div>
+                    <div class="finance-item-inline">
+                        <span class="finance-label-inline">赛季末剩余</span>
+                        <span class="finance-value-inline ${isNegative ? 'negative' : ''}">${formatMoneyExact(remainingFunds)}</span>
+                        ${isNegative ? '<div class="finance-risk">有无法通过赛季末准入风险</div>' : ''}
+                    </div>
+                </div>
+            `;
+
             const html = `
                 <div class="team-card" id="captureCard">
                     <div class="card-header">
@@ -777,6 +1089,8 @@
                         </div>
                     </div>
                     
+                    ${financeHtml}
+
                     <div class="stats-grid">
                         <div class="stat-item">
                             <div class="stat-value">${team.stats.playerCount}</div>
@@ -815,17 +1129,96 @@
                     </div>
                     
                     <div style="padding: 1rem; text-align: center; font-size: 0.7rem; color: var(--text-secondary); border-top: 1px solid rgba(212, 175, 55, 0.1); background: rgba(0,0,0,0.2);">
-                        加西亚足协官方数据 · Garcia Football Association
+                        萨特第二共和国足协官方数据 · SUTTER REPUBLIC II
                     </div>
                 </div>
             `;
             
-            document.getElementById('cardContainer').innerHTML = html;
+            document.getElementById('teamView').innerHTML = html;
+        }
+
+        // 渲染联赛总览
+        function renderLeagueOverview() {
+            const teams = Object.values(teamsData);
+            
+            // 1. 球场容量排行（从大到小）
+            const stadiumRanking = [...teams].sort((a, b) => b.capacity - a.capacity);
+            
+            // 2. 青训等级排行（从大到小）
+            const youthRanking = [...teams].sort((a, b) => b.youth - a.youth);
+            
+            // 3. 均CA排行（从大到小）
+            const caRanking = [...teams].sort((a, b) => b.stats.avgCA - a.stats.avgCA);
+            
+            // 4. 均PA排行（从大到小）
+            const paRanking = [...teams].sort((a, b) => b.stats.avgPA - a.stats.avgPA);
+            
+            const createRankingCard = (title, icon, teams, valueField, valueFormatter) => {
+                const maxValue = Math.max(...teams.map(t => {
+                    const val = valueField === 'capacity' ? t.capacity : 
+                                valueField === 'youth' ? t.youth : 
+                                valueField === 'avgCA' ? t.stats.avgCA : t.stats.avgPA;
+                    return val;
+                }));
+                
+                return `
+                    <div class="ranking-card">
+                        <div class="ranking-header">
+                            <span>${icon} ${title}</span>
+                            <span style="font-size: 0.75rem; opacity: 0.7;">TOP ${teams.length}</span>
+                        </div>
+                        <div class="ranking-list">
+                            ${teams.map((team, idx) => {
+                                const value = valueField === 'capacity' ? team.capacity : 
+                                            valueField === 'youth' ? team.youth : 
+                                            valueField === 'avgCA' ? team.stats.avgCA : team.stats.avgPA;
+                                const displayValue = valueFormatter ? valueFormatter(value) : value;
+                                
+                                let rankClass = 'normal';
+                                if (idx === 0) rankClass = 'gold';
+                                else if (idx === 1) rankClass = 'silver';
+                                else if (idx === 2) rankClass = 'bronze';
+                                
+                                const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+                                
+                                return `
+                                    <div class="ranking-item ${idx < 3 ? 'top3' : ''}">
+                                        <div class="rank-number ${rankClass}">${idx + 1}</div>
+                                        <div class="rank-team-name">${team.name}</div>
+                                        <div style="display: flex; align-items: center;">
+                                            <div class="rank-value">${displayValue}</div>
+                                            <div class="rank-value-bar" style="display: block; margin-left: 8px;">
+                                                <div class="rank-value-bar-fill" style="width: ${percentage}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            };
+            
+            const html = `
+                <div class="overview-header">
+                    <div class="overview-title">🏆 联赛总览</div>
+                    <div class="overview-subtitle">萨特第二共和国足球超级联赛数据排行榜</div>
+                </div>
+                
+                <div class="ranking-grid">
+                    ${createRankingCard('球场容量', '🏟️', stadiumRanking, 'capacity', v => (v/10000).toFixed(1)+'w')}
+                    ${createRankingCard('青训等级', '⭐', youthRanking, 'youth', v => 'Lv.'+v)}
+                    ${createRankingCard('平均CA', '⚽', caRanking, 'avgCA', v => v)}
+                    ${createRankingCard('平均PA', '📈', paRanking, 'avgPA', v => v)}
+                </div>
+            `;
+            
+            document.getElementById('leagueView').innerHTML = html;
         }
 
         // 下载功能
         document.getElementById('downloadBtn').addEventListener('click', async function() {
-            if (!currentTeam) return;
+            if (!currentTeam || currentView !== 'team') return;
             
             this.disabled = true;
             this.textContent = '生成中...';
@@ -842,7 +1235,7 @@
             document.getElementById('exportOverlay').classList.add('active');
             
             this.disabled = false;
-            this.textContent = '📸 生成完整球队卡 (PNG)';
+            this.textContent = '📸 生成球队信息卡 (PNG)';
         });
 
         function closeExport() {
