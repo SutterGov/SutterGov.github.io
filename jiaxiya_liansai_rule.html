@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>加西亚足球模拟联赛 - 政策规定</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Noto Sans SC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .rule-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .rule-card:hover {
+            transform: translateX(4px);
+            border-left-color: #3b82f6;
+        }
+        
+        .rule-card.important {
+            border-left-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .rule-card.new {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .rule-card.warning {
+            border-left-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+        
+        .tag-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+        .tag-green { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+        .tag-blue { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+        .tag-yellow { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+        .tag-purple { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+        
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .expandable-content.expanded {
+            max-height: 1000px;
+        }
+        
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+        
+        .chevron.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .country-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            margin: 2px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+            font-size: 0.7rem;
+            color: #93c5fd;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+            border-left: 3px solid #3b82f6;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        @media (max-width: 640px) {
+            .container-padding {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="text-slate-200 pb-20">
+
+    <!-- 顶部导航 -->
+    <div class="sticky-header">
+        <div class="container-padding max-w-lg mx-auto py-4 px-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">加西亚足球模拟联赛</h1>
+                    <p class="text-xs text-slate-400 mt-1">政策规定一览表</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterRules('all')" class="filter-btn active px-3 py-1.5 rounded-full text-xs font-medium bg-blue-600 text-white transition-all" data-filter="all">全部</button>
+                    <button onclick="filterRules('important')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300 transition-all" data-filter="important">重要</button>
+                    <button onclick="filterRules('new')" class="filter-btn px-3 py-1.5 rounded-full text-xs font-medium bg-slate-700 text-slate-300 transition-all" data-filter="new">S5新规</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区 -->
+    <div class="container-padding max-w-lg mx-auto mt-6 space-y-4 px-4">
+
+        <!-- 核心数据速览 -->
+        <div class="glass-card rounded-2xl p-4 animate-fade-in">
+            <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">核心参数速览</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700">
+                    <div class="text-2xl font-bold text-blue-400">6000万</div>
+                    <div class="text-xs text-slate-400 mt-1">初始资金</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700">
+                    <div class="text-2xl font-bold text-green-400">6外援</div>
+                    <div class="text-xs text-slate-400 mt-1">外援限制</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700">
+                    <div class="text-2xl font-bold text-yellow-400">126</div>
+                    <div class="text-xs text-slate-400 mt-1">S5 CA上限</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-3 text-center border border-slate-700">
+                    <div class="text-2xl font-bold text-purple-400">27岁</div>
+                    <div class="text-xs text-slate-400 mt-1">停止增长</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则1：基础玩法 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-blue">基础</span>
+                        <span class="text-xs text-slate-500">Rule 01</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">球队经理权限</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        玩家可担任球队经理，拥有完整管理权限：购买和转出球员、选任或解雇主教练和教练组、投资青训体系、扩建主场设施等。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则2：二队制度 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-purple">扩展</span>
+                        <span class="text-xs text-slate-500">Rule 02</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">二队建立机制</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-3">
+                        玩家可花费 <span class="text-yellow-400 font-bold">1000万</span> 建立二队，二队参赛级别比一线队低一个级别。
+                    </p>
+                    <div class="highlight-box">
+                        <p class="text-xs text-slate-400">二队可参与低级别联赛，为一线队培养人才或作为球员储备池。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则3：青训系统 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">培养</span>
+                        <span class="text-xs text-slate-500">Rule 03</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">青训投资规则</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        青训每投资 <span class="text-green-400 font-bold">100万</span> 增长一级，最高可升至 <span class="text-green-400 font-bold">100级</span>。等级越高，产出高潜力年轻球员概率越大。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则4：财政准入（重要） -->
+        <div class="rule-card important glass-card rounded-2xl p-5 animate-fade-in" data-category="all important">
+            <div class="flex items-start justify-between cursor-pointer" onclick="toggleExpand(this)">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-red">重要</span>
+                        <span class="tag tag-yellow">财政</span>
+                        <span class="text-xs text-slate-500">Rule 04</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">财政准入与工资政策</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        联赛实行严格的合同和工资政策。赛季末若球队财政为负数，且被认定无法短期转正，可能无法通过联赛准入。
+                    </p>
+                    <div class="expandable-content mt-3">
+                        <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mt-2">
+                            <p class="text-xs text-red-200 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                财政负数且无法转正 = 准入失败风险
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <svg class="chevron w-5 h-5 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
+
+        <!-- 规则5：数据基础 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-blue">技术</span>
+                        <span class="text-xs text-slate-500">Rule 05</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">联赛模拟与数据来源</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        联赛由AI模拟，使用 <span class="font-bold text-white">FM26（足球经理26）</span> 球员数据作为基础。玩家可从FMINSIDE、搜猪网等在线数据库获取联赛外球员数据。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则6-7：转会规则 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between cursor-pointer" onclick="toggleExpand(this)">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-purple">转会</span>
+                        <span class="text-xs text-slate-500">Rule 06-07</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">转会窗规则</h3>
+                    <div class="space-y-2 text-sm text-slate-300">
+                        <p>• 不限制外部转会和内部转会次数</p>
+                        <p>• <span class="text-red-400 font-semibold">禁止单个转会窗进行二次转会</span>（同一球员一窗内只能转会一次）</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则8：外援政策（重要且复杂） -->
+        <div class="rule-card important glass-card rounded-2xl p-5 animate-fade-in" data-category="all important">
+            <div class="flex items-start justify-between cursor-pointer" onclick="toggleExpand(this)">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-red">重要</span>
+                        <span class="tag tag-yellow">外援</span>
+                        <span class="text-xs text-slate-500">Rule 08</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">外援与内援认定</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-2">
+                        联赛限制 <span class="text-yellow-400 font-bold">6外援</span> 政策。以下国家和地区球员被视为内援：
+                    </p>
+                    <div class="expandable-content">
+                        <div class="bg-slate-800/50 rounded-lg p-3 mt-3 max-h-60 overflow-y-auto">
+                            <p class="text-xs text-slate-400 mb-2 font-semibold">现有内援国家/地区：</p>
+                            <div class="flex flex-wrap" id="domesticCountries">
+                                <!-- 国家标签将通过JS生成 -->
+                            </div>
+                            
+                            <div class="mt-4 pt-3 border-t border-slate-700">
+                                <p class="text-xs text-green-400 mb-2 font-semibold flex items-center gap-1">
+                                    <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                    S5赛季新增内援（第五赛季起生效）：
+                                </p>
+                                <div class="flex gap-2">
+                                    <span class="country-tag border-green-500/30 text-green-400">澳大利亚</span>
+                                    <span class="country-tag border-green-500/30 text-green-400">新西兰</span>
+                                    <span class="country-tag border-green-500/30 text-green-400">阿尔及利亚</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <svg class="chevron w-5 h-5 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
+
+        <!-- 规则9：CA限制 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-blue">能力限制</span>
+                        <span class="text-xs text-slate-500">Rule 09</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">联赛外球员CA上限</h3>
+                    <div class="flex gap-4 mt-3">
+                        <div class="flex-1 bg-slate-800 rounded-lg p-3 text-center border border-slate-700">
+                            <div class="text-lg font-bold text-slate-400">S4赛季</div>
+                            <div class="text-2xl font-bold text-white mt-1">122</div>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <div class="flex-1 bg-blue-900/30 rounded-lg p-3 text-center border border-blue-500/30">
+                            <div class="text-lg font-bold text-blue-400">S5赛季</div>
+                            <div class="text-2xl font-bold text-blue-400 mt-1">126</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-3">从联赛外买入的球员CA不得超过当季限制</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则10：自由球员 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">转会</span>
+                        <span class="text-xs text-slate-500">Rule 10</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">自由球员库</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        联赛设有自由球员库，可在<span class="text-green-400 font-semibold">非转会窗时期</span>购买。购买联赛内自由球员<span class="text-green-400 font-semibold">不需要转会费</span>。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则11：购买方式 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-purple">操作</span>
+                        <span class="text-xs text-slate-500">Rule 11</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">球员购买流程</h3>
+                    <div class="bg-slate-800/50 rounded-lg p-3 mt-2 space-y-2 text-sm text-slate-300">
+                        <div class="flex items-start gap-2">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
+                            <span>将目标球员英文名或APP信息页截图发给联赛负责人</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
+                            <span>负责人给出包含转会费和工资的价格</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
+                            <span>玩家同意则转会立即达成</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则12-14：基础设定 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between cursor-pointer" onclick="toggleExpand(this)">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-blue">基础设定</span>
+                        <span class="text-xs text-slate-500">Rule 12-14</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">资金与球员成长</h3>
+                    <div class="space-y-3 text-sm text-slate-300">
+                        <div class="flex justify-between items-center py-2 border-b border-slate-700/50">
+                            <span>初始资金</span>
+                            <span class="text-yellow-400 font-bold">6000万</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-slate-700/50">
+                            <span>球员退役年龄</span>
+                            <span class="text-white font-semibold">33岁及以上</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span>能力停止增长</span>
+                            <span class="text-white font-semibold">27岁</span>
+                        </div>
+                    </div>
+                    <div class="expandable-content mt-3">
+                        <div class="highlight-box mt-2">
+                            <p class="text-xs text-slate-400">注：27岁后球员CA不再自然增长，但通过特殊道具或事件仍可能提升。</p>
+                        </div>
+                    </div>
+                </div>
+                <svg class="chevron w-5 h-5 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
+
+        <!-- 规则15：术语解释 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-purple">术语</span>
+                        <span class="text-xs text-slate-500">Rule 15</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-3">联赛常用术语</h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="bg-slate-800/50 rounded-lg p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-blue-600 text-white rounded-lg px-2 py-1 text-xs font-bold">CA</span>
+                                <span class="text-sm text-slate-300">Current Ability</span>
+                            </div>
+                            <span class="text-xs text-slate-500">当前能力</span>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-purple-600 text-white rounded-lg px-2 py-1 text-xs font-bold">PA</span>
+                                <span class="text-sm text-slate-300">Potential Ability</span>
+                            </div>
+                            <span class="text-xs text-slate-500">潜力</span>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="bg-green-600 text-white rounded-lg px-2 py-1 text-xs font-bold">牛</span>
+                                <span class="text-sm text-slate-300">年轻球员</span>
+                            </div>
+                            <span class="text-xs text-slate-500">仍有CA增长空间</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则16：新手补助 -->
+        <div class="rule-card glass-card rounded-2xl p-5 animate-fade-in" data-category="all">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">福利</span>
+                        <span class="text-xs text-slate-500">Rule 16</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">新手接队补助</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        联赛进行中接队（非重新建队）的玩家，在球队原财政基础上增加 <span class="text-green-400 font-bold">1000万</span> 新手补助。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- S5新赛季政策（特殊区块） -->
+        <div class="mt-8 mb-4 flex items-center gap-3">
+            <div class="h-px bg-gradient-to-r from-transparent via-green-500 to-transparent flex-1"></div>
+            <span class="text-green-400 font-bold text-sm tracking-wider">第五赛季新增政策</span>
+            <div class="h-px bg-gradient-to-r from-transparent via-green-500 to-transparent flex-1"></div>
+        </div>
+
+        <!-- S5政策1：联赛重排 -->
+        <div class="rule-card new glass-card rounded-2xl p-5 animate-fade-in" data-category="all new">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">S5新规</span>
+                        <span class="tag tag-red">重大变更</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">S5联赛重新准入与分级</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        S5进行联赛重新准入，按照S4联赛战绩进行 <span class="text-white font-bold">16+16两级别联赛</span> 重排。顶级16队，次级16队。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- S5政策2：外援扩展 -->
+        <div class="rule-card new glass-card rounded-2xl p-5 animate-fade-in" data-category="all new">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">S5新规</span>
+                        <span class="tag tag-yellow">外援</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">S5外援国扩展与CA限制</h3>
+                    <div class="space-y-2 text-sm text-slate-300">
+                        <p>• 新增内援国家：<span class="text-green-400">澳大利亚、新西兰、阿尔及利亚</span></p>
+                        <p>• S5赛季CA上限提升至：<span class="text-blue-400 font-bold">126</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- S5政策3：违约金改革 -->
+        <div class="rule-card new glass-card rounded-2xl p-5 animate-fade-in" data-category="all new">
+            <div class="flex items-start justify-between cursor-pointer" onclick="toggleExpand(this)">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">S5新规</span>
+                        <span class="tag tag-red">重要</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">违约金与续约机制改革</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-2">
+                        每个球队自定 <span class="text-yellow-400 font-bold">50%球员</span> 的违约金，剩余球员违约金沿用现有公式。
+                    </p>
+                    <div class="expandable-content">
+                        <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mt-3 space-y-2">
+                            <p class="text-xs text-red-200 font-semibold">⚠️ 重要提示：</p>
+                            <p class="text-xs text-slate-300">• 鉴于违约金离队难度大幅度增长，将<span class="text-yellow-400">调涨球员续约难度</span></p>
+                            <p class="text-xs text-slate-300">• 对于蓄意购买低能力值球员刷50%违约金的，将<span class="text-red-400 font-bold">重罚</span></p>
+                        </div>
+                    </div>
+                </div>
+                <svg class="chevron w-5 h-5 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
+
+        <!-- S5政策4：选秀政策 -->
+        <div class="rule-card new glass-card rounded-2xl p-5 animate-fade-in" data-category="all new">
+            <div class="flex items-start justify-between cursor-pointer" onclick="toggleExpand(this)">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="tag tag-green">S5新规</span>
+                        <span class="tag tag-purple">选秀</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">新增选秀政策（S6起）</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-2">
+                        下赛季增加选秀政策，老T1球队需贡献球员给低级别球队。
+                    </p>
+                    <div class="expandable-content">
+                        <div class="bg-slate-800/50 rounded-lg p-3 mt-3 space-y-2 text-xs text-slate-300">
+                            <div class="flex items-start gap-2">
+                                <span class="bg-blue-600 text-white rounded px-1.5 py-0.5 text-xs font-bold mt-0.5">T1</span>
+                                <span>每个球队拿出两个115+ 或 一个118+（含），或用 <span class="text-yellow-400">800w</span> 免除参加</span>
+                            </div>
+                            <div class="flex items-center justify-center py-1">
+                                <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <span class="bg-green-600 text-white rounded px-1.5 py-0.5 text-xs font-bold mt-0.5">T2-T4</span>
+                                <span>参与联合试训，获得T1球队提供的球员</span>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-700 text-slate-400">
+                                S6开始：T1球队出人给T2球队
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <svg class="chevron w-5 h-5 text-slate-400 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="mt-8 text-center pb-8">
+            <p class="text-xs text-slate-500">加西亚足球模拟联赛 · 政策最终解释权归联赛委员会所有</p>
+            <p class="text-xs text-slate-600 mt-1">最后更新：S5赛季</p>
+        </div>
+
+    </div>
+
+    <script>
+        // 内援国家列表
+        const domesticCountries = [
+            "中国（含港澳台）", "蒙古", "乌兹别克斯坦", "哈萨克斯坦", "土库曼斯坦", 
+            "塔吉克斯坦", "白俄罗斯", "老挝", "缅甸", "泰国", "越南", "不丹", 
+            "尼泊尔", "孟加拉国", "文莱", "东帝汶", "阿富汗", "印度", "斯里兰卡", 
+            "马尔代夫", "菲律宾", "马来西亚", "新加坡", "巴布亚新几内亚", "所罗门群岛", 
+            "瓦努阿图", "斐济", "法属新喀里多尼亚", "美属萨摩亚", "库克群岛", 
+            "萨摩亚", "汤加", "密克罗尼西亚联邦", "北马里亚纳群岛", "帕劳", 
+            "图瓦卢", "瓦利斯和福图纳", "基里巴斯", "瑙鲁", "纽埃", "波黑"
+        ];
+
+        // 生成国家标签
+        function generateCountryTags() {
+            const container = document.getElementById('domesticCountries');
+            domesticCountries.forEach(country => {
+                const span = document.createElement('span');
+                span.className = 'country-tag';
+                span.textContent = country;
+                container.appendChild(span);
+            });
+        }
+
+        // 切换展开/收起
+        function toggleExpand(element) {
+            const content = element.querySelector('.expandable-content');
+            const chevron = element.querySelector('.chevron');
+            
+            if (content && chevron) {
+                content.classList.toggle('expanded');
+                chevron.classList.toggle('rotated');
+            }
+        }
+
+        // 筛选规则
+        function filterRules(category) {
+            // 更新按钮状态
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter === category) {
+                    btn.classList.remove('bg-slate-700', 'text-slate-300');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-slate-700', 'text-slate-300');
+                }
+            });
+
+            // 显示/隐藏规则卡片
+            document.querySelectorAll('.rule-card').forEach(card => {
+                if (category === 'all' || card.dataset.category.includes(category)) {
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCountryTags();
+            
+            // 添加滚动动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.rule-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(card);
+            });
+        });
+
+        // 防止iOS橡皮筋效果
+        document.body.addEventListener('touchmove', function(e) {
+            if (e.target.closest('.max-h-60')) return; // 允许内部滚动
+        }, { passive: true });
+    </script>
+</body>
+</html>
