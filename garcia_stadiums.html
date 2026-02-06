@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>加西亚足球联赛 · 球场巡礼</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-hover: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 16px;
+            --radius-sm: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --accent-primary: #60a5fa;
+            --accent-secondary: #a78bfa;
+            --accent-gradient: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            --border-color: #334155;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            background-color: rgba(var(--bg-secondary-rgb, 255, 255, 255), 0.9);
+        }
+
+        [data-theme="dark"] .header {
+            background-color: rgba(30, 41, 59, 0.9);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 1.25rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-hover);
+            transform: scale(1.05);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .filter-bar {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-value {
+            color: var(--accent-primary);
+            font-weight: 700;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin-left: 1rem;
+        }
+
+        /* Stadium Grid */
+        .stadium-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .stadium-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                padding: 1rem;
+            }
+            
+            .logo-text {
+                font-size: 1rem;
+            }
+            
+            .filter-bar {
+                padding: 0.75rem;
+            }
+            
+            .stats-bar {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* Stadium Card */
+        .stadium-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .stadium-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stadium-image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: var(--bg-hover);
+        }
+
+        .stadium-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .stadium-card:hover .stadium-image {
+            transform: scale(1.05);
+        }
+
+        .stadium-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+            display: flex;
+            align-items: flex-end;
+            padding: 1rem;
+        }
+
+        .stadium-rating {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stadium-rating.high {
+            background: rgba(34, 197, 94, 0.9);
+        }
+
+        .stadium-rating.medium {
+            background: rgba(234, 179, 8, 0.9);
+        }
+
+        .stadium-rating.low {
+            background: rgba(239, 68, 68, 0.9);
+        }
+
+        .stadium-content {
+            padding: 1.25rem;
+        }
+
+        .stadium-header {
+            margin-bottom: 1rem;
+        }
+
+        .stadium-name {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .stadium-location {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stadium-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            background: var(--bg-primary);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-value.capacity {
+            color: var(--accent-primary);
+        }
+
+        .stadium-teams {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+
+        .teams-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .teams-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .team-tag {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .team-tag.more {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: rgba(0,0,0,0.8);
+            transform: rotate(90deg);
+        }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-stat {
+            background: var(--bg-primary);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .modal-stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stadium-card {
+            animation: fadeIn 0.5s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">⚽</div>
+                <div>
+                    <div class="logo-text">加西亚足球联赛</div>
+                    <div class="logo-subtitle">GARCIA FOOTBALL LEAGUE</div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="filter-section">
+        <div class="filter-bar">
+            <div class="filter-group">
+                <button class="filter-btn active" data-filter="all">全部球场</button>
+                <button class="filter-btn" data-filter="province">按省份</button>
+                <button class="filter-btn" data-filter="capacity">按容量</button>
+                <button class="filter-btn" data-filter="rating">按评分</button>
+            </div>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span>共</span>
+                    <span class="stat-value" id="total-count">21</span>
+                    <span>座球场</span>
+                </div>
+                <div class="stat-item">
+                    <span>总容量</span>
+                    <span class="stat-value" id="total-capacity">0</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-content">
+        <h2 class="section-title">🏟️ 球场巡礼</h2>
+        <div class="stadium-grid" id="stadium-grid">
+            <!-- Stadium cards will be inserted here -->
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <img class="modal-image" id="modal-image" src="" alt="">
+            <div class="modal-body">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="modal-title"></h2>
+                    <p class="stadium-location" id="modal-location"></p>
+                </div>
+                <div class="modal-stats" id="modal-stats"></div>
+                <div id="modal-teams"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stadium data
+        const stadiums = [
+            {
+                name: "新阿尔米利亚提公园球场",
+                city: "三宝敦",
+                province: "阿拉尼亚省",
+                capacity: 9500,
+                rating: 18,
+                ratingClass: "high",
+                owner: "三宝敦队",
+                built: "2011",
+                teams: ["三宝敦队", "三宝敦乐邦战士"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/cc079d9415dd494e8e7b399fb2f968d8.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=2026020419293010655C1E0C2F90029861&rrcfp=ddbb2dc7&x-expires=2085564588&x-signature=H%2BZlLOk2F6eYGEDDAdFcMBu5N%2BI%3D"
+            },
+            {
+                name: "新吕伐登黑森林球场",
+                city: "新吕伐登",
+                province: "阿拉尼亚省",
+                capacity: 20000,
+                rating: 10,
+                ratingClass: "low",
+                owner: "坎布尔新吕伐登",
+                built: "1965",
+                teams: ["坎布尔新吕伐登", "新吕伐登猫头鹰镇"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/a5a25afca3454ca09337ab40089ff917.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=2026020618545004B5FE430E8E9B0CF909&rrcfp=ddbb2dc7&x-expires=2085735303&x-signature=NYgJBek21sBXd6NKx64jP5nlt5k%3D"
+            },
+            {
+                name: "新吕伐登黑森林球场外场",
+                city: "新吕伐登",
+                province: "阿拉尼亚省",
+                capacity: 3000,
+                rating: 20,
+                ratingClass: "high",
+                owner: "坎布尔新吕伐登",
+                built: "2026",
+                teams: ["巴峰"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/10cc06e340f443b0b91580edda0f5a2e.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061858173569316C49A15F0FED40&rrcfp=ddbb2dc7&x-expires=2085735511&x-signature=1f5dviEV5lNiJFzcpy0QR1UiZlM%3D"
+            },
+            {
+                name: "马雷克奥体中心",
+                city: "马雷克市",
+                province: "马雷克省",
+                capacity: 15000,
+                rating: 16,
+                ratingClass: "high",
+                owner: "马雷克省政府",
+                built: "1995",
+                teams: ["马雷克青春之城"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/f99e22a0a89d41218879d202bd36814b.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061901021178091F99DAAF1091F6&rrcfp=ddbb2dc7&x-expires=2085735674&x-signature=tzJZuA7kWcbPZa5Kwa%2B3049rlZA%3D"
+            },
+            {
+                name: "新泰体育中心专业足球场",
+                city: "新南城",
+                province: "色温省",
+                capacity: 30000,
+                rating: 18,
+                ratingClass: "high",
+                owner: "新南城",
+                built: "2024",
+                teams: ["南太平洋大学色温校区", "新南城"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/0df9bdbf0efe4753a5a2c8b1860bf211.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061903410DA0BC73A96DF310F7DC&rrcfp=ddbb2dc7&x-expires=2085735833&x-signature=jsQoG4hkY077uY45Y4l39zE1Y0o%3D"
+            },
+            {
+                name: "里拉赫球场",
+                city: "萨乌萨乌",
+                province: "阿拉卡省",
+                capacity: 3500,
+                rating: 13,
+                ratingClass: "medium",
+                owner: "里拉赫区议会",
+                built: "1982",
+                teams: ["皇家萨乌萨乌"],
+                image: "https://p11-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/7dddc5247c194d1583461d79ae85d1a5.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=2026020619061224A1D3F631C11E0D0294&rrcfp=ddbb2dc7&x-expires=2085735985&x-signature=2QOWdB7kKrgpinKDfgl8fxarTUY%3D"
+            },
+            {
+                name: "安倍萨足球场",
+                city: "安倍萨",
+                province: "大巴姆岛省",
+                capacity: 250,
+                rating: 16,
+                ratingClass: "high",
+                owner: "安倍萨镇",
+                built: "1995",
+                teams: ["安倍萨镇"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/9b98acbb5b724bbca5517df25266bd60.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206190818A9501C3EF5947111511C&rrcfp=ddbb2dc7&x-expires=2085736111&x-signature=y27U6cmRlH0g6KsY2IBIESOnlnM%3D"
+            },
+            {
+                name: "哈贾丹橄榄球场",
+                city: "哈贾丹",
+                province: "马雷克省",
+                capacity: 700,
+                rating: 12,
+                ratingClass: "medium",
+                owner: "哈贾丹市橄榄球队",
+                built: "2000",
+                teams: ["哈贾丹太平洋人"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/93bebba01f3e4530bcbaeb0b17ef70f0.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206191430F1D5AFFB8DAE2D111AF3&rrcfp=e875b5a5&x-expires=2085736490&x-signature=qHk4K3u95zLkDkTqKRn7V%2F1QIIk%3D"
+            },
+            {
+                name: "总统国立竞技场",
+                city: "萨乌萨乌",
+                province: "阿拉卡省",
+                capacity: 30000,
+                rating: 19,
+                ratingClass: "high",
+                owner: "萨乌萨乌市议会",
+                built: "2021",
+                teams: ["首都守护者"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/ea573f579d8749ea8379f7a7bb3853ad.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061925467D0B6C5CC773FF0CF4C4&rrcfp=ddbb2dc7&x-expires=2085737162&x-signature=RL4O2uu%2BPSEXsYF3Cl84R5fSHjk%3D"
+            },
+            {
+                name: "瓦巴萨朱运动场",
+                city: "瓦巴萨朱",
+                province: "大巴姆岛省",
+                capacity: 4000,
+                rating: 14,
+                ratingClass: "medium",
+                owner: "瓦巴萨朱树鸦",
+                built: "1993",
+                teams: ["瓦巴萨朱树鸦"],
+                image: "https://p6-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/bdbac3a209d5427cb661031514b26dfe.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206192912D9FCF5C81EBD0A1195DC&rrcfp=e875b5a5&x-expires=2085737355&x-signature=0bvgDi3Pe%2F2gIq0gVztPOasnXEI%3D"
+            },
+            {
+                name: "穆拉哈体育场",
+                city: "穆拉哈",
+                province: "穆拉哈省",
+                capacity: 700,
+                rating: 11,
+                ratingClass: "low",
+                owner: "穆拉哈西部",
+                built: "2004",
+                teams: ["穆拉哈西部"],
+                image: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/32297b7cd6e144d6b99fa5918d2dae5d.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206193037328014E3A7CA5716A587&rrcfp=ddbb2dc7&x-expires=2085737449&x-signature=HwMO1ZhWthLT9Y5yXi54shwFHuw%3D"
+            },
+            {
+                name: "沙伯卢瓦球场",
+                city: "阿尔特弗雷奇群岛市",
+                province: "阿尔特弗雷奇群岛自治区",
+                capacity: 9500,
+                rating: 17,
+                ratingClass: "high",
+                owner: "阿尔特弗雷奇流浪者",
+                built: "2023",
+                teams: ["阿尔特弗雷奇流浪者"],
+                image: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/029c7ca77cc543de81722ca1d3d4b25b.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061935050B993B4ABD5262112D84&rrcfp=ddbb2dc7&x-expires=2085737722&x-signature=3NezprP6G6pBs%2B%2Bd74uPoc8%2FPcE%3D"
+            },
+            {
+                name: "银河竞技场",
+                city: "乌克斯布里德",
+                province: "比列群岛省",
+                capacity: 25000,
+                rating: 20,
+                ratingClass: "high",
+                owner: "诺维奇港",
+                built: "2025",
+                teams: ["诺维奇港"],
+                image: "https://p11-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/f496cec797d74c05879069b85450a25f.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206193802D7A81F3A5E6183115377&rrcfp=ddbb2dc7&x-expires=2085737896&x-signature=EvcvmhXUjFetoB7S7dPMnzlZ%2FGc%3D"
+            },
+            {
+                name: "东木市体育场",
+                city: "东木市",
+                province: "阿拉卡省",
+                capacity: 15000,
+                rating: 15,
+                ratingClass: "medium",
+                owner: "东木市政府",
+                built: "2022",
+                teams: ["东木市职业"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/0b7d138ab86b48c7812584ea13bc006e.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061940163175266A35B1AF19952C&rrcfp=ddbb2dc7&x-expires=2085738029&x-signature=ZK13KF8Kbaqn4opwS8LryiboHbE%3D"
+            },
+            {
+                name: "哈克足球场",
+                city: "哈卡拉托特卡市",
+                province: "泰克马省",
+                capacity: 1000,
+                rating: 12,
+                ratingClass: "medium",
+                owner: "哈卡拉托特卡市议会",
+                built: "2024",
+                teams: ["哈克竞技"],
+                image: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/02037ab6c19840ebb469ad4cc96e4fc7.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061941382BC8E1C37A1229107BF9&rrcfp=ddbb2dc7&x-expires=2085738111&x-signature=D5%2BW%2FD66ZURg%2BTu3QeaKh2mugMc%3D"
+            },
+            {
+                name: "泰克足球场",
+                city: "泰克马市",
+                province: "泰克马省",
+                capacity: 700,
+                rating: 10,
+                ratingClass: "low",
+                owner: "泰克马队",
+                built: "2000",
+                teams: ["泰克马队"],
+                image: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/8c95ae6a6ebd4956a669d07eaaae4773.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061941382BC8E1C37A1229107BF9&rrcfp=ddbb2dc7&x-expires=2085738111&x-signature=EDyJsQxB92oHxfTLNFuvYw9dyO8%3D"
+            },
+            {
+                name: "新泰市泰山区泰山体育场",
+                city: "泰山市",
+                province: "色温省",
+                capacity: 28000,
+                rating: 17,
+                ratingClass: "high",
+                owner: "泰山区议会",
+                built: "2024",
+                teams: ["新泰泰山"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/06f0d5f99cb04f5cb1ac63c6969d1766.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206194501327253C9A66B6316D78D&rrcfp=ddbb2dc7&x-expires=2085738313&x-signature=4y7ywLEEAAs00MpJiy9dEBxU0K4%3D"
+            },
+            {
+                name: "巴峰总统纪念球场",
+                city: "泰克马市",
+                province: "泰克马省",
+                capacity: 16500,
+                rating: 15,
+                ratingClass: "medium",
+                owner: "泰克马市政府",
+                built: "2023",
+                teams: ["泰克马联合"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/a8e1e2180b80494196d16d3264fc4cca.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206195047482BCED43249BC128697&rrcfp=ddbb2dc7&x-expires=2085738660&x-signature=po2Rj%2FlfdX6F0AY1u84U8rjY3bc%3D"
+            },
+            {
+                name: "新利雅得琛止苏丹球场",
+                city: "新利雅得",
+                province: "图马哈省",
+                capacity: 6000,
+                rating: 13,
+                ratingClass: "medium",
+                owner: "新利雅得新月",
+                built: "1999",
+                teams: ["新利雅得新月"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/2001bb993f894c1aa20eefb4ab1f6c23.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=20260206194823D1872BD27D0A25101BD9&rrcfp=ddbb2dc7&x-expires=2085738517&x-signature=VZfV%2BQm0gf53d9kYttLvqoKJtKE%3D"
+            },
+            {
+                name: "白岩球场",
+                city: "伊丽莎白女王镇",
+                province: "大巴姆岛省",
+                capacity: 12000,
+                rating: 16,
+                ratingClass: "high",
+                owner: "伊丽莎白女王镇政府",
+                built: "2004",
+                teams: ["伊丽莎白女王镇联合"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/4e03b84fc665440ab98d045deed227b2.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=2026020619525389D32A8B090FF31106A1&rrcfp=ddbb2dc7&x-expires=2085738786&x-signature=C5EVcdE3OWb2OAPeGZMicWtEnlY%3D"
+            },
+            {
+                name: "东平县运动场",
+                city: "东平县",
+                province: "色温省",
+                capacity: 4500,
+                rating: 12,
+                ratingClass: "medium",
+                owner: "东平县政府",
+                built: "2000",
+                teams: ["东平雄鹰"],
+                image: "https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc_gen_image/1e12d1b6a18d4f989478b45b5ba99181.jpeg~tplv-a9rns2rl98-image_pre_watermark_1_6b.png?lk3s=8e244e95&rcl=202602061941382BC8E1C37A1229107BF9&rrcfp=ddbb2dc7&x-expires=2085738111&x-signature=YKCA9ywqbTjWfAHLCFRmuINxQ6M%3D"
+            },
+        ];
+
+        let currentFilter = 'all';
+        let filteredStadiums = [...stadiums];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStadiums();
+            updateStats();
+            initTheme();
+            
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    applyFilter(btn.dataset.filter);
+                });
+            });
+        });
+
+        function applyFilter(filter) {
+            currentFilter = filter;
+            
+            switch(filter) {
+                case 'capacity':
+                    filteredStadiums = [...stadiums].sort((a, b) => b.capacity - a.capacity);
+                    break;
+                case 'rating':
+                    filteredStadiums = [...stadiums].sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'province':
+                    filteredStadiums = [...stadiums].sort((a, b) => a.province.localeCompare(b.province));
+                    break;
+                default:
+                    filteredStadiums = [...stadiums];
+            }
+            
+            renderStadiums();
+        }
+
+        function renderStadiums() {
+            const grid = document.getElementById('stadium-grid');
+            grid.innerHTML = filteredStadiums.map((stadium, index) => `
+                <div class="stadium-card" onclick="openModal(${index})" style="animation-delay: ${index * 0.05}s">
+                    <div class="stadium-image-container">
+                        <img class="stadium-image" src="${stadium.image}" alt="${stadium.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x200?text=Stadium'">
+                        <div class="stadium-image-overlay"></div>
+                        <div class="stadium-rating ${stadium.ratingClass}">
+                            <span>★</span>
+                            <span>${stadium.rating}/20</span>
+                        </div>
+                    </div>
+                    <div class="stadium-content">
+                        <div class="stadium-header">
+                            <h3 class="stadium-name">${stadium.name}</h3>
+                            <div class="stadium-location">
+                                <span>📍</span>
+                                <span>${stadium.province} · ${stadium.city}</span>
+                            </div>
+                        </div>
+                        <div class="stadium-info-grid">
+                            <div class="info-item">
+                                <div class="info-label">容量</div>
+                                <div class="info-value capacity">${stadium.capacity.toLocaleString()} 人</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">建立年份</div>
+                                <div class="info-value">${stadium.built}</div>
+                            </div>
+                        </div>
+                        <div class="stadium-teams">
+                            <div class="teams-label">使用球队</div>
+                            <div class="teams-list">
+                                ${stadium.teams.slice(0, 2).map(team => `<span class="team-tag">${team}</span>`).join('')}
+                                ${stadium.teams.length > 2 ? `<span class="team-tag more">+${stadium.teams.length - 2}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const totalCapacity = stadiums.reduce((sum, s) => sum + s.capacity, 0);
+            document.getElementById('total-capacity').textContent = totalCapacity.toLocaleString();
+        }
+
+        function openModal(index) {
+            const stadium = filteredStadiums[index];
+            document.getElementById('modal-image').src = stadium.image;
+            document.getElementById('modal-title').textContent = stadium.name;
+            document.getElementById('modal-location').innerHTML = `
+                <span>📍</span>
+                <span>${stadium.province} · ${stadium.city}</span>
+            `;
+            
+            document.getElementById('modal-stats').innerHTML = `
+                <div class="modal-stat">
+                    <div class="modal-stat-value">${stadium.capacity.toLocaleString()}</div>
+                    <div class="modal-stat-label">容纳人数</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value">${stadium.rating}</div>
+                    <div class="modal-stat-label">球场评分</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value">${stadium.built}</div>
+                    <div class="modal-stat-label">建立年份</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value">${stadium.teams.length}</div>
+                    <div class="modal-stat-label">使用球队</div>
+                </div>
+            `;
+            
+            document.getElementById('modal-teams').innerHTML = `
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <div class="teams-label" style="font-size: 0.875rem; margin-bottom: 0.75rem;">使用球队</div>
+                    <div class="teams-list">
+                        ${stadium.teams.map(team => `<span class="team-tag">${team}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <div class="teams-label" style="font-size: 0.875rem; margin-bottom: 0.5rem;">球场所有者</div>
+                    <p style="color: var(--text-secondary);">${stadium.owner}</p>
+                </div>
+            `;
+            
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            if (!event || event.target.id === 'modal') {
+                document.getElementById('modal').classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Theme toggle
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            document.getElementById('theme-icon').textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
