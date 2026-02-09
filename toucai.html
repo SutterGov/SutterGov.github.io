@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修仙农场管理员控制台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --accent-gold: #ffd700;
+            --accent-cyan: #00d9ff;
+            --accent-red: #ff4757;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 水墨背景效果 */
+        .ink-bg {
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 50%);
+        }
+
+        /* 书法字体标题 */
+        .calligraphy {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 金色渐变文字 */
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 卡片样式 */
+        .immortal-card {
+            background: rgba(22, 33, 62, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .immortal-card:hover {
+            border-color: rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        /* 按钮样式 */
+        .btn-immortal {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: var(--accent-gold);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-immortal:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
+            border-color: var(--accent-gold);
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-immortal:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.8);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1) 0%, rgba(255, 71, 87, 0.05) 100%);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            color: var(--accent-red);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2) 0%, rgba(255, 71, 87, 0.1) 100%);
+            border-color: var(--accent-red);
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.3);
+        }
+
+        /* 土地样式 */
+        .land-plot {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(34, 34, 34, 0.3) 100%);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .land-plot:hover {
+            border-color: var(--accent-gold);
+            transform: scale(1.02);
+        }
+
+        .land-plot.protected::after {
+            content: '\f3ed';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        .land-plot.ready {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-gold) 100%);
+            transition: width 0.3s ease;
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.5);
+        }
+
+        /* 模态框动画 */
+        .modal-enter {
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 闪烁提示 */
+        .flash-red {
+            animation: flashRed 0.5s ease 3;
+        }
+
+        @keyframes flashRed {
+            0%, 100% { border-color: rgba(255, 71, 87, 0.3); }
+            50% { border-color: var(--accent-red); box-shadow: 0 0 20px rgba(255, 71, 87, 0.5); }
+        }
+
+        /* 玩家列表项 */
+        .player-item {
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .player-item:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .player-item.active {
+            background: rgba(255, 215, 0, 0.15);
+            border-left-color: var(--accent-gold);
+        }
+
+        /* 日志条目 */
+        .log-entry {
+            border-left: 3px solid var(--accent-gold);
+            padding-left: 10px;
+            margin: 5px 0;
+            font-size: 0.9rem;
+            opacity: 0;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 境界标签 */
+        .realm-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .realm-mortal { background: rgba(100, 100, 100, 0.3); color: #aaa; }
+        .realm-xi { background: rgba(0, 217, 255, 0.2); color: var(--accent-cyan); }
+        .realm-xian { background: rgba(255, 215, 0, 0.2); color: var(--accent-gold); }
+
+        /* 响应式布局 */
+        @media (max-width: 1280px) {
+            .main-layout {
+                grid-template-columns: 200px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            .sidebar-left, .sidebar-right {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body class="ink-bg min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="immortal-card border-b border-yellow-600/30 p-4 sticky top-0 z-50">
+        <div class="flex justify-between items-center max-w-full">
+            <div class="flex items-center gap-4">
+                <i class="fas fa-yin-yang text-3xl text-yellow-500 animate-spin-slow"></i>
+                <h1 class="calligraphy text-2xl text-gold-gradient">修仙农场管理员控制台</h1>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="text-center">
+                    <div class="text-sm text-gray-400">当前回合</div>
+                    <div class="text-2xl font-bold text-cyan-400" id="roundDisplay">第 1 回合</div>
+                </div>
+                
+                <button onclick="game.nextRound()" class="btn-immortal px-6 py-2 rounded-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-forward"></i>
+                    下一回合
+                </button>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="ui.showStats()" class="btn-immortal px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-chart-bar mr-1"></i>查看统计
+                </button>
+                <button onclick="ui.showRules()" class="btn-immortal px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-book mr-1"></i>游戏规则
+                </button>
+                <button onclick="game.downloadSave()" class="btn-immortal px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-download mr-1"></i>下载存档
+                </button>
+                <label class="btn-immortal px-4 py-2 rounded-lg text-sm cursor-pointer">
+                    <i class="fas fa-upload mr-1"></i>上传存档
+                    <input type="file" id="uploadInput" class="hidden" accept=".json" onchange="game.uploadSave(this)">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主体布局 -->
+    <div class="main-layout flex-1 grid grid-cols-[250px_1fr_300px] gap-4 p-4 overflow-hidden" style="min-height: calc(100vh - 140px);">
+        
+        <!-- 左侧边栏：玩家列表 -->
+        <aside class="sidebar-left immortal-card rounded-xl p-4 overflow-y-auto">
+            <h3 class="text-gold-gradient font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-users"></i> 玩家列表 (28)
+            </h3>
+            <div id="playerList" class="space-y-1">
+                <!-- 动态生成 -->
+            </div>
+        </aside>
+
+        <!-- 中央主区域：田地可视化 -->
+        <main class="immortal-card rounded-xl p-6 overflow-y-auto">
+            <div id="currentPlayerHeader" class="mb-6 border-b border-yellow-600/30 pb-4">
+                <h2 class="text-3xl calligraphy text-gold-gradient mb-2" id="currentPlayerName">请选择玩家</h2>
+                <div class="flex gap-4 text-sm">
+                    <span class="realm-tag" id="currentPlayerRealm">-</span>
+                    <span class="text-cyan-400"><i class="fas fa-gem mr-1"></i>晶石: <span id="currentPlayerCrystals">0</span></span>
+                    <span class="text-yellow-400"><i class="fas fa-bolt mr-1"></i>行动点: <span id="currentPlayerAP">0/0</span></span>
+                </div>
+            </div>
+
+            <div id="landsContainer" class="grid gap-4 place-items-center">
+                <!-- 动态生成土地 -->
+                <div class="text-gray-500 text-center py-20">
+                    <i class="fas fa-hand-pointer text-4xl mb-4 opacity-50"></i>
+                    <p>请从左侧选择玩家查看田地</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 右侧边栏：操作面板 -->
+        <aside class="sidebar-right immortal-card rounded-xl p-4 overflow-y-auto">
+            <h3 class="text-gold-gradient font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-gamepad"></i> 操作面板
+            </h3>
+
+            <div id="actionPanel" class="space-y-3 opacity-50 pointer-events-none">
+                <div class="bg-black/30 rounded-lg p-3 mb-4">
+                    <div class="text-sm text-gray-400 mb-1">可用行动点</div>
+                    <div class="text-2xl font-bold text-cyan-400" id="actionPointsDisplay">0 / 0</div>
+                    <div class="progress-bar mt-2">
+                        <div class="progress-fill" id="actionPointsBar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <button onclick="actions.showStealModal()" class="btn-danger w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2" id="btnSteal">
+                    <i class="fas fa-mask"></i> 偷菜
+                </button>
+
+                <button onclick="actions.protect()" class="btn-immortal w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2" id="btnProtect">
+                    <i class="fas fa-shield-alt"></i> 保护田地
+                </button>
+
+                <button onclick="actions.showUpgradeModal()" class="btn-immortal w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2" id="btnUpgrade">
+                    <i class="fas fa-arrow-up"></i> 升级田地
+                </button>
+
+                <button onclick="actions.showAlchemyModal()" class="btn-immortal w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2" id="btnAlchemy">
+                    <i class="fas fa-flask"></i> 炼丹
+                </button>
+
+                <button onclick="actions.showSellModal()" class="btn-immortal w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2" id="btnSell">
+                    <i class="fas fa-coins"></i> 出售灵草
+                </button>
+
+                <button onclick="actions.showBreakthroughModal()" class="btn-immortal w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 border-yellow-500" id="btnBreakthrough">
+                    <i class="fas fa-mountain"></i> 突破境界
+                </button>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-yellow-600/30">
+                <h4 class="text-sm text-gray-400 mb-2">炼丹师等级</h4>
+                <div class="text-lg font-bold text-purple-400" id="alchemistRankDisplay">未解锁</div>
+                <div class="text-xs text-gray-500 mt-1" id="alchemistRateDisplay">-</div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 底部状态栏：日志 -->
+    <footer class="immortal-card border-t border-yellow-600/30 p-4 h-32 overflow-hidden">
+        <h4 class="text-sm text-gold-gradient mb-2 flex items-center gap-2">
+            <i class="fas fa-scroll"></i> 全局日志
+        </h4>
+        <div id="gameLog" class="overflow-y-auto h-20 space-y-1 text-sm">
+            <div class="text-gray-500 italic">游戏初始化完成，等待操作...</div>
+        </div>
+    </footer>
+
+    <!-- 模态框：偷菜 -->
+    <div id="stealModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-2xl w-full mx-4 modal-enter max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">选择偷菜目标</h3>
+            <div id="stealTargetList" class="grid grid-cols-2 gap-2 mb-4 max-h-60 overflow-y-auto">
+                <!-- 动态生成 -->
+            </div>
+            <div id="stealLandSelection" class="hidden mb-4">
+                <h4 class="text-lg mb-2 text-cyan-400">选择目标土地</h4>
+                <div id="stealLandGrid" class="grid grid-cols-2 gap-2">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button onclick="ui.closeModal('stealModal')" class="btn-immortal px-4 py-2 rounded-lg">取消</button>
+                <button onclick="actions.confirmSteal()" id="confirmStealBtn" class="btn-danger px-4 py-2 rounded-lg" disabled>确认偷菜</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：升级田地 -->
+    <div id="upgradeModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-lg w-full mx-4 modal-enter">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">升级田地</h3>
+            <div id="upgradeOptions" class="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                <!-- 动态生成 -->
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button onclick="ui.closeModal('upgradeModal')" class="btn-immortal px-4 py-2 rounded-lg">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：炼丹 -->
+    <div id="alchemyModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-lg w-full mx-4 modal-enter">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">炼丹</h3>
+            <div id="alchemyContent" class="space-y-4">
+                <!-- 动态生成 -->
+            </div>
+            <div class="flex gap-2 justify-end mt-4">
+                <button onclick="ui.closeModal('alchemyModal')" class="btn-immortal px-4 py-2 rounded-lg">取消</button>
+                <button onclick="actions.confirmAlchemy()" class="btn-immortal px-4 py-2 rounded-lg">开始炼丹</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：出售灵草 -->
+    <div id="sellModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-lg w-full mx-4 modal-enter">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">出售灵草</h3>
+            <div id="sellContent" class="space-y-2 mb-4 max-h-60 overflow-y-auto">
+                <!-- 动态生成 -->
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button onclick="ui.closeModal('sellModal')" class="btn-immortal px-4 py-2 rounded-lg">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：突破境界 -->
+    <div id="breakthroughModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-md w-full mx-4 modal-enter text-center">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">突破境界</h3>
+            <div id="breakthroughContent" class="mb-6">
+                <!-- 动态生成 -->
+            </div>
+            <div class="flex gap-2 justify-center">
+                <button onclick="ui.closeModal('breakthroughModal')" class="btn-immortal px-6 py-2 rounded-lg">取消</button>
+                <button onclick="actions.confirmBreakthrough()" id="confirmBreakthroughBtn" class="btn-immortal px-6 py-2 rounded-lg border-yellow-500">确认突破</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：统计 -->
+    <div id="statsModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-6xl w-full mx-4 modal-enter max-h-[90vh] overflow-hidden flex flex-col">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">玩家统计</h3>
+            <div class="overflow-auto flex-1">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 bg-[#16213e]">
+                        <tr class="border-b border-yellow-600/30">
+                            <th class="p-2 text-left cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('name')">玩家名 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-left cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('realm')">境界 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-center cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('lands')">土地数 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-center cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('production')">产量/回合 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-right cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('crystals')">晶石 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-center cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('stolenFrom')">被偷次数 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-center cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('stolenBy')">偷人次数 <i class="fas fa-sort"></i></th>
+                            <th class="p-2 text-center cursor-pointer hover:text-yellow-400" onclick="ui.sortStats('alchemist')">炼丹师 <i class="fas fa-sort"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="statsTableBody" class="divide-y divide-yellow-600/10">
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="ui.closeModal('statsModal')" class="btn-immortal px-6 py-2 rounded-lg">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框：游戏规则 -->
+    <div id="rulesModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-3xl w-full mx-4 modal-enter max-h-[90vh] overflow-y-auto">
+            <h3 class="text-2xl calligraphy text-gold-gradient mb-4">游戏规则</h3>
+            <div class="prose prose-invert max-w-none text-sm leading-relaxed space-y-4" id="rulesContent">
+                <!-- 动态生成 -->
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button onclick="ui.closeModal('rulesModal')" class="btn-immortal px-6 py-2 rounded-lg">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认对话框 -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="immortal-card rounded-xl p-6 max-w-md w-full mx-4 modal-enter text-center">
+            <i class="fas fa-question-circle text-4xl text-yellow-500 mb-4"></i>
+            <h3 class="text-xl font-bold mb-4" id="confirmTitle">确认操作?</h3>
+            <p class="text-gray-400 mb-6" id="confirmMessage">-</p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="ui.closeModal('confirmModal')" class="btn-immortal px-6 py-2 rounded-lg">取消</button>
+                <button onclick="ui.executeConfirmedAction()" class="btn-danger px-6 py-2 rounded-lg">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 游戏配置与常量 ====================
+        const CONFIG = {
+            players: [
+                "三宝敦", "马雷克青春之城", "首都守护者", "阿尔特弗雷奇流浪者", 
+                "瓦巴萨朱树鸦", "东平雄鹰", "拉阿纳", "南太大", "皇家萨乌萨乌", 
+                "安倍萨镇", "哈贾丹太平洋人", "穆拉哈西部", "巴峰", "泰克马联合", 
+                "新南城", "诺维奇港", "坎布尔新吕伐登", "东木市职业", "哈克竞技", 
+                "新泰泰山", "乐邦战士", "新月", "伊丽莎白女王镇联合", "奥顿兰富力", 
+                "奥顿兰海鸥", "新达华哈海岸", "斯波托普城市", "泰克马职业"
+            ],
+            realmNames: {
+                mortal: "凡田境",
+                xi: "息壤境",
+                xian: "灵境"
+            },
+            alchemistRanks: [
+                {name: "未解锁", rate: 0, multiplier: 0, cost: 0},
+                {name: "一阶天师", rate: 0.6, multiplier: 1.5, cost: 0},
+                {name: "二阶天师", rate: 0.7, multiplier: 1.8, cost: 2000},
+                {name: "三阶天师", rate: 0.8, multiplier: 2.2, cost: 5000},
+                {name: "四阶天师", rate: 0.9, multiplier: 2.8, cost: 10000},
+                {name: "五阶天师", rate: 0.95, multiplier: 3.5, cost: 20000},
+                {name: "六阶天师", rate: 0.99, multiplier: 5.0, cost: 50000}
+            ]
+        };
+
+        // ==================== 游戏状态管理 ====================
+        class GameState {
+            constructor() {
+                this.data = this.loadFromStorage() || this.initNewGame();
+                this.currentPlayerId = 0;
+                this.pendingAction = null;
+            }
+
+            initNewGame() {
+                const players = CONFIG.players.map((name, id) => ({
+                    id,
+                    name,
+                    realm: "mortal",
+                    realmTier: 1,
+                    actionPoints: {current: 2, max: 2},
+                    crystals: 0,
+                    alchemistRank: 0,
+                    stats: {stolenFrom: 0, stolenBy: 0},
+                    lands: [{level: 1, crop: null, progress: 0, protected: false}]
+                }));
+
+                return {
+                    round: 1,
+                    players,
+                    log: [{round: 0, message: "游戏初始化完成", timestamp: Date.now()}]
+                };
+            }
+
+            loadFromStorage() {
+                try {
+                    const saved = localStorage.getItem('immortalFarm_save');
+                    if (saved) {
+                        return JSON.parse(saved);
+                    }
+                } catch (e) {
+                    console.error("加载存档失败:", e);
+                }
+                return null;
+            }
+
+            saveToStorage() {
+                try {
+                    localStorage.setItem('immortalFarm_save', JSON.stringify(this.data));
+                } catch (e) {
+                    console.error("保存失败:", e);
+                }
+            }
+
+            getPlayer(id) {
+                return this.data.players.find(p => p.id === id);
+            }
+
+            getCurrentPlayer() {
+                return this.getPlayer(this.currentPlayerId);
+            }
+
+            addLog(message) {
+                this.data.log.unshift({
+                    round: this.data.round,
+                    message,
+                    timestamp: Date.now()
+                });
+                if (this.data.log.length > 100) this.data.log.pop();
+                this.saveToStorage();
+                ui.updateLog();
+            }
+
+            // 计算行动点上限
+            calculateMaxAP(player) {
+                if (player.realm === 'mortal') {
+                    return player.realmTier + 1;
+                } else if (player.realm === 'xi') {
+                    return player.realmTier * 3;
+                } else if (player.realm === 'xian') {
+                    return player.realmTier * 5;
+                }
+                return 2;
+            }
+
+            // 计算灵草价值
+            calculateCropValue(tier) {
+                return tier * 10;
+            }
+
+            // 计算单块土地产量
+            calculateLandYield(land, player) {
+                let baseYield = 1;
+                if (player.realm === 'mortal') {
+                    baseYield = land.level;
+                } else if (player.realm === 'xi') {
+                    baseYield = 10 + (player.realmTier); // 11-20
+                    baseYield *= (1 + (player.realmTier - 1) * 0.1); // 息壤加成
+                } else if (player.realm === 'xian') {
+                    baseYield = 20 + player.realmTier; // 21-25
+                }
+                return Math.floor(baseYield);
+            }
+
+            nextRound() {
+                this.data.round++;
+                this.data.players.forEach(p => {
+                    // 刷新行动点
+                    p.actionPoints.max = this.calculateMaxAP(p);
+                    p.actionPoints.current = p.actionPoints.max;
+                    
+                    // 取消保护状态
+                    p.lands.forEach(land => land.protected = false);
+                    
+                    // 作物生长
+                    p.lands.forEach(land => {
+                        if (land.crop && !land.crop.ready) {
+                            land.progress += 100; // 每回合成熟
+                            if (land.progress >= 100) {
+                                land.crop.ready = true;
+                                land.progress = 100;
+                            }
+                        } else if (!land.crop) {
+                            // 自动种植
+                            let tier = 1;
+                            if (p.realm === 'mortal') tier = land.level;
+                            else if (p.realm === 'xi') tier = 10 + p.realmTier;
+                            else if (p.realm === 'xian') tier = 20 + p.realmTier;
+                            
+                            land.crop = {tier, ready: false};
+                            land.progress = 0;
+                        }
+                    });
+                });
+                
+                this.addLog(`第 ${this.data.round} 回合开始，所有玩家行动点已刷新`);
+                this.saveToStorage();
+                ui.updateAll();
+            }
+        }
+
+        // ==================== 游戏操作逻辑 ====================
+        class Actions {
+            constructor() {
+                this.stealTarget = null;
+                this.stealLandIndex = null;
+                this.selectedLandForAlchemy = null;
+                this.alchemyAmount = 10;
+            }
+
+            checkAP(cost = 1) {
+                const player = game.getCurrentPlayer();
+                if (player.actionPoints.current < cost) {
+                    ui.showToast("行动点不足！", "error");
+                    return false;
+                }
+                return true;
+            }
+
+            checkCrystals(amount) {
+                const player = game.getCurrentPlayer();
+                if (player.crystals < amount) {
+                    ui.flashInsufficientCrystals();
+                    ui.showToast(`晶石不足！需要 ${amount} 晶石`, "error");
+                    return false;
+                }
+                return true;
+            }
+
+            // 偷菜
+            showStealModal() {
+                if (!this.checkAP()) return;
+                
+                const current = game.getCurrentPlayer();
+                const targets = game.data.players.filter(p => p.id !== current.id);
+                
+                const container = document.getElementById('stealTargetList');
+                container.innerHTML = targets.map(p => `
+                    <div onclick="actions.selectStealTarget(${p.id})" 
+                         class="p-3 rounded-lg border border-yellow-600/30 cursor-pointer hover:bg-yellow-600/20 transition-colors ${this.stealTarget?.id === p.id ? 'bg-yellow-600/30 border-yellow-500' : ''}">
+                        <div class="font-bold">${p.name}</div>
+                        <div class="text-xs text-gray-400">${CONFIG.realmNames[p.realm]} ${p.realmTier}${p.realm === 'mortal' ? '级' : '阶'}</div>
+                        <div class="text-xs ${p.lands.some(l => l.protected) ? 'text-cyan-400' : 'text-green-400'}">
+                            ${p.lands.some(l => l.protected) ? '⚠ 受保护' : '✓ 可偷取'}
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('stealLandSelection').classList.add('hidden');
+                document.getElementById('confirmStealBtn').disabled = true;
+                ui.showModal('stealModal');
+            }
+
+            selectStealTarget(playerId) {
+                this.stealTarget = game.getPlayer(playerId);
+                this.stealLandIndex = null;
+                
+                // 更新选中样式
+                const container = document.getElementById('stealTargetList');
+                Array.from(container.children).forEach((el, idx) => {
+                    const p = game.data.players.filter(p => p.id !== game.getCurrentPlayer().id)[idx];
+                    if (p.id === playerId) {
+                        el.classList.add('bg-yellow-600/30', 'border-yellow-500');
+                    } else {
+                        el.classList.remove('bg-yellow-600/30', 'border-yellow-500');
+                    }
+                });
+
+                // 显示土地选择
+                const landContainer = document.getElementById('stealLandGrid');
+                landContainer.innerHTML = this.stealTarget.lands.map((land, idx) => `
+                    <div onclick="actions.selectStealLand(${idx})" 
+                         class="land-plot p-2 rounded ${land.protected ? 'protected opacity-50' : ''} ${this.stealLandIndex === idx ? 'border-yellow-500 border-4' : ''}">
+                        <div class="text-xs text-center">
+                            ${land.crop?.ready ? `<div class="text-yellow-400 font-bold">${land.crop.tier}品灵草</div>` : '<div class="text-gray-500">生长中</div>'}
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('stealLandSelection').classList.remove('hidden');
+            }
+
+            selectStealLand(index) {
+                const land = this.stealTarget.lands[index];
+                if (land.protected) {
+                    ui.showToast("该土地受保护，无法偷取", "error");
+                    return;
+                }
+                if (!land.crop?.ready) {
+                    ui.showToast("该土地没有成熟作物", "error");
+                    return;
+                }
+                
+                this.stealLandIndex = index;
+                
+                // 更新选中样式
+                const container = document.getElementById('stealLandGrid');
+                Array.from(container.children).forEach((el, idx) => {
+                    if (idx === index) {
+                        el.classList.add('border-yellow-500', 'border-4');
+                    } else {
+                        el.classList.remove('border-yellow-500', 'border-4');
+                    }
+                });
+                
+                document.getElementById('confirmStealBtn').disabled = false;
+            }
+
+            confirmSteal() {
+                if (!this.checkAP()) return;
+                
+                const thief = game.getCurrentPlayer();
+                const victim = this.stealTarget;
+                const land = victim.lands[this.stealLandIndex];
+                
+                if (land.protected) {
+                    ui.showToast("偷取失败：目标已开启保护", "error");
+                    thief.actionPoints.current--;
+                    game.addLog(`${thief.name} 试图偷取 ${victim.name} 的作物，但对方已开启保护`);
+                    ui.closeModal('stealModal');
+                    ui.updateAll();
+                    return;
+                }
+                
+                // 计算偷取数量
+                const yield_amount = game.calculateLandYield(land, victim);
+                const stolenAmount = Math.ceil(yield_amount * 0.5);
+                const value = stolenAmount * game.calculateCropValue(land.crop.tier);
+                
+                // 执行偷取
+                thief.crystals += value;
+                thief.actionPoints.current--;
+                thief.stats.stolenBy++;
+                victim.stats.stolenFrom++;
+                
+                // 重置被偷土地
+                land.crop = null;
+                land.progress = 0;
+                
+                game.addLog(`${thief.name} 成功偷取 ${victim.name} 的 ${land.crop?.tier || '?'}品灵草，获得 ${value} 晶石`);
+                ui.closeModal('stealModal');
+                ui.updateAll();
+                
+                this.stealTarget = null;
+                this.stealLandIndex = null;
+            }
+
+            // 保护
+            protect() {
+                if (!this.checkAP()) return;
+                
+                const player = game.getCurrentPlayer();
+                player.lands.forEach(land => land.protected = true);
+                player.actionPoints.current--;
+                
+                game.addLog(`${player.name} 开启了田地保护`);
+                ui.updateAll();
+                ui.showToast("保护已开启", "success");
+            }
+
+            // 升级田地
+            showUpgradeModal() {
+                const player = game.getCurrentPlayer();
+                const container = document.getElementById('upgradeOptions');
+                
+                if (player.realm !== 'mortal') {
+                    container.innerHTML = '<div class="text-gray-400 text-center py-4">当前境界无法升级单个田地</div>';
+                    ui.showModal('upgradeModal');
+                    return;
+                }
+                
+                container.innerHTML = player.lands.map((land, idx) => {
+                    if (land.level >= 10) {
+                        return `<div class="p-3 border border-yellow-600/20 rounded opacity-50">
+                            <div>土地 ${idx + 1}</div>
+                            <div class="text-yellow-600">已达满级 (10级)</div>
+                        </div>`;
+                    }
+                    
+                    const cost = land.level * 100;
+                    const canAfford = player.crystals >= cost && player.actionPoints.current >= 1;
+                    
+                    return `
+                        <div class="p-3 border border-yellow-600/30 rounded flex justify-between items-center ${canAfford ? 'cursor-pointer hover:bg-yellow-600/10' : 'opacity-50'}" 
+                             onclick="${canAfford ? `actions.upgradeLand(${idx})` : ''}">
+                            <div>
+                                <div class="font-bold">土地 ${idx + 1}</div>
+                                <div class="text-sm text-gray-400">当前: ${land.level}级 → ${land.level + 1}级</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-yellow-400">${cost} <i class="fas fa-gem text-xs"></i></div>
+                                <div class="text-xs text-cyan-400">+1 <i class="fas fa-bolt text-xs"></i></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                ui.showModal('upgradeModal');
+            }
+
+            upgradeLand(index) {
+                if (!this.checkAP()) return;
+                
+                const player = game.getCurrentPlayer();
+                const land = player.lands[index];
+                const cost = land.level * 100;
+                
+                if (!this.checkCrystals(cost)) return;
+                
+                player.crystals -= cost;
+                player.actionPoints.current--;
+                land.level++;
+                
+                game.addLog(`${player.name} 将土地${index + 1}升级至${land.level}级`);
+                ui.closeModal('upgradeModal');
+                ui.updateAll();
+                ui.showToast("升级成功！", "success");
+            }
+
+            // 炼丹
+            showAlchemyModal() {
+                const player = game.getCurrentPlayer();
+                
+                if (player.realm === 'mortal') {
+                    ui.showToast("凡田境无法炼丹，请先突破至息壤境", "error");
+                    return;
+                }
+                
+                if (player.alchemistRank === 0) {
+                    // 首次开启炼丹
+                    player.alchemistRank = 1;
+                    game.addLog(`${player.name} 解锁炼丹功能，成为一阶天师`);
+                }
+                
+                const container = document.getElementById('alchemyContent');
+                const rank = CONFIG.alchemistRanks[player.alchemistRank];
+                
+                // 检查可炼丹的土地
+                const availableLands = player.lands.filter(l => l.crop?.ready);
+                
+                if (availableLands.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 py-4">没有成熟作物可供炼丹</div>';
+                    ui.showModal('alchemyModal');
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="bg-black/30 p-3 rounded mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-400">当前等级</span>
+                            <span class="text-purple-400 font-bold">${rank.name}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-400">成丹率</span>
+                            <span class="text-cyan-400">${(rank.rate * 100).toFixed(0)}%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">售价倍数</span>
+                            <span class="text-yellow-400">×${rank.multiplier}</span>
+                        </div>
+                        ${player.alchemistRank < 6 ? `
+                        <div class="mt-3 pt-3 border-t border-gray-600">
+                            <button onclick="actions.upgradeAlchemist()" class="w-full btn-immortal py-2 rounded text-sm">
+                                升级炼丹师 (${CONFIG.alchemistRanks[player.alchemistRank + 1].cost} <i class="fas fa-gem"></i>)
+                            </button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="text-cyan-400 mb-2">选择材料来源</h4>
+                        ${availableLands.map((land, idx) => `
+                            <div onclick="actions.selectAlchemyLand(${player.lands.indexOf(land)})" 
+                                 class="p-3 border rounded cursor-pointer transition-colors ${this.selectedLandForAlchemy === player.lands.indexOf(land) ? 'border-yellow-500 bg-yellow-600/20' : 'border-yellow-600/30 hover:bg-yellow-600/10'}">
+                                <div class="flex justify-between">
+                                    <span>土地 ${player.lands.indexOf(land) + 1}</span>
+                                    <span class="text-yellow-400">${land.crop.tier}品灵草</span>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-1">价值: ${game.calculateCropValue(land.crop.tier)} 晶石/株</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${this.selectedLandForAlchemy !== null ? `
+                    <div class="mt-4">
+                        <h4 class="text-cyan-400 mb-2">投入数量 (最少10株)</h4>
+                        <input type="range" min="10" max="100" value="${this.alchemyAmount}" 
+                               oninput="actions.updateAlchemyAmount(this.value)"
+                               class="w-full accent-yellow-500">
+                        <div class="text-center text-yellow-400 mt-1">${this.alchemyAmount} 株</div>
+                    </div>
+                    ` : ''}
+                `;
+                
+                ui.showModal('alchemyModal');
+            }
+
+            selectAlchemyLand(index) {
+                this.selectedLandForAlchemy = index;
+                this.showAlchemyModal(); // 刷新显示
+            }
+
+            updateAlchemyAmount(val) {
+                this.alchemyAmount = parseInt(val);
+                document.querySelector('#alchemyModal input[type="range"]').nextElementSibling.textContent = val + ' 株';
+            }
+
+            upgradeAlchemist() {
+                const player = game.getCurrentPlayer();
+                if (player.alchemistRank >= 6) return;
+                
+                const nextRank = CONFIG.alchemistRanks[player.alchemistRank + 1];
+                if (!this.checkCrystals(nextRank.cost)) return;
+                
+                player.crystals -= nextRank.cost;
+                player.alchemistRank++;
+                game.addLog(`${player.name} 炼丹师等级提升至${CONFIG.alchemistRanks[player.alchemistRank].name}`);
+                this.showAlchemyModal();
+                ui.updateAll();
+            }
+
+            confirmAlchemy() {
+                if (!this.checkAP()) return;
+                
+                const player = game.getCurrentPlayer();
+                const land = player.lands[this.selectedLandForAlchemy];
+                
+                if (!land.crop?.ready) {
+                    ui.showToast("作物未成熟", "error");
+                    return;
+                }
+                
+                const rank = CONFIG.alchemistRanks[player.alchemistRank];
+                const singleValue = game.calculateCropValue(land.crop.tier);
+                const totalValue = singleValue * this.alchemyAmount;
+                
+                // 计算产出
+                const randomFactor = 0.9 + Math.random() * 0.2; // 0.9-1.1
+                const successRate = rank.rate * randomFactor;
+                const outputValue = Math.floor(totalValue * rank.multiplier * successRate);
+                
+                player.crystals += outputValue;
+                player.actionPoints.current--;
+                
+                // 消耗作物
+                land.crop = null;
+                land.progress = 0;
+                
+                game.addLog(`${player.name} 炼丹成功，投入${this.alchemyAmount}株${land.crop?.tier || '?'}品灵草，获得丹药价值${outputValue}晶石`);
+                ui.closeModal('alchemyModal');
+                ui.updateAll();
+                ui.showToast(`炼丹成功！获得 ${outputValue} 晶石`, "success");
+                
+                this.selectedLandForAlchemy = null;
+                this.alchemyAmount = 10;
+            }
+
+            // 出售灵草
+            showSellModal() {
+                const player = game.getCurrentPlayer();
+                const container = document.getElementById('sellContent');
+                
+                const availableLands = player.lands.filter(l => l.crop?.ready);
+                
+                if (availableLands.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-400 py-4">没有成熟作物可出售</div>';
+                    ui.showModal('sellModal');
+                    return;
+                }
+                
+                container.innerHTML = availableLands.map((land, idx) => {
+                    const value = game.calculateCropValue(land.crop.tier) * game.calculateLandYield(land, player);
+                    return `
+                        <div class="p-3 border border-yellow-600/30 rounded flex justify-between items-center hover:bg-yellow-600/10 cursor-pointer"
+                             onclick="actions.sellCrop(${player.lands.indexOf(land)})">
+                            <div>
+                                <div class="font-bold">土地 ${player.lands.indexOf(land) + 1}</div>
+                                <div class="text-sm text-yellow-400">${land.crop.tier}品灵草 × ${game.calculateLandYield(land, player)}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-green-400 font-bold">${value} <i class="fas fa-gem text-xs"></i></div>
+                                <div class="text-xs text-gray-400">点击出售</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                ui.showModal('sellModal');
+            }
+
+            sellCrop(landIndex) {
+                if (!this.checkAP()) return;
+                
+                const player = game.getCurrentPlayer();
+                const land = player.lands[landIndex];
+                
+                if (!land.crop?.ready) return;
+                
+                const amount = game.calculateLandYield(land, player);
+                const value = game.calculateCropValue(land.crop.tier) * amount;
+                
+                player.crystals += value;
+                player.actionPoints.current--;
+                land.crop = null;
+                land.progress = 0;
+                
+                game.addLog(`${player.name} 出售${land.crop?.tier || '?'}品灵草，获得${value}晶石`);
+                ui.closeModal('sellModal');
+                ui.updateAll();
+                ui.showToast(`出售成功！获得 ${value} 晶石`, "success");
+            }
+
+            // 突破境界
+            showBreakthroughModal() {
+                const player = game.getCurrentPlayer();
+                const container = document.getElementById('breakthroughContent');
+                
+                let content = '';
+                let canBreak = false;
+                let cost = 0;
+                
+                if (player.realm === 'mortal' && player.realmTier >= 10) {
+                    cost = 5000;
+                    canBreak = player.crystals >= cost;
+                    content = `
+                        <div class="text-6xl mb-4">🌱➡️🌿</div>
+                        <div class="text-xl mb-2">凡田境 突破至 息壤境</div>
+                        <div class="text-gray-400 mb-4">土地扩展为2块，解锁炼丹功能</div>
+                        <div class="text-2xl text-yellow-400 mb-2">${cost} <i class="fas fa-gem"></i></div>
+                    `;
+                } else if (player.realm === 'xi' && player.realmTier >= 10) {
+                    cost = 50000;
+                    canBreak = player.crystals >= cost;
+                    content = `
+                        <div class="text-6xl mb-4">🌿➡️🌳</div>
+                        <div class="text-xl mb-2">息壤境 突破至 灵境</div>
+                        <div class="text-gray-400 mb-4">土地扩展为4块，进入天人五衰</div>
+                        <div class="text-2xl text-yellow-400 mb-2">${cost} <i class="fas fa-gem"></i></div>
+                    `;
+                } else if (player.realm === 'xian' && player.realmTier >= 5) {
+                    content = `
+                        <div class="text-6xl mb-4">👑</div>
+                        <div class="text-xl mb-2">已达最高境界</div>
+                        <div class="text-gray-400">您已修炼至灵境五阶，傲视群雄</div>
+                    `;
+                } else {
+                    const nextTier = player.realmTier + 1;
+                    if (player.realm === 'mortal') {
+                        cost = player.realmTier * 100;
+                        canBreak = player.crystals >= cost;
+                        content = `
+                            <div class="text-4xl mb-4">📈</div>
+                            <div class="text-xl mb-2">升级至凡田境 ${nextTier}级</div>
+                            <div class="text-2xl text-yellow-400 mb-2">${cost} <i class="fas fa-gem"></i></div>
+                        `;
+                    } else if (player.realm === 'xi') {
+                        cost = player.realmTier * 800;
+                        canBreak = player.crystals >= cost;
+                        content = `
+                            <div class="text-4xl mb-4">📈</div>
+                            <div class="text-xl mb-2">升阶至息壤境 ${nextTier}阶</div>
+                            <div class="text-gray-400 mb-2">土地产量+10%</div>
+                            <div class="text-2xl text-yellow-400 mb-2">${cost} <i class="fas fa-gem"></i></div>
+                        `;
+                    } else if (player.realm === 'xian') {
+                        cost = player.realmTier * 10000;
+                        canBreak = player.crystals >= cost;
+                        content = `
+                            <div class="text-4xl mb-4">📈</div>
+                            <div class="text-xl mb-2">升阶至灵境 ${nextTier}阶</div>
+                            <div class="text-2xl text-yellow-400 mb-2">${cost} <i class="fas fa-gem"></i></div>
+                        `;
+                    }
+                }
+                
+                container.innerHTML = content;
+                document.getElementById('confirmBreakthroughBtn').style.display = 
+                    (player.realm === 'xian' && player.realmTier >= 5) ? 'none' : 'inline-block';
+                document.getElementById('confirmBreakthroughBtn').disabled = !canBreak;
+                if (!canBreak && cost > 0) {
+                    document.getElementById('confirmBreakthroughBtn').classList.add('opacity-50');
+                } else {
+                    document.getElementById('confirmBreakthroughBtn').classList.remove('opacity-50');
+                }
+                
+                ui.showModal('breakthroughModal');
+            }
+
+            confirmBreakthrough() {
+                const player = game.getCurrentPlayer();
+                let cost = 0;
+                let oldRealm = player.realm;
+                
+                if (player.realm === 'mortal' && player.realmTier >= 10) {
+                    cost = 5000;
+                    if (!this.checkCrystals(cost)) return;
+                    player.realm = 'xi';
+                    player.realmTier = 1;
+                    player.lands = [
+                        {level: 1, crop: null, progress: 0, protected: false},
+                        {level: 1, crop: null, progress: 0, protected: false}
+                    ];
+                    player.alchemistRank = 1;
+                } else if (player.realm === 'xi' && player.realmTier >= 10) {
+                    cost = 50000;
+                    if (!this.checkCrystals(cost)) return;
+                    player.realm = 'xian';
+                    player.realmTier = 1;
+                    player.lands = [
+                        {level: 1, crop: null, progress: 0, protected: false},
+                        {level: 1, crop: null, progress: 0, protected: false},
+                        {level: 1, crop: null, progress: 0, protected: false},
+                        {level: 1, crop: null, progress: 0, protected: false}
+                    ];
+                } else {
+                    if (player.realm === 'mortal') cost = player.realmTier * 100;
+                    else if (player.realm === 'xi') cost = player.realmTier * 800;
+                    else if (player.realm === 'xian') cost = player.realmTier * 10000;
+                    
+                    if (!this.checkCrystals(cost)) return;
+                    player.realmTier++;
+                }
+                
+                player.crystals -= cost;
+                player.actionPoints.max = game.calculateMaxAP(player);
+                
+                const realmText = CONFIG.realmNames[player.realm];
+                game.addLog(`${player.name} 突破成功！达到${realmText} ${player.realmTier}${player.realm === 'mortal' ? '级' : '阶'}`);
+                ui.closeModal('breakthroughModal');
+                ui.updateAll();
+                ui.showToast("突破成功！", "success");
+            }
+        }
+
+        // ==================== UI管理 ====================
+        class UI {
+            constructor() {
+                this.sortField = null;
+                this.sortAsc = true;
+            }
+
+            init() {
+                this.updatePlayerList();
+                this.selectPlayer(0);
+                this.updateLog();
+                this.updateRules();
+            }
+
+            updateAll() {
+                this.updatePlayerList();
+                this.updateCurrentPlayerView();
+                this.updateActionPanel();
+            }
+
+            updatePlayerList() {
+                const container = document.getElementById('playerList');
+                const current = game.getCurrentPlayer();
+                
+                container.innerHTML = game.data.players.map(p => {
+                    const isActive = p.id === game.currentPlayerId;
+                    const apPercent = (p.actionPoints.current / p.actionPoints.max) * 100;
+                    
+                    return `
+                        <div onclick="ui.selectPlayer(${p.id})" 
+                             class="player-item p-3 rounded cursor-pointer ${isActive ? 'active' : ''}">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-sm ${isActive ? 'text-yellow-400' : ''}">${p.name}</span>
+                                <span class="realm-tag realm-${p.realm} text-xs">${p.realmTier}${p.realm === 'mortal' ? '级' : '阶'}</span>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span><i class="fas fa-bolt text-cyan-400"></i> ${p.actionPoints.current}/${p.actionPoints.max}</span>
+                                <span><i class="fas fa-gem text-yellow-400"></i> ${p.crystals}</span>
+                            </div>
+                            <div class="progress-bar mt-1">
+                                <div class="progress-fill" style="width: ${apPercent}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            selectPlayer(id) {
+                game.currentPlayerId = id;
+                this.updatePlayerList();
+                this.updateCurrentPlayerView();
+                this.updateActionPanel();
+            }
+
+            updateCurrentPlayerView() {
+                const player = game.getCurrentPlayer();
+                
+                document.getElementById('currentPlayerName').textContent = player.name;
+                document.getElementById('currentPlayerRealm').textContent = 
+                    `${CONFIG.realmNames[player.realm]} ${player.realmTier}${player.realm === 'mortal' ? '级' : '阶'}`;
+                document.getElementById('currentPlayerRealm').className = `realm-tag realm-${player.realm}`;
+                document.getElementById('currentPlayerCrystals').textContent = player.crystals;
+                document.getElementById('currentPlayerAP').textContent = 
+                    `${player.actionPoints.current}/${player.actionPoints.max}`;
+                
+                // 渲染土地
+                const container = document.getElementById('landsContainer');
+                container.innerHTML = '';
+                
+                // 根据境界确定布局
+                let gridClass = '';
+                if (player.realm === 'mortal') {
+                    gridClass = 'grid-cols-1 max-w-xs';
+                } else if (player.realm === 'xi') {
+                    gridClass = 'grid-cols-2 max-w-md';
+                } else {
+                    gridClass = 'grid-cols-2 max-w-md';
+                }
+                
+                container.className = `grid ${gridClass} gap-4 w-full`;
+                
+                player.lands.forEach((land, idx) => {
+                    const landEl = document.createElement('div');
+                    landEl.className = `land-plot rounded-lg flex flex-col items-center justify-center p-4 ${land.protected ? 'protected' : ''} ${land.crop?.ready ? 'ready' : ''}`;
+                    
+                    let content = '';
+                    if (player.realm === 'mortal') {
+                        content = `
+                            <div class="text-2xl font-bold text-gold-gradient mb-1">${land.level}级</div>
+                            <div class="text-xs text-gray-400 mb-2">凡田境</div>
+                        `;
+                    } else if (player.realm === 'xi') {
+                        content = `
+                            <div class="text-lg font-bold text-cyan-400 mb-1">元婴境</div>
+                            <div class="text-xs text-gray-400 mb-2">息壤 ${player.realmTier}阶</div>
+                        `;
+                    } else {
+                        content = `
+                            <div class="text-lg font-bold text-yellow-400 mb-1">天人${['一','二','三','四','五'][player.realmTier-1]}衰</div>
+                            <div class="text-xs text-gray-400 mb-2">灵境 ${player.realmTier}阶</div>
+                        `;
+                    }
+                    
+                    if (land.crop) {
+                        const yield_amount = game.calculateLandYield(land, player);
+                        content += `
+                            <div class="mt-2 text-center">
+                                <div class="text-3xl mb-1">${land.crop.ready ? '🌾' : '🌱'}</div>
+                                <div class="text-sm ${land.crop.ready ? 'text-yellow-400 font-bold' : 'text-gray-400'}">
+                                    ${land.crop.tier}品灵草
+                                </div>
+                                ${land.crop.ready ? `<div class="text-xs text-green-400">可收获 ×${yield_amount}</div>` : 
+                                  `<div class="progress-bar w-20 mt-1"><div class="progress-fill" style="width: ${land.progress}%"></div></div>`}
+                            </div>
+                        `;
+                    } else {
+                        content += `
+                            <div class="mt-2 text-center text-gray-500">
+                                <div class="text-2xl mb-1">🌑</div>
+                                <div class="text-xs">空地</div>
+                            </div>
+                        `;
+                    }
+                    
+                    landEl.innerHTML = content;
+                    container.appendChild(landEl);
+                });
+            }
+
+            updateActionPanel() {
+                const player = game.getCurrentPlayer();
+                const panel = document.getElementById('actionPanel');
+                
+                // 检查是否有选中玩家（实际游戏中始终有，但初始状态可能需要处理）
+                panel.classList.remove('opacity-50', 'pointer-events-none');
+                
+                // 更新行动点显示
+                const apPercent = (player.actionPoints.current / player.actionPoints.max) * 100;
+                document.getElementById('actionPointsDisplay').textContent = 
+                    `${player.actionPoints.current} / ${player.actionPoints.max}`;
+                document.getElementById('actionPointsBar').style.width = `${apPercent}%`;
+                
+                // 更新按钮状态
+                const hasAP = player.actionPoints.current >= 1;
+                ['btnSteal', 'btnProtect', 'btnUpgrade', 'btnAlchemy', 'btnSell', 'btnBreakthrough'].forEach(id => {
+                    document.getElementById(id).disabled = !hasAP;
+                });
+                
+                // 炼丹师显示
+                if (player.realm === 'mortal') {
+                    document.getElementById('alchemistRankDisplay').textContent = '未解锁';
+                    document.getElementById('alchemistRateDisplay').textContent = '需突破至息壤境';
+                } else {
+                    const rank = CONFIG.alchemistRanks[player.alchemistRank];
+                    document.getElementById('alchemistRankDisplay').textContent = rank.name;
+                    document.getElementById('alchemistRateDisplay').textContent = 
+                        `成丹率 ${(rank.rate * 100).toFixed(0)}% | 售价×${rank.multiplier}`;
+                }
+            }
+
+            updateLog() {
+                const container = document.getElementById('gameLog');
+                container.innerHTML = game.data.log.map(entry => `
+                    <div class="log-entry">
+                        <span class="text-yellow-600 text-xs">[第${entry.round}回合]</span>
+                        <span class="text-gray-300">${entry.message}</span>
+                    </div>
+                `).join('');
+            }
+
+            // 统计模态框
+            showStats() {
+                this.updateStatsTable();
+                this.showModal('statsModal');
+            }
+
+            updateStatsTable() {
+                const tbody = document.getElementById('statsTableBody');
+                let players = [...game.data.players];
+                
+                if (this.sortField) {
+                    players.sort((a, b) => {
+                        let valA, valB;
+                        switch(this.sortField) {
+                            case 'name': valA = a.name; valB = b.name; break;
+                            case 'realm': 
+                                const realmOrder = {mortal: 0, xi: 1, xian: 2};
+                                valA = realmOrder[a.realm] * 100 + a.realmTier;
+                                valB = realmOrder[b.realm] * 100 + b.realmTier;
+                                break;
+                            case 'lands': valA = a.lands.length; valB = b.lands.length; break;
+                            case 'production': 
+                                valA = a.lands.reduce((sum, l) => sum + (l.crop?.ready ? game.calculateLandYield(l, a) : 0), 0);
+                                valB = b.lands.reduce((sum, l) => sum + (l.crop?.ready ? game.calculateLandYield(l, b) : 0), 0);
+                                break;
+                            case 'crystals': valA = a.crystals; valB = b.crystals; break;
+                            case 'stolenFrom': valA = a.stats.stolenFrom; valB = b.stats.stolenFrom; break;
+                            case 'stolenBy': valA = a.stats.stolenBy; valB = b.stats.stolenBy; break;
+                            case 'alchemist': valA = a.alchemistRank; valB = b.alchemistRank; break;
+                            default: valA = 0; valB = 0;
+                        }
+                        
+                        if (typeof valA === 'string') {
+                            return this.sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                        }
+                        return this.sortAsc ? valA - valB : valB - valA;
+                    });
+                }
+                
+                tbody.innerHTML = players.map(p => {
+                    const production = p.lands.reduce((sum, l) => 
+                        sum + (l.crop?.ready ? game.calculateLandYield(l, p) : 0), 0);
+                    const alchemistName = p.realm === 'mortal' ? '-' : CONFIG.alchemistRanks[p.alchemistRank].name;
+                    
+                    return `
+                        <tr class="hover:bg-yellow-600/10">
+                            <td class="p-2 font-bold">${p.name}</td>
+                            <td class="p-2"><span class="realm-tag realm-${p.realm}">${CONFIG.realmNames[p.realm]} ${p.realmTier}${p.realm === 'mortal' ? '级' : '阶'}</span></td>
+                            <td class="p-2 text-center">${p.lands.length}</td>
+                            <td class="p-2 text-center text-yellow-400">${production}</td>
+                            <td class="p-2 text-right text-cyan-400">${p.crystals}</td>
+                            <td class="p-2 text-center ${p.stats.stolenFrom > 0 ? 'text-red-400' : ''}">${p.stats.stolenFrom}</td>
+                            <td class="p-2 text-center ${p.stats.stolenBy > 0 ? 'text-green-400' : ''}">${p.stats.stolenBy}</td>
+                            <td class="p-2 text-center text-purple-400">${alchemistName}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            sortStats(field) {
+                if (this.sortField === field) {
+                    this.sortAsc = !this.sortAsc;
+                } else {
+                    this.sortField = field;
+                    this.sortAsc = true;
+                }
+                this.updateStatsTable();
+            }
+
+            // 规则模态框
+            showRules() {
+                this.showModal('rulesModal');
+            }
+
+            updateRules() {
+                const content = document.getElementById('rulesContent');
+                content.innerHTML = `
+                    <h4 class="text-gold-gradient font-bold text-lg">一、田地系统</h4>
+                    <p>初始每人1块1级凡田。凡田1-10级产出对应品级灵草。突破10级→1阶息壤（消耗5000晶石），获得2块土地，种植11-20级等效灵草。息壤1-10阶每阶增产10%。突破10阶息壤→1阶灵境（消耗50000晶石），获得4块土地，种植21-25级等效灵草。</p>
+                    
+                    <h4 class="text-gold-gradient font-bold text-lg mt-4">二、行动点数</h4>
+                    <p>凡田境：等级+1点/回合。息壤境：阶数×3点/回合。灵境：阶数×5点/回合。每回合刷新，不累计。</p>
+                    
+                    <h4 class="text-gold-gradient font-bold text-lg mt-4">三、操作指令（各消耗1点）</h4>
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li><strong>偷菜：</strong>选择目标→选择土地→若未保护则成功，窃取50%产量（向上取整）</li>
+                        <li><strong>保护：</strong>本回合保护全部土地，使所有偷菜失败</li>
+                        <li><strong>升级田地：</strong>消耗晶石提升凡田等级（当前等级×100）</li>
+                    </ul>
+                    
+                    <h4 class="text-gold-gradient font-bold text-lg mt-4">四、晶石经济</h4>
+                    <p>出售灵草：N品=N×10晶石。升级 田地消耗当前等级×100晶石。境界突破：凡田→息壤5000，息壤升阶当前阶×800，息壤→灵境50000，灵境升阶当前阶×10000。</p>
+                    
+                    <h4 class="text-gold-gradient font-bold text-lg mt-4">五、炼丹系统（息壤境开启）</h4>
+                    <p>炼丹师共六阶，影响成丹率和售价倍数。一阶天师初始拥有（成丹率60%，售价×1.5）。升级消耗：二阶2000、三阶5000、四阶10000、五阶20000、六阶50000晶石。</p>
+                    <p>炼丹需投入至少10株同品级成熟灵草，产出价值=投入总价值×售价倍数×随机波动(0.9-1.1)。</p>
+                `;
+            }
+
+            // 模态框控制
+            showModal(id) {
+                const modal = document.getElementById(id);
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            closeModal(id) {
+                const modal = document.getElementById(id);
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            // 提示消息
+            showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                const colors = {
+                    success: 'border-green-500 text-green-400',
+                    error: 'border-red-500 text-red-400',
+                    info: 'border-yellow-500 text-yellow-400'
+                };
+                
+                toast.className = `fixed top-20 right-4 immortal-card border-l-4 ${colors[type]} px-6 py-3 rounded shadow-2xl z-50 modal-enter`;
+                toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-times' : 'fa-info-circle'} mr-2"></i>${message}`;
+                
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // 晶石不足闪烁
+            flashInsufficientCrystals() {
+                const btn = document.getElementById('btnBreakthrough');
+                btn.classList.add('flash-red');
+                setTimeout(() => btn.classList.remove('flash-red'), 1500);
+            }
+        }
+
+        // ==================== 初始化 ====================
+        const game = new GameState();
+        const actions = new Actions();
+        const ui = new UI();
+
+        // 全局暴露（供HTML事件调用）
+        window.game = game;
+        window.actions = actions;
+        window.ui = ui;
+
+        // 启动
+        document.addEventListener('DOMContentLoaded', () => {
+            ui.init();
+            
+            // 定期自动保存（虽然每次操作都已保存，双重保险）
+            setInterval(() => game.saveToStorage(), 30000);
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // 关闭所有模态框
+                ['stealModal', 'upgradeModal', 'alchemyModal', 'sellModal', 'breakthroughModal', 'statsModal', 'rulesModal'].forEach(id => {
+                    document.getElementById(id).classList.add('hidden');
+                    document.getElementById(id).classList.remove('flex');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
