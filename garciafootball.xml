@@ -5,9 +5,16 @@
     <channel>
         <title><![CDATA[garciafootball 标签活动]]></title>
         <description><![CDATA[garciafootball 标签新回帖]]></description>        <link><![CDATA[https://sutterfootball.freeflarum.com]]></link>
-        <pubDate>Tue, 10 Feb 2026 16:55:39 +0000</pubDate>
+        <pubDate>Tue, 10 Feb 2026 17:02:49 +0000</pubDate>
         <atom:link href="https://sutterfootball.freeflarum.com/rss/t/garciafootball" rel="self" type="application/rss+xml" />
 
+                <item>
+            <title><![CDATA[修复推送Rss的公告]]></title>
+            <link>https://sutterfootball.freeflarum.com/d/12166-xiu-fu-tui-song-rssde-gong-gao/1</link>
+            <description><![CDATA[<p>如果你能看到这条消息，证明新闻恢复了实时更新，Rss的问题已经被解决。</p>]]></description>
+            <guid isPermaLink="true">https://sutterfootball.freeflarum.com/d/12166/1</guid>
+            <pubDate>Tue, 10 Feb 2026 16:56:16 +0000</pubDate>
+        </item>
                 <item>
             <title><![CDATA[长帖测试]]></title>
             <link>https://sutterfootball.freeflarum.com/d/12165-chang-tie-ce-shi/1</link>
