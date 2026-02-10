@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>加西亚足球APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e3a5f',
+                        accent: '#c9a227',
+                        dark: {
+                            bg: '#121212',
+                            surface: '#1e1e1e',
+                            border: '#2c2c2c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        
+        * {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+        
+        *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        
+        html, body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        
+        body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .news-card {
+            transition: all 0.2s ease;
+        }
+        
+        .news-card:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        .tag-active {
+            position: relative;
+        }
+        
+        .tag-active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background-color: #10b981;
+            border-radius: 2px;
+        }
+        
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .bottom-nav-item {
+            transition: all 0.2s;
+        }
+        
+        .bottom-nav-item.active {
+            color: #10b981;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pull-refresh {
+            position: absolute;
+            top: -60px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+        }
+        
+        .pull-refresh-spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #e5e7eb;
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .refresh-toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .refresh-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .scroll-container {
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* 球队页面样式 – 扁平风格 */
+        .team-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+        }
+        
+        .team-logo-large {
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .player-card {
+            transition: all 0.2s;
+        }
+        
+        .player-card:active {
+            transform: scale(0.98);
+        }
+        
+        .position-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .position-gk { background: #fbbf24; color: #92400e; }
+        .position-df { background: #3b82f6; color: white; }
+        .position-mf { background: #10b981; color: white; }
+        .position-fw { background: #ef4444; color: white; }
+        
+        .rating-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .tab-active {
+            color: #10b981;
+            border-bottom: 2px solid #10b981;
+        }
+        
+        /* 队徽样式 - 自适应大小 */
+        .team-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .team-logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .team-logo-list {
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+        }
+        
+        .team-logo-detail {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+        
+        .team-logo-small {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+        
+        /* 新闻中的球队标签 */
+        .news-team-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #10b981;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .news-team-tag:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+        
+        .news-team-tag img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+        }
+        
+        /* 资金警告 */
+        .financial-warning {
+            background: linear-gradient(90deg, #fef2f2 0%, #fee2e2 100%);
+            border-left: 4px solid #ef4444;
+            color: #dc2626;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .dark .financial-warning {
+            background: linear-gradient(90deg, #450a0a 0%, #7f1d1d 100%);
+            color: #fca5a5;
+        }
+        
+        /* 文章详情页动画 - 修复版 */
+        .article-page {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+        }
+        
+        .article-page.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 transition-colors duration-300 pb-16">
+
+    <!-- 刷新成功提示 -->
+    <div id="refreshToast" class="refresh-toast">
+        <i class="fas fa-check-circle mr-1"></i> 已更新
+    </div>
+
+    <!-- 顶部状态栏 -->
+    <div class="sticky top-0 z-50 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border transition-colors duration-300" id="mainHeader">
+        <!-- 时间栏 -->
+        <div class="flex justify-between items-center px-4 py-1 text-xs text-gray-500 dark:text-gray-400">
+            <span id="clock">16:10</span>
+            <div class="flex items-center gap-1">
+                <span id="syncStatus" class="text-gray-400 dark:text-gray-500 text-[10px] mr-2">
+                    等待刷新
+                </span>
+                <span>5G</span>
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-full"></i>
+            </div>
+        </div>
+        
+        <!-- 搜索栏 -->
+        <div class="px-4 py-2 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                <img src="https://suttergov.github.io/十周年纪念.png" alt="avatar" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 relative">
+                <input type="text" placeholder="搜索加西亚足球APP..." 
+                       class="w-full bg-gray-100 dark:bg-dark-border text-sm px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:text-gray-200 transition-colors">
+                <i class="fas fa-search absolute right-3 top-2.5 text-gray-400 text-sm"></i>
+            </div>
+            <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+            </button>
+        </div>
+        
+        <!-- 标签栏 - 仅在首页显示 -->
+        <div id="homeTabs" class="flex overflow-x-auto px-2 py-2 gap-6 text-sm font-medium border-t border-gray-100 dark:border-dark-border" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <button onclick="filterByTag('all')" class="tag-btn tag-active text-emerald-600 dark:text-emerald-400 whitespace-nowrap px-2" data-tag="all">全部</button>
+            <button onclick="filterByTag('match')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="match">战报</button>
+            <button onclick="filterByTag('transfer')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="transfer">转会</button>
+            <button onclick="filterByTag('official')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="official">公告</button>
+            <button onclick="filterByTag('analysis')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="analysis">分析</button>
+        </div>
+    </div>
+
+    <!-- 下拉刷新容器 -->
+    <div id="refreshContainer" class="relative">
+        <div id="pullIndicator" class="pull-refresh">
+            <div id="pullSpinner" class="pull-refresh-spinner hidden"></div>
+            <div id="pullText" class="text-gray-500 dark:text-gray-400 text-sm">
+                <i class="fas fa-arrow-down mr-1"></i> 下拉刷新
+            </div>
+        </div>
+
+        <!-- 首页内容 -->
+        <main id="newsFeed" class="divide-y divide-gray-200 dark:divide-dark-border min-h-[60vh] scroll-container">
+        </main>
+
+        <!-- 球队页面 -->
+        <div id="teamPage" class="hidden min-h-[60vh] scroll-container bg-gray-100 dark:bg-dark-bg">
+            <!-- 球队列表 -->
+            <div id="teamList" class="p-4 grid grid-cols-1 gap-3">
+                <!-- 动态加载 -->
+            </div>
+        </div>
+
+        <!-- 球队详情页 -->
+        <div id="teamDetailPage" class="hidden fixed inset-0 z-50 bg-gray-100 dark:bg-dark-bg scroll-container">
+            <!-- 球队详情头部 -->
+            <div class="team-header text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div>
+                
+                <!-- 导航栏 -->
+                <div class="relative z-10 flex items-center justify-between px-4 py-3">
+                    <button onclick="backToTeamList()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span class="font-medium">球队详情</span>
+                    <button onclick="shareTeam()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+                
+                <!-- 球队信息 -->
+                <div class="relative z-10 px-4 pb-6 pt-2">
+                    <div class="flex items-center gap-4">
+                        <div class="team-logo-container team-logo-detail bg-white/10 rounded-lg p-2">
+                            <img id="teamDetailLogo" src="" alt="" class="team-logo-large">
+                        </div>
+                        <div class="flex-1">
+                            <h1 id="teamDetailName" class="text-2xl font-bold mb-1"></h1>
+                            <p id="teamDetailNameEn" class="text-sm opacity-80 mb-2"></p>
+                            <div class="flex items-center gap-2 text-xs flex-wrap">
+                                <span class="bg-white/20 px-2 py-1 rounded">加超联</span>
+                                <span id="teamDetailCoach" class="bg-white/20 px-2 py-1 rounded"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据统计 -->
+                    <div class="grid grid-cols-3 gap-2 mt-4">
+                        <div class="stat-card rounded-lg p-3 text-center">
+                            <div class="text-xs opacity-80">球队资金</div>
+                            <div class="text-lg font-bold" id="teamDetailFunds"></div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center">
+                            <div class="text-xs opacity-80">场均上座</div>
+                            <div class="text-lg font-bold" id="teamDetailAttendance"></div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center">
+                            <div class="text-xs opacity-80">上座率</div>
+                            <div class="text-lg font-bold" id="teamDetailOccupancy"></div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center">
+                            <div class="text-xs opacity-80">球场容量</div>
+                            <div class="text-lg font-bold" id="teamDetailCapacity"></div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center">
+                            <div class="text-xs opacity-80">球队总年薪</div>
+                            <div class="text-lg font-bold" id="teamDetailWages"></div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center">
+                            <div class="text-xs opacity-80">预计季末资金</div>
+                            <div class="text-lg font-bold" id="teamDetailProjected"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 资金警告 -->
+                    <div id="financialWarning" class="hidden mt-3 rounded-lg financial-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>球队资金情况危险，可能无法通过准入</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border sticky top-0 z-40">
+                <div class="flex">
+                    <button onclick="switchTeamTab('squad')" class="team-tab flex-1 py-3 text-sm font-medium text-center tab-active" data-tab="squad">阵容</button>
+                    <button onclick="switchTeamTab('stats')" class="team-tab flex-1 py-3 text-sm font-medium text-center text-gray-500 dark:text-gray-400" data-tab="stats">数据</button>
+                    <button onclick="switchTeamTab('schedule')" class="team-tab flex-1 py-3 text-sm font-medium text-center text-gray-500 dark:text-gray-400" data-tab="schedule">赛程</button>
+                    <button onclick="switchTeamTab('news')" class="team-tab flex-1 py-3 text-sm font-medium text-center text-gray-500 dark:text-gray-400" data-tab="news">动态</button>
+                </div>
+            </div>
+            
+            <!-- 阵容内容 -->
+            <div id="squadContent" class="p-4">
+                <!-- 主教练 - 可点击进入教练详情 -->
+                <div class="mb-4">
+                    <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">主教练</h3>
+                    <div onclick="openCoachDetail()" class="bg-white dark:bg-dark-surface rounded-lg p-4 flex items-center justify-between shadow-sm cursor-pointer active:scale-95 transition-transform">
+                        <div id="coachCard" class="flex-1">
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 dark:text-gray-500 ml-2"></i>
+                    </div>
+                </div>
+                
+                <!-- 球员列表 -->
+                <div id="playersList">
+                    <!-- 按位置分组显示 -->
+                </div>
+            </div>
+            
+            <!-- 其他标签内容（占位） -->
+            <div id="statsContent" class="hidden p-4">
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-8 text-center text-gray-400">
+                    <i class="fas fa-chart-bar text-4xl mb-2"></i>
+                    <p>数据统计功能开发中</p>
+                </div>
+            </div>
+            
+            <div id="scheduleContent" class="hidden p-4">
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-8 text-center text-gray-400">
+                    <i class="fas fa-calendar-alt text-4xl mb-2"></i>
+                    <p>赛程功能开发中</p>
+                </div>
+            </div>
+            
+            <div id="newsContent" class="hidden p-4">
+                <div id="teamNewsList" class="space-y-3">
+                    <!-- 球队相关新闻动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 教练详情页 -->
+        <div id="coachDetailPage" class="hidden fixed inset-0 z-[60] bg-gray-100 dark:bg-dark-bg scroll-container">
+            <div class="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-4 py-3 flex items-center sticky top-0 z-50">
+                <button onclick="backToTeamDetailFromCoach()" class="w-10 h-10 flex items-center justify-center -ml-2">
+                    <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                </button>
+                <span class="font-medium ml-2 dark:text-gray-100">教练团队</span>
+            </div>
+            <div id="coachList" class="p-4 space-y-3">
+            </div>
+        </div>
+
+        <!-- 球员详情页 -->
+        <div id="playerDetailPage" class="hidden fixed inset-0 z-[70] bg-gray-100 dark:bg-dark-bg scroll-container">
+            <!-- 球员头部 -->
+            <div class="relative bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <button onclick="backToTeamDetail()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span class="font-medium">球员详情</span>
+                    <button onclick="sharePlayer()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+                
+                <div class="px-4 pb-6 flex items-end gap-4">
+                    <div class="w-24 h-24 rounded-lg bg-white/20 flex items-center justify-center text-4xl font-bold">
+                        <span id="playerInitial"></span>
+                    </div>
+                    <div class="flex-1 pb-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="playerDetailPosition" class="position-badge"></span>
+                        </div>
+                        <h1 id="playerDetailName" class="text-2xl font-bold mb-1"></h1>
+                        <p id="playerDetailTeam" class="text-sm opacity-80"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 球员数据 -->
+            <div class="p-4 space-y-4">
+                <!-- 能力值 -->
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <h3 class="font-bold mb-3 dark:text-gray-200">能力评估</h3>
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-24 h-24 rounded-full rating-badge flex items-center justify-center text-3xl" id="playerDetailRating">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">当前能力(CA)</span>
+                            <span class="font-bold" id="playerDetailCA"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">潜力(PA)</span>
+                            <span class="font-bold text-emerald-600" id="playerDetailPA"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">年龄</span>
+                            <span class="font-bold" id="playerDetailAge"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">国籍</span>
+                            <span class="font-bold" id="playerDetailNation"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">身高</span>
+                            <span class="font-bold" id="playerDetailHeight"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">体重</span>
+                            <span class="font-bold" id="playerDetailWeight"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 位置信息 -->
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <h3 class="font-bold mb-3 dark:text-gray-200">可打位置</h3>
+                    <div id="playerAllPositions" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+                
+                <!-- 合同信息 -->
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <h3 class="font-bold mb-3 dark:text-gray-200">合同信息</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">所在球队</span>
+                            <span class="font-bold" id="playerDetailTeam2"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">合约到期</span>
+                            <span class="font-bold" id="playerDetailContract"></span>
+                        </div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border">
+                            <span class="text-gray-500">年薪</span>
+                            <span class="font-bold text-emerald-600" id="playerDetailWage"></span>
+                        </div>
+                        <div class="flex justify-between py-2">
+                            <span class="text-gray-500">违约金</span>
+                            <span class="font-bold text-red-500" id="playerDetailClause"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文章详情页 - 修复版 -->
+    <div id="articlePage" class="article-page fixed inset-0 z-50 bg-white dark:bg-dark-bg scroll-container">
+        <div class="sticky top-0 bg-white/95 dark:bg-dark-surface/95 backdrop-blur border-b border-gray-200 dark:border-dark-border px-4 py-2 flex items-center justify-between">
+            <button onclick="closeArticle()" class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                <i class="fas fa-arrow-left text-lg"></i>
+            </button>
+            <span class="font-medium text-sm dark:text-gray-200">加西亚足球APP</span>
+            <button onclick="shareArticle()" class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </div>
+        
+        <article id="articleContent" class="p-4">
+        </article>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-6 py-2 flex justify-between items-center z-40 transition-colors duration-300">
+        <button onclick="switchTab('home')" class="bottom-nav-item active flex flex-col items-center gap-1 text-emerald-600 dark:text-emerald-400" data-tab="home">
+            <i class="fas fa-home text-xl"></i>
+            <span class="text-xs">首页</span>
+        </button>
+        <button onclick="switchTab('match')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500" data-tab="match">
+            <i class="fas fa-trophy text-xl"></i>
+            <span class="text-xs">比赛</span>
+        </button>
+        <button onclick="switchTab('team')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500" data-tab="team">
+            <i class="fas fa-shield-alt text-xl"></i>
+            <span class="text-xs">球队</span>
+        </button>
+        <button onclick="switchTab('video')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500" data-tab="video">
+            <i class="fas fa-play-circle text-xl"></i>
+            <span class="text-xs">视频</span>
+        </button>
+        <button onclick="switchTab('data')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500" data-tab="data">
+            <i class="fas fa-chart-bar text-xl"></i>
+            <span class="text-xs">数据</span>
+        </button>
+    </nav>
+
+    <script>
+        const CONFIG = {
+            owner: 'SutterGov',
+            repo: 'SutterGov.github.io',
+            branch: 'main',
+            rssPath: 'garciafootball.xml',
+            excelUrl: 'https://suttergov.github.io/GarciaDatabase26.xlsx'
+        };
+
+        // 球队队徽映射表 - 更新版
+        const TEAM_LOGOS = {
+            '南太平洋大学色温校区': 'https://suttergov.github.io/南太大新泰.png',
+            '三宝敦': 'https://suttergov.github.io/三宝敦.png',
+            '东平雄鹰': 'https://suttergov.github.io/东平雄鹰.png',
+            '伊丽莎白女王镇联合': 'https://suttergov.github.io/伊丽莎白联合.png',
+            '泰克马联合': 'https://suttergov.github.io/伊斯特伍德联合新2.png',
+            '首都守护者': 'https://suttergov.github.io/哈卡拉托特卡11.png',
+            '哈贾丹太平洋人': 'https://suttergov.github.io/哈贾丹太平洋人.png',
+            '坎布尔新吕伐登': 'https://suttergov.github.io/坎布尔新吕伐登.png',
+            '大同拜仁皇家加西亚': 'https://suttergov.github.io/大同拜仁皇家加西亚.png',
+            '奥顿兰海港': 'https://suttergov.github.io/奥顿兰斯巴达克斯.png',
+            '奥顿兰海鸥': 'https://suttergov.github.io/奥顿兰海港.png',
+            '东木市职业': 'https://suttergov.github.io/孔恩度卢FC.png',
+            '安倍萨镇': 'https://suttergov.github.io/安倍萨城.png',
+            '拉阿纳': 'https://suttergov.github.io/拉阿纳城市竞技.png',
+            '斯波托普城市': 'https://suttergov.github.io/斯波托普城市.png',
+            '新吕伐登猫头鹰镇': 'https://suttergov.github.io/新吕伐登猫头鹰.png',
+            '新南城': 'https://suttergov.github.io/新泰新3.png',
+            '新达华哈海岸': 'https://suttergov.github.io/新达华哈海岸.png',
+            '泰克马职业': 'https://suttergov.github.io/泰克马职业.png',
+            '泰克马队': 'https://suttergov.github.io/泰克马队.png',
+            '瓦巴萨朱树鸦': 'https://suttergov.github.io/瓦巴萨朱树鸦.png',
+            '瓦巴萨朱树鸦B': 'https://suttergov.github.io/瓦巴萨朱树鸦.png',
+            '新泰泰山': 'https://suttergov.github.io/瓦巴萨朱艾奥纳尔.png',
+            '皇家萨乌萨乌': 'https://suttergov.github.io/皇家萨乌萨乌.png',
+            '穆拉哈西部': 'https://suttergov.github.io/穆拉哈西部.png',
+            '三宝敦乐邦战士': 'https://suttergov.github.io/维尔图钢管.png',
+            '色温岱州东岳': 'https://suttergov.github.io/色温岱州东岳.png',
+            '巴峰': 'https://suttergov.github.io/萨乌萨乌新.png',
+            '诺维奇港': 'https://suttergov.github.io/诺维奇港新.png',
+            '北泰克马': 'https://suttergov.github.io/里拉赫飞燕.png',
+            '阿尔特弗雷奇流浪者': 'https://suttergov.github.io/阿尔特弗雷奇流浪者.png',
+            '马雷克青春之城': 'https://suttergov.github.io/马雷克新.png',
+            '哈卡竞技': 'https://suttergov.github.io/哈卡拉托特卡.png',
+            // 新增队徽
+            '新利雅得新月': 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F8b173e002d366de185a0b51b67e71d230f63b72e-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75',
+            '首都-东木联合B': 'https://suttergov.github.io/哈卡拉托特卡11.png',
+            '哈卡拉托特卡海牛': 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F2d2c10be4e5d9a91aada5021b9b551ebd88f3bdc-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75',
+            '伊斯特伍德海岸线': 'https://suttergov.github.io/运动伊斯特伍德.png',
+            '新法鲁大里斯本联盟': 'https://suttergov.github.io/新法鲁新.png',
+            '北泰克马队': 'https://suttergov.github.io/里拉赫飞燕.png',
+            '岱州东岳': 'https://suttergov.github.io/色温岱州东岳.png'
+        };
+
+        // 默认队徽
+        const DEFAULT_LOGO = 'https://duihui.duoduocdn.com/zuqiu/zuqiuzhudui1.png';
+
+        let currentTag = 'all';
+        let currentTab = 'home';
+        let rssData = [];
+        let teamData = [];
+        let playersData = [];
+        let currentTeam = null;
+        let currentCoaches = [];
+        let isRefreshing = false;
+        let touchStartY = 0;
+        let touchCurrentY = 0;
+        let isPulling = false;
+        const PULL_THRESHOLD = 80;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cached = localStorage.getItem('rss_cache');
+            if (cached) {
+                try {
+                    const { data } = JSON.parse(cached);
+                    rssData = data;
+                    renderNews();
+                    updateSyncStatus('cached');
+                } catch (e) {
+                    showEmptyState();
+                }
+            } else {
+                showEmptyState();
+            }
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            initPullToRefresh();
+        });
+
+        function showEmptyState() {
+            document.getElementById('newsFeed').innerHTML = `
+                <div class="p-8 text-center text-gray-400 dark:text-gray-500 mt-10">
+                    <div class="text-4xl mb-3">📡</div>
+                    <p class="mb-2">暂无数据</p>
+                    <p class="text-xs mb-4">下拉刷新或点击首页按钮获取最新内容</p>
+                    <button onclick="loadRSS()" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition">
+                        立即刷新
+                    </button>
+                </div>
+            `;
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}`;
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function initPullToRefresh() {
+            const container = document.getElementById('refreshContainer');
+            const indicator = document.getElementById('pullIndicator');
+            const spinner = document.getElementById('pullSpinner');
+            const text = document.getElementById('pullText');
+            
+            container.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0 && !isRefreshing && currentTab === 'home') {
+                    touchStartY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            }, { passive: true });
+            
+            container.addEventListener('touchmove', (e) => {
+                if (!isPulling || isRefreshing || currentTab !== 'home') return;
+                
+                touchCurrentY = e.touches[0].clientY;
+                const diff = touchCurrentY - touchStartY;
+                
+                if (diff > 0) {
+                    e.preventDefault();
+                    const pullDistance = Math.min(diff * 0.5, 120);
+                    indicator.style.transform = `translateY(${pullDistance}px)`;
+                    
+                    if (pullDistance > PULL_THRESHOLD) {
+                        text.innerHTML = '<i class="fas fa-arrow-up mr-1"></i> 释放刷新';
+                        indicator.classList.add('ready');
+                    } else {
+                        text.innerHTML = '<i class="fas fa-arrow-down mr-1"></i> 下拉刷新';
+                        indicator.classList.remove('ready');
+                    }
+                }
+            }, { passive: false });
+            
+            container.addEventListener('touchend', () => {
+                if (!isPulling || isRefreshing) return;
+                
+                const diff = touchCurrentY - touchStartY;
+                
+                if (diff > PULL_THRESHOLD && !isRefreshing) {
+                    startRefresh();
+                } else {
+                    resetPullIndicator();
+                }
+                
+                isPulling = false;
+                touchStartY = 0;
+                touchCurrentY = 0;
+            });
+        }
+
+        function startRefresh() {
+            isRefreshing = true;
+            const indicator = document.getElementById('pullIndicator');
+            const spinner = document.getElementById('pullSpinner');
+            const text = document.getElementById('pullText');
+            
+            spinner.classList.remove('hidden');
+            text.innerHTML = '<span class="ml-2">刷新中...</span>';
+            indicator.style.transform = `translateY(60px)`;
+            
+            loadRSS().then(() => {
+                showRefreshToast();
+            }).finally(() => {
+                setTimeout(() => {
+                    resetPullIndicator();
+                    isRefreshing = false;
+                }, 500);
+            });
+        }
+
+        function resetPullIndicator() {
+            const indicator = document.getElementById('pullIndicator');
+            const spinner = document.getElementById('pullSpinner');
+            const text = document.getElementById('pullText');
+            
+            indicator.style.transition = 'transform 0.3s';
+            indicator.style.transform = 'translateY(0)';
+            spinner.classList.add('hidden');
+            text.innerHTML = '<i class="fas fa-arrow-down mr-1"></i> 下拉刷新';
+            
+            setTimeout(() => {
+                indicator.style.transition = '';
+            }, 300);
+        }
+
+        function showRefreshToast() {
+            const toast = document.getElementById('refreshToast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        async function loadRSS() {
+            updateSyncStatus('syncing');
+            
+            try {
+                const githubUrl = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.rssPath}?t=${new Date().getTime()}`;
+                
+                let response = await fetch(githubUrl, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/xml, text/xml, */*' },
+                    signal: AbortSignal.timeout(10000)
+                });
+
+                if (!response.ok) {
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://sutterfootball.freeflarum.com/rss/t/garciafootball');
+                    response = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+                }
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const xmlText = await response.text();
+                if (!xmlText.includes('<?xml') && !xmlText.includes('<rss')) {
+                    throw new Error('返回内容不是有效的 RSS');
+                }
+
+                const items = parseRSS(xmlText);
+                if (items.length === 0) throw new Error('RSS 解析结果为空');
+
+                rssData = items;
+                renderNews();
+                updateSyncStatus('success', items.length);
+                
+                localStorage.setItem('rss_cache', JSON.stringify({
+                    data: items,
+                    time: new Date().toISOString()
+                }));
+
+            } catch (error) {
+                console.error('RSS 加载失败:', error);
+                const cached = localStorage.getItem('rss_cache');
+                if (cached) {
+                    try {
+                        const { data, time } = JSON.parse(cached);
+                        rssData = data;
+                        renderNews();
+                        updateSyncStatus('cached', data.length, time);
+                    } catch (e) {
+                        showError('加载失败，且无缓存数据可用');
+                    }
+                } else {
+                    showError('加载失败: ' + error.message);
+                }
+            }
+        }
+
+        function parseRSS(xmlText) {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const parseError = xml.querySelector('parsererror');
+            if (parseError) throw new Error('XML 解析错误');
+
+            const items = xml.querySelectorAll('item');
+            
+            return Array.from(items).map((item, index) => {
+                let title = item.querySelector('title')?.textContent || '无标题';
+                title = title.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1').trim();
+                
+                const link = item.querySelector('link')?.textContent || '';
+                
+                let description = item.querySelector('description')?.textContent || '';
+                description = description.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1').trim();
+                
+                let content = item.querySelector('content\\:encoded')?.textContent || 
+                             item.querySelector('encoded')?.textContent || 
+                             description;
+                content = content.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1').trim();
+                
+                const pubDate = item.querySelector('pubDate')?.textContent || 
+                               item.querySelector('dc\\:date')?.textContent || 
+                               new Date().toISOString();
+                
+                const author = item.querySelector('author')?.textContent || 
+                              item.querySelector('dc\\:creator')?.textContent || 
+                              item.querySelector('creator')?.textContent || 
+                              '加西亚足球APP';
+                
+                const categories = Array.from(item.querySelectorAll('category')).map(c => c.textContent);
+                const category = categories[0] || detectCategory(title);
+                
+                const id = item.querySelector('guid')?.textContent || 
+                          item.querySelector('link')?.textContent || 
+                          index;
+                
+                const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+                const image = imgMatch ? imgMatch[1] : getDefaultImage(category, index);
+                
+                return { id, title, link, description: stripHtml(description).substring(0, 200) + '...', content, pubDate, author, category, image, comments: Math.floor(Math.random() * 100), views: Math.floor(Math.random() * 1000) + 100 };
+            });
+        }
+
+        function detectCategory(title) {
+            const lower = title.toLowerCase();
+            if (lower.includes('战报') || lower.includes('vs') || lower.includes('-') || lower.includes('比赛')) return 'match';
+            if (lower.includes('转会') || lower.includes('签约') || lower.includes('续约') || lower.includes('加盟')) return 'transfer';
+            if (lower.includes('公告') || lower.includes('官方') || lower.includes('通知')) return 'official';
+            if (lower.includes('分析') || lower.includes('战术') || lower.includes('数据')) return 'analysis';
+            return 'news';
+        }
+
+        function getDefaultImage(category, seed) {
+            const images = {
+                match: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=300&fit=crop',
+                transfer: 'https://images.unsplash.com/photo-1522778119026-d647f0565c6a?w=400&h=300&fit=crop',
+                official: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=400&h=300&fit=crop',
+                analysis: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=400&h=300&fit=crop',
+                news: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=400&h=300&fit=crop'
+            };
+            return images[category] || images.news;
+        }
+
+        function updateSyncStatus(status, count, cacheTime) {
+            const el = document.getElementById('syncStatus');
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            switch(status) {
+                case 'syncing':
+                    el.innerHTML = '<i class="fas fa-sync-alt animate-spin mr-1"></i>更新中';
+                    el.className = 'text-emerald-600 dark:text-emerald-400 text-[10px] mr-2';
+                    break;
+                case 'success':
+                    el.innerHTML = `<i class="fas fa-check mr-1"></i>${count}条 ${timeStr}`;
+                    el.className = 'text-emerald-600 dark:text-emerald-400 text-[10px] mr-2';
+                    break;
+                case 'cached':
+                    const cacheDate = new Date(cacheTime);
+                    const cacheTimeStr = `${String(cacheDate.getHours()).padStart(2,'0')}:${String(cacheDate.getMinutes()).padStart(2,'0')}`;
+                    el.innerHTML = `<i class="fas fa-clock mr-1"></i>缓存 ${cacheTimeStr}`;
+                    el.className = 'text-amber-600 dark:text-amber-400 text-[10px] mr-2';
+                    break;
+            }
+        }
+
+        function showError(message) {
+            const feed = document.getElementById('newsFeed');
+            feed.innerHTML = `
+                <div class="p-8 text-center text-red-500 dark:text-red-400">
+                    <div class="text-4xl mb-2">⚠️</div>
+                    <p class="font-medium mb-2">${message}</p>
+                    <button onclick="loadRSS()" class="mt-4 px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition">
+                        重新加载
+                    </button>
+                </div>
+            `;
+            updateSyncStatus('error');
+        }
+
+        function filterByTag(tag) {
+            currentTag = tag;
+            
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.classList.remove('tag-active', 'text-emerald-600', 'dark:text-emerald-400');
+                btn.classList.add('text-gray-600', 'dark:text-gray-400');
+                if (btn.dataset.tag === tag) {
+                    btn.classList.add('tag-active', 'text-emerald-600', 'dark:text-emerald-400');
+                    btn.classList.remove('text-gray-600', 'dark:text-gray-400');
+                }
+            });
+            
+            renderNews();
+        }
+
+        // 检测新闻中是否包含球队名
+        function detectTeamsInNews(title, description) {
+            const teams = [];
+            const text = (title + ' ' + description).toLowerCase();
+            
+            for (const teamName in TEAM_LOGOS) {
+                if (text.includes(teamName.toLowerCase())) {
+                    teams.push(teamName);
+                }
+            }
+            
+            return teams;
+        }
+
+        // 获取球队ID
+        function getTeamIdByName(teamName) {
+            const team = teamData.find(t => t.name === teamName);
+            return team ? team.id : null;
+        }
+
+        function renderNews() {
+            const feed = document.getElementById('newsFeed');
+            feed.innerHTML = '';
+            
+            const filtered = currentTag === 'all' ? rssData : rssData.filter(p => p.category === currentTag);
+            
+            if (filtered.length === 0) {
+                feed.innerHTML = `
+                    <div class="p-8 text-center text-gray-400 dark:text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-3"></i>
+                        <p>暂无相关文章</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filtered.forEach((post, index) => {
+                const card = document.createElement('div');
+                card.className = 'news-card bg-white dark:bg-dark-surface p-4 flex gap-4 cursor-pointer fade-in';
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.onclick = () => openArticle(post);
+                
+                const tagColors = {
+                    match: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+                    transfer: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+                    official: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
+                    analysis: 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
+                    news: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                };
+                
+                const tagNames = { match: '战报', transfer: '转会', official: '公告', analysis: '分析', news: '新闻' };
+                
+                const tagClass = tagColors[post.category] || tagColors.news;
+                const tagName = tagNames[post.category] || '新闻';
+                
+                // 检测相关球队
+                const relatedTeams = detectTeamsInNews(post.title, post.description);
+                let teamTagsHtml = '';
+                if (relatedTeams.length > 0) {
+                    teamTagsHtml = `
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            ${relatedTeams.map(team => `
+                                <span class="news-team-tag" onclick="event.stopPropagation(); goToTeamByName('${team}')">
+                                    <img src="${getTeamLogo(team)}" alt="${team}" onerror="this.src='${DEFAULT_LOGO}'">
+                                    ${team}
+                                </span>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 leading-snug mb-2 line-clamp-2">
+                            ${escapeHtml(post.title)}
+                        </h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">
+                            ${escapeHtml(post.description)}
+                        </p>
+                        <div class="flex items-center text-xs text-gray-400 dark:text-gray-500 gap-3">
+                            <span class="${tagClass} px-2 py-0.5 rounded font-medium">${tagName}</span>
+                            <span class="flex items-center gap-1"><i class="far fa-comment-alt"></i>${post.comments}</span>
+                            <span>${formatTime(post.pubDate)}</span>
+                        </div>
+                        ${teamTagsHtml}
+                    </div>
+                    <div class="w-24 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
+                        <img src="${post.image}" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                    </div>
+                `;
+                
+                feed.appendChild(card);
+            });
+        }
+
+        // 根据球队名跳转到球队页
+        function goToTeamByName(teamName) {
+            const team = teamData.find(t => t.name === teamName);
+            if (team) {
+                // 切换到球队标签
+                switchTab('team');
+                // 打开球队详情
+                setTimeout(() => openTeamDetail(team.id), 100);
+            } else {
+                alert('球队数据尚未加载，请先访问球队页面');
+            }
+        }
+
+        // 修复：文章详情页打开函数
+        function openArticle(post) {
+            const page = document.getElementById('articlePage');
+            const content = document.getElementById('articleContent');
+            
+            const tagNames = { match: '比赛战报', transfer: '转会动态', official: '官方公告', analysis: '战术分析', news: '新闻报道' };
+            
+            // 检测相关球队
+            const relatedTeams = detectTeamsInNews(post.title, post.description);
+            let teamTagsHtml = '';
+            if (relatedTeams.length > 0) {
+                teamTagsHtml = `
+                    <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+                        <span class="text-sm text-gray-500 dark:text-gray-400 mr-2">相关球队：</span>
+                        ${relatedTeams.map(team => `
+                            <span class="news-team-tag" onclick="event.stopPropagation(); goToTeamByName('${team}')">
+                                <img src="${getTeamLogo(team)}" alt="${team}" onerror="this.src='${DEFAULT_LOGO}'">
+                                ${team}
+                            </span>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = `
+                <div class="mb-4">
+                    <span class="inline-block px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs rounded mb-2 font-medium">
+                        ${tagNames[post.category] || '新闻'}
+                    </span>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-3">
+                        ${escapeHtml(post.title)}
+                    </h1>
+                    <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-dark-border pb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700 dark:text-gray-300">${escapeHtml(post.author)}</span>
+                            <span>•</span>
+                            <span>${formatTime(post.pubDate)}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center gap-1"><i class="far fa-eye"></i>${post.views}</span>
+                            <span class="flex items-center gap-1"><i class="far fa-comment"></i>${post.comments}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base">
+                    ${post.content}
+                </div>
+                ${teamTagsHtml}
+            `;
+            
+            // 修复：添加 show 类来触发滑入动画
+            page.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 修复：文章详情页关闭函数
+        function closeArticle() {
+            const page = document.getElementById('articlePage');
+            page.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function shareArticle() {
+            const title = document.querySelector('#articleContent h1')?.textContent || '加西亚足球APP';
+            if (navigator.share) {
+                navigator.share({ title: title, text: '来自加西亚足球APP', url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => alert('链接已复制到剪贴板'));
+            }
+        }
+
+        // ========== 球队页面功能 ==========
+        
+        // 获取队徽URL
+        function getTeamLogo(teamName) {
+            return TEAM_LOGOS[teamName] || DEFAULT_LOGO;
+        }
+        
+        // 解析位置分类 - 根据第一个位置判断
+        function getPositionCategory(position) {
+            if (!position) return 'MF';
+            
+            const posList = position.split(/[,，]/).map(p => p.trim());
+            const firstPos = posList[0];
+            
+            // 门将
+            if (firstPos.includes('门将') || firstPos.includes('守门')) return 'GK';
+            
+            // 后卫 - X卫
+            if (firstPos.includes('后卫') || firstPos.includes('后卫') || 
+                firstPos.includes('后卫') || firstPos.includes('后卫') ||
+                firstPos.includes('后卫') || firstPos.includes('后卫') ||
+                firstPos.includes('后卫') || firstPos.endsWith('卫')) return 'DF';
+            
+            // 前锋 - X锋
+            if (firstPos.includes('前锋') || firstPos.includes('中锋') || 
+                firstPos.includes('影锋') || firstPos.includes('边锋') ||
+                firstPos.endsWith('锋')) return 'FW';
+            
+            // 中场 - X场、X腰
+            if (firstPos.includes('中场') || firstPos.includes('前卫') || 
+                firstPos.includes('后腰') || firstPos.includes('前腰') ||
+                firstPos.includes('中前卫') || firstPos.includes('组织') ||
+                firstPos.includes('进攻') || firstPos.endsWith('场') || 
+                firstPos.endsWith('腰')) return 'MF';
+            
+            return 'MF';
+        }
+        
+        // 获取位置颜色类
+        function getPositionColorClass(pos) {
+            const map = { 'GK': 'position-gk', 'DF': 'position-df', 'MF': 'position-mf', 'FW': 'position-fw' };
+            return map[pos] || 'position-mf';
+        }
+        
+        // 解析教练字符串，提取所有教练
+        function parseCoaches(coachStr) {
+            if (!coachStr) return [];
+            // 按顿号、逗号、斜杠分隔
+            return coachStr.split(/[、,，/]/).map(c => c.trim()).filter(c => c);
+        }
+        
+        // 格式化数字，不显示单位
+        function formatNumberRaw(num) {
+            if (!num) return '0';
+            return num.toString();
+        }
+        
+        async function loadTeamData() {
+            const teamList = document.getElementById('teamList');
+            teamList.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-emerald-600"></i><p class="text-sm text-gray-500 mt-2">加载球队数据...</p></div>';
+            
+            try {
+                const response = await fetch(CONFIG.excelUrl, { signal: AbortSignal.timeout(15000) });
+                if (!response.ok) throw new Error('无法加载数据文件');
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // 解析球队表格（第二个工作表）
+                const teamSheetName = workbook.SheetNames.find(name => name.includes('球队')) || workbook.SheetNames[1];
+                const teamSheet = workbook.Sheets[teamSheetName];
+                const teamJson = XLSX.utils.sheet_to_json(teamSheet);
+                
+                // 解析球员数据库（第一个工作表）
+                const playerSheetName = workbook.SheetNames.find(name => name.includes('球员')) || workbook.SheetNames[0];
+                const playerSheet = workbook.Sheets[playerSheetName];
+                const playerJson = XLSX.utils.sheet_to_json(playerSheet);
+                
+                // 处理球队数据 - 跳过标题行
+                teamData = teamJson.slice(1).filter(row => row['球队名'] && row['球队名'] !== '球队名').map((row, idx) => ({
+                    id: idx,
+                    name: row['球队名'] || '',
+                    manager: row['玩家'] || '',
+                    coach: row['教练组'] || '',
+                    stadium: row['主场'] || '',
+                    capacity: row['座席数'] || 0,
+                    avgAttendance: row['场均上座'] || 0,
+                    occupancyRate: row['上座率'] || 0,
+                    revenue: row['收入'] || 0,
+                    funds: row['球队资金'] || 0,
+                    sponsor1: row['赞助商1'] || '',
+                    sponsor2: row['赞助商2'] || '',
+                    youth: row['青训'] || '',
+                    other: row['其他'] || ''
+                }));
+                
+                // 处理球员数据 - 跳过标题行
+                playersData = playerJson.slice(1).filter(row => row['球员名称'] && row['球员名称'] !== '球员名称').map((row, idx) => {
+                    const position = row['位置'] || '';
+                    const mainPos = getPositionCategory(position);
+                    const posList = position.split(/[,，]/).map(p => p.trim()).filter(p => p);
+                    
+                    return {
+                        id: idx,
+                        name: row['球员名称'] || '',
+                        age: row['年龄'] || 0,
+                        nation: row['国家/地区籍'] || '',
+                        height: row['身高'] || 0,
+                        weight: row['体重'] || 0,
+                        ca: row['CA'] || 0,
+                        pa: row['PA'] || 0,
+                        position: position,
+                        mainPosition: mainPos,
+                        positionName: posList[0] || '未知',
+                        allPositions: posList,
+                        wage: row['年薪'] || 0,
+                        team: row['所在球队'] || '',
+                        contractEnd: row['合约到期'] || '',
+                        clause: row['违约金'] || '',
+                        contractType: row['合同类型'] || '',
+                        contractNote: row['合同备注'] || ''
+                    };
+                });
+                
+                renderTeamList();
+                
+            } catch (error) {
+                console.error('加载球队数据失败:', error);
+                teamList.innerHTML = `
+                    <div class="text-center text-red-500 py-8">
+                        <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                        <p class="text-sm">加载失败: ${error.message}</p>
+                        <button onclick="loadTeamData()" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm">
+                            重试
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderTeamList() {
+            const container = document.getElementById('teamList');
+            
+            if (teamData.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无球队数据</div>';
+                return;
+            }
+            
+            container.innerHTML = teamData.map((team, idx) => `
+                <div onclick="openTeamDetail(${team.id})" class="bg-white dark:bg-dark-surface rounded-lg p-4 flex items-center gap-4 shadow-sm cursor-pointer active:scale-95 transition-transform">
+                    <div class="team-logo-container team-logo-list bg-gray-50 dark:bg-gray-800 rounded-lg p-1">
+                        <img src="${getTeamLogo(team.name)}" alt="${team.name}" onerror="this.src='${DEFAULT_LOGO}'">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-bold text-lg dark:text-gray-100 truncate">${team.name}</h3>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span class="truncate">${team.stadium}</span>
+                        </div>
+                        <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                            <span>资金: ${formatNumber(team.funds)}万</span>
+                            <span>上座: ${formatNumber(team.avgAttendance)}</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600"></i>
+                </div>
+            `).join('');
+        }
+        
+        function formatNumber(num) {
+            if (!num) return '0';
+            if (num >= 10000) return (num / 10000).toFixed(1) + '亿';
+            if (num >= 1000) return (num / 1000).toFixed(1) + '千万';
+            return num.toString();
+        }
+        
+        function openTeamDetail(teamId) {
+            currentTeam = teamData.find(t => t.id === teamId);
+            if (!currentTeam) return;
+            
+            // 解析教练列表
+            currentCoaches = parseCoaches(currentTeam.coach);
+            const headCoach = currentCoaches[0] || '暂无';
+            
+            // 计算球队总年薪和预计季末资金
+            const teamPlayers = playersData.filter(p => p.team === currentTeam.name);
+            const totalWages = teamPlayers.reduce((sum, p) => sum + (parseFloat(p.wage) || 0), 0);
+            const projectedFunds = (parseFloat(currentTeam.funds) || 0) - totalWages;
+            
+            // 填充球队信息 - 头部只显示主教练
+            document.getElementById('teamDetailName').textContent = currentTeam.name;
+            document.getElementById('teamDetailNameEn').textContent = currentTeam.stadium;
+            document.getElementById('teamDetailCoach').textContent = headCoach;
+            
+            // 统计数字不显示单位
+            document.getElementById('teamDetailFunds').textContent = formatNumberRaw(currentTeam.funds);
+            document.getElementById('teamDetailAttendance').textContent = formatNumberRaw(currentTeam.avgAttendance);
+            document.getElementById('teamDetailOccupancy').textContent = ((currentTeam.occupancyRate || 0) * 100).toFixed(1) + '%';
+            document.getElementById('teamDetailCapacity').textContent = formatNumberRaw(currentTeam.capacity);
+            
+            // 新增：球队总年薪和预计季末资金
+            document.getElementById('teamDetailWages').textContent = formatNumberRaw(totalWages);
+            document.getElementById('teamDetailProjected').textContent = formatNumberRaw(projectedFunds);
+            
+            // 如果预计季末资金为负数，显示警告
+            const warningEl = document.getElementById('financialWarning');
+            if (projectedFunds < 0) {
+                warningEl.classList.remove('hidden');
+            } else {
+                warningEl.classList.add('hidden');
+            }
+            
+            // 球队logo
+            document.getElementById('teamDetailLogo').src = getTeamLogo(currentTeam.name);
+            
+            // 主教练区域 - 只显示主教练，添加箭头
+            document.getElementById('coachCard').innerHTML = `
+                <div class="font-bold dark:text-gray-100 text-lg">${headCoach}</div>
+                <div class="text-sm text-gray-500">主教练</div>
+            `;
+            
+            // 渲染球员列表
+            renderSquad();
+            
+            // 渲染球队动态（相关新闻）
+            renderTeamNews();
+            
+            // 重置标签页
+            switchTeamTab('squad');
+            
+            // 显示详情页
+            document.getElementById('teamDetailPage').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 渲染球队动态（相关新闻）
+        function renderTeamNews() {
+            const container = document.getElementById('teamNewsList');
+            if (!currentTeam) return;
+            
+            // 从RSS数据中筛选包含当前球队的新闻
+            const teamNews = rssData.filter(post => {
+                const text = (post.title + ' ' + post.description).toLowerCase();
+                return text.includes(currentTeam.name.toLowerCase());
+            });
+            
+            if (teamNews.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-dark-surface rounded-lg p-8 text-center text-gray-400">
+                        <i class="fas fa-newspaper text-4xl mb-2"></i>
+                        <p>暂无相关动态</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = teamNews.map((post, idx) => {
+                const tagColors = {
+                    match: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+                    transfer: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+                    official: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
+                    analysis: 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
+                    news: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                };
+                const tagNames = { match: '战报', transfer: '转会', official: '公告', analysis: '分析', news: '新闻' };
+                const tagClass = tagColors[post.category] || tagColors.news;
+                const tagName = tagNames[post.category] || '新闻';
+                
+                return `
+                    <div onclick="openArticleFromTeam(${post.id})" class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm cursor-pointer active:scale-95 transition-transform">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="${tagClass} px-2 py-0.5 rounded text-xs font-medium">${tagName}</span>
+                            <span class="text-xs text-gray-400">${formatTime(post.pubDate)}</span>
+                        </div>
+                        <h4 class="font-bold text-sm dark:text-gray-100 line-clamp-2">${escapeHtml(post.title)}</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">${escapeHtml(post.description)}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 从球队动态打开文章
+        function openArticleFromTeam(postId) {
+            const post = rssData.find(p => p.id == postId);
+            if (post) {
+                openArticle(post);
+            }
+        }
+        
+        // 打开教练详情页
+        function openCoachDetail() {
+            const container = document.getElementById('coachList');
+            
+            if (currentCoaches.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无教练信息</div>';
+            } else {
+                container.innerHTML = currentCoaches.map((coach, idx) => `
+                    <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-bold dark:text-gray-100 text-lg">${coach}</div>
+                                <div class="text-sm text-gray-500">${idx === 0 ? '主教练' : '助理教练'}</div>
+                            </div>
+                            ${idx === 0 ? '<span class="text-emerald-600 text-sm font-medium">现任</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('coachDetailPage').classList.remove('hidden');
+        }
+        
+        // 从教练详情返回球队详情
+        function backToTeamDetailFromCoach() {
+            document.getElementById('coachDetailPage').classList.add('hidden');
+        }
+        
+        function renderSquad() {
+            const container = document.getElementById('playersList');
+            const teamPlayers = playersData.filter(p => p.team === currentTeam.name);
+            
+            if (teamPlayers.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无球员数据</div>';
+                return;
+            }
+            
+            // 按位置分组
+            const positionOrder = ['GK', 'DF', 'MF', 'FW'];
+            const positionTitles = {'GK': '门将', 'DF': '后卫', 'MF': '中场', 'FW': '前锋'};
+            
+            container.innerHTML = positionOrder.map(pos => {
+                const posPlayers = teamPlayers.filter(p => p.mainPosition === pos);
+                if (posPlayers.length === 0) return '';
+                
+                return `
+                    <div class="mb-4">
+                        <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">${positionTitles[pos]} (${posPlayers.length}人)</h3>
+                        <div class="bg-white dark:bg-dark-surface rounded-lg overflow-hidden shadow-sm">
+                            ${posPlayers.map((player, idx) => `
+                                <div onclick="openPlayerDetail(${player.id})" class="player-card flex items-center gap-3 p-3 ${idx !== posPlayers.length - 1 ? 'border-b border-gray-100 dark:border-dark-border' : ''} cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-sm dark:text-gray-100">${player.name}</span>
+                                            <span class="position-badge ${getPositionColorClass(pos)}">${player.positionName}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                            ${player.age}岁 · ${player.nation} · 年薪${player.wage}万
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-emerald-600">${player.ca}</div>
+                                        <div class="text-xs text-gray-400">CA</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function switchTeamTab(tab) {
+            // 更新标签样式
+            document.querySelectorAll('.team-tab').forEach(btn => {
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('text-gray-500', 'dark:text-gray-400');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-gray-500', 'dark:text-gray-400');
+                }
+            });
+            
+            // 显示对应内容
+            ['squad', 'stats', 'schedule', 'news'].forEach(t => {
+                document.getElementById(t + 'Content').classList.toggle('hidden', t !== tab);
+            });
+        }
+        
+        function backToTeamList() {
+            document.getElementById('teamDetailPage').classList.add('hidden');
+            document.getElementById('coachDetailPage').classList.add('hidden');
+            document.body.style.overflow = '';
+            currentTeam = null;
+            currentCoaches = [];
+        }
+        
+        function shareTeam() {
+            if (navigator.share && currentTeam) {
+                navigator.share({
+                    title: currentTeam.name,
+                    text: `查看${currentTeam.name}的详细资料`,
+                    url: window.location.href
+                });
+            }
+        }
+        
+        // ========== 球员详情 ==========
+        
+        function openPlayerDetail(playerId) {
+            const player = playersData.find(p => p.id === playerId);
+            if (!player) return;
+            
+            // 移除头像，使用首字母
+            document.getElementById('playerInitial').textContent = player.name.charAt(0);
+            document.getElementById('playerDetailPosition').textContent = player.positionName;
+            document.getElementById('playerDetailPosition').className = 'position-badge ' + getPositionColorClass(player.mainPosition);
+            document.getElementById('playerDetailName').textContent = player.name;
+            document.getElementById('playerDetailTeam').textContent = player.team;
+            
+            // 计算综合评分（基于CA）
+            const rating = Math.min(10, (player.ca / 200) * 10).toFixed(1);
+            document.getElementById('playerDetailRating').textContent = rating;
+            
+            document.getElementById('playerDetailCA').textContent = player.ca;
+            document.getElementById('playerDetailPA').textContent = player.pa;
+            document.getElementById('playerDetailAge').textContent = player.age + '岁';
+            document.getElementById('playerDetailNation').textContent = player.nation;
+            document.getElementById('playerDetailHeight').textContent = player.height + 'cm';
+            document.getElementById('playerDetailWeight').textContent = player.weight + 'kg';
+            document.getElementById('playerDetailTeam2').textContent = player.team;
+            document.getElementById('playerDetailContract').textContent = player.contractEnd || '未到期';
+            document.getElementById('playerDetailWage').textContent = player.wage + '万';
+            document.getElementById('playerDetailClause').textContent = player.clause ? player.clause + '万' : '无';
+            
+            // 显示所有可打位置
+            const positionsContainer = document.getElementById('playerAllPositions');
+            positionsContainer.innerHTML = player.allPositions.map((pos, idx) => {
+                const posCat = getPositionCategory(pos);
+                return `<span class="position-badge ${getPositionColorClass(posCat)}">${pos}</span>`;
+            }).join('');
+            
+            document.getElementById('playerDetailPage').classList.remove('hidden');
+        }
+        
+        function backToTeamDetail() {
+            document.getElementById('playerDetailPage').classList.add('hidden');
+        }
+        
+        function sharePlayer() {
+            const playerName = document.getElementById('playerDetailName').textContent;
+            if (navigator.share) {
+                navigator.share({
+                    title: playerName,
+                    text: `查看${playerName}的详细资料`,
+                    url: window.location.href
+                });
+            }
+        }
+
+        // ========== 底部导航切换 ==========
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+                btn.classList.remove('active', 'text-emerald-600', 'dark:text-emerald-400');
+                btn.classList.add('text-gray-400', 'dark:text-gray-500');
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('active', 'text-emerald-600', 'dark:text-emerald-400');
+                    btn.classList.remove('text-gray-400', 'dark:text-gray-500');
+                }
+            });
+            
+            // 隐藏所有页面
+            document.getElementById('newsFeed').classList.add('hidden');
+            document.getElementById('teamPage').classList.add('hidden');
+            document.getElementById('homeTabs').classList.add('hidden');
+            document.getElementById('pullIndicator').classList.add('hidden');
+            
+            if (tab === 'home') {
+                document.getElementById('newsFeed').classList.remove('hidden');
+                document.getElementById('homeTabs').classList.remove('hidden');
+                document.getElementById('pullIndicator').classList.remove('hidden');
+                loadRSS();
+            } else if (tab === 'team') {
+                document.getElementById('teamPage').classList.remove('hidden');
+                if (teamData.length === 0) {
+                    loadTeamData();
+                }
+            } else {
+                // 其他页面占位
+                document.getElementById('newsFeed').classList.remove('hidden');
+                document.getElementById('newsFeed').innerHTML = `
+                    <div class="p-8 text-center text-gray-400 dark:text-gray-500 mt-20">
+                        <i class="fas fa-tools text-4xl mb-3"></i>
+                        <p>功能开发中</p>
+                        <p class="text-sm mt-2">敬请期待</p>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function stripHtml(html) {
+            if (!html) return '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+            
+            if (diff < 60) return '刚刚';
+            if (diff < 3600) return `${Math.floor(diff/60)}分钟前`;
+            if (diff < 86400) return `${Math.floor(diff/3600)}小时前`;
+            if (diff < 604800) return `${Math.floor(diff/86400)}天前`;
+            return date.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'});
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeArticle();
+                backToTeamDetail();
+                backToTeamList();
+            }
+        });
+    </script>
+</body>
+</html>
