@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
+
+    <channel>
+        <title><![CDATA[garciafootball 标签活动]]></title>
+        <description><![CDATA[garciafootball 标签新回帖]]></description>        <link><![CDATA[https://sutterfootball.freeflarum.com]]></link>
+        <pubDate>Tue, 10 Feb 2026 09:19:47 +0000</pubDate>
+        <atom:link href="https://sutterfootball.freeflarum.com/rss/t/garciafootball" rel="self" type="application/rss+xml" />
+
+                <item>
+            <title><![CDATA[测试测试]]></title>
+            <link>https://sutterfootball.freeflarum.com/d/12157-ce-shi-ce-shi/1</link>
+            <description><![CDATA[我也说不好是啥，反正我搁这儿测试呢]]></description>
+            <guid isPermaLink="true">https://sutterfootball.freeflarum.com/d/12157/1</guid>
+            <pubDate>Tue, 10 Feb 2026 08:19:28 +0000</pubDate>
+        </item>
+        
+    </channel>
+
+</rss>
