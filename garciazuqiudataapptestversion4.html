@@ -1006,7 +1006,7 @@
         <div id="coachDetailPage" class="hidden fixed inset-0 z-[60] bg-gray-100 dark:bg-dark-bg scroll-container">
             <div class="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-4 py-3 flex items-center sticky top-0 z-50">
                 <button onclick="backToTeamDetailFromCoach()" class="w-10 h-10 flex items-center justify-center -ml-2"><i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i></button>
-                <span class="font-medium ml-2 dark:text-gray-100">历任主教练</span>
+                <span class="font-medium ml-2 dark:text-gray-100">教练组名单</span>
             </div>
             <div id="coachList" class="py-4"></div>
         </div>
@@ -1116,9 +1116,9 @@
             '色温岱州东岳': 'https://suttergov.github.io/%E8%89%B2%E6%B8%A9%E5%B2%B1%E5%B7%9E%E4%B8%9C%E5%B2%B3.png',
             '巴峰': 'https://suttergov.github.io/%E8%90%A8%E4%B9%8C%E8%90%A8%E4%B9%8C%E6%96%B0.png',
             '诺维奇港': 'https://suttergov.github.io/%E8%AF%BA%E7%BB%B4%E5%A5%87%E6%B8%AF%E6%96%B0.png',
-            '北泰克马': 'http://suttergov.github.io/%E9%87%8C%E6%8B%89%E8%B5%AB%E9%A3%9E%E7%87%95.png',
+            '北泰克马': 'https://suttergov.github.io/%E9%87%8C%E6%8B%89%E8%B5%AB%E9%A3%9E%E7%87%95.png',
             '阿尔特弗雷奇流浪者': 'https://suttergov.github.io/%E9%98%BF%E5%B0%94%E7%89%B9%E5%BC%97%E9%9B%B7%E5%A5%87%E6%B5%81%E6%B5%AA%E8%80%85.png',
-            '马雷克青春之城': 'http://suttergov.github.io/%E9%A9%AC%E9%9B%B7%E5%85%8B%E6%96%B0.png',
+            '马雷克青春之城': 'https://suttergov.github.io/%E9%A9%AC%E9%9B%B7%E5%85%8B%E6%96%B0.png',
             '哈克竞技': 'https://suttergov.github.io/%E5%93%88%E5%8D%A1%E6%8B%89%E6%89%98%E7%89%B9%E5%8D%A1.png',
             '比列竞技': 'https://suttergov.github.io/%E6%AF%94%E5%88%97%E7%AB%9E%E6%8A%80%E6%96%B0.png',
             '朱马蓝色协进': 'https://suttergov.github.io/%E6%9C%B1%E9%A9%AC%E8%93%9D%E8%89%B2%E5%8D%8F%E8%BF%9B.png',
@@ -2532,7 +2532,7 @@
                 .replace(/fc|俱乐部|队|城/g, '');
         }
         
-        // 重构：渲染球队资料页（懂球帝风格）- 修复球队变迁和射手榜混淆问题
+        // 重构：渲染球队资料页（FUTPLR风格）- 修复球队变迁和射手榜混淆问题
         function renderTeamStats() {
             const container = document.getElementById('statsContent');
             if (!currentTeam) return;
@@ -2838,7 +2838,7 @@
             }
         }
         
-        // 重构：教练详情页（懂球帝风格）
+        // 重构：教练详情页（扁平化风格）
         function openCoachDetail() {
             const container = document.getElementById('coachList');
             
@@ -2853,12 +2853,12 @@
                         </div>
                         <div class="coach-info">
                             <div class="coach-name">${coach}</div>
-                            <div class="coach-record">胜率 ${Math.floor(Math.random() * 30 + 40)}%</div>
+                            <div class="coach-record">随机数 ${Math.floor(Math.random() * 30 + 40)}%</div>
                         </div>
                         <div class="coach-duration">
-                            <div class="${idx === 0 ? 'coach-current' : ''}">${idx === 0 ? '现任' : '已卸任'}</div>
+                            <div class="${idx === 0 ? 'coach-current' : ''}">${idx === 0 ? '主教练' : '助理教练'}</div>
                             <div style="font-size: 11px; color: #999; margin-top: 2px;">
-                                ${idx === 0 ? '2024至今' : '2022-2024'}
+                                ${idx === 0 ? '现任教练组成员' : '现任教练组成员'}
                             </div>
                         </div>
                     </div>
