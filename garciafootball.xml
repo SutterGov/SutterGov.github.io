@@ -5,9 +5,31 @@
     <channel>
         <title><![CDATA[garciafootball 标签活动]]></title>
         <description><![CDATA[garciafootball 标签新回帖]]></description>        <link><![CDATA[https://sutterfootball.freeflarum.com]]></link>
-        <pubDate>Thu, 12 Feb 2026 12:06:06 +0000</pubDate>
+        <pubDate>Thu, 12 Feb 2026 13:13:59 +0000</pubDate>
         <atom:link href="https://sutterfootball.freeflarum.com/rss/t/garciafootball" rel="self" type="application/rss+xml" />
 
+                <item>
+            <title><![CDATA[公告：联赛APP正式版发布，我的开发日记]]></title>
+            <link>https://sutterfootball.freeflarum.com/d/12182-gong-gao-lian-sai-appzheng-shi-ban-fa-bu-wo-de-kai-fa-ri-ji/1</link>
+            <description><![CDATA[<p>这个项目，开发日程说长不长，不过一周时间。说短不短，我等了十年时间。<br>
+咱们群的玩家，有八九年 五六年一路走过来的，老群友知道，为了一个属于联赛自己的APP，我们等了多久，付出了多少努力。<br>
+在几年前，“前AI时代”，我们就用纯手动编程完成了第一次联赛APP的尝试。后来因为BUG太多、事故频发，无疾而终。<br>
+这个梦终于在2026年，这个Seedream、 Clawbot大杀四方的AI大时代得以实现。这一次的开发时间远远短于几年前，出现过的问题也远远少于几年前。<br>
+感谢AI，尤其感谢Kimi，这家来自“月之暗面”的企业提供的产品解决了开发过程中的很多问题。我本人并非计算机专业出身，很多地方只能算是“初窥门径”，根本无法独立完成这个足足3642行代码的庞大工程。是Kimi的帮忙，才让这个项目成功走到今天。<br>
+今年是联赛的第十年，常言道“十全圆满”，这一次终于夙愿得偿，应该说也是一种圆满了。<br>
+<img src="https://free.boltp.com/2026/02/12/698dcf3d7f5b5.webp" title="" alt=""><br>
+这是我以前做过的一个看台旗帜的废案，【继光】。不只是戚继光的精神，更代表着传火——继光继光，承继光明。代代相传，光芒万丈。<br>
+加西亚从2025年8月到现在，足足走过了六个月的时间，这已经是仅次于巴新、萨特的单一档时长了。或许加西亚这个档没那么传奇，但正所谓“平凡自伟大”。我们在时光中，你我携手，一起走过。<br>
+……<br>
+抒情结束了，简单说说正式版的功能吧。<br>
+首先，是联赛历史积分榜和赛程（赛果），随后清理了一下球队数据那块的Bug。<br>
+历史射手榜卡了我很久，我放弃了。人有悲欢离合，月有阴晴圆缺。所谓“无缺”、“完美”，不过是只会在短剧和网文里出现的一种蜃景罢了。<br>
+当然，上一个测试版本历史射手榜是没问题的，您也可以继续用那个版本。不过，鉴于正式版拥有更好的性能和访问体验，我诚挚建议您使用正式版。<br>
+……<br>
+最后，因为我没有iOS开发者账号，苹果设备使用者依旧需要访问网页端，作为乔布斯的品控思维的忠实支持者，却被乔布斯力推的封闭系统模式干扰了使用体验，实在是让我哭笑不得。</p>]]></description>
+            <guid isPermaLink="true">https://sutterfootball.freeflarum.com/d/12182/1</guid>
+            <pubDate>Thu, 12 Feb 2026 13:13:39 +0000</pubDate>
+        </item>
                 <item>
             <title><![CDATA[20260212 足协杯第4轮 战报]]></title>
             <link>https://sutterfootball.freeflarum.com/d/12181-20260212-zu-xie-bei-di-4lun-zhan-bao/1</link>
