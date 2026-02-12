@@ -5,9 +5,18 @@
     <channel>
         <title><![CDATA[garciafootball 标签活动]]></title>
         <description><![CDATA[garciafootball 标签新回帖]]></description>        <link><![CDATA[https://sutterfootball.freeflarum.com]]></link>
-        <pubDate>Thu, 12 Feb 2026 10:00:23 +0000</pubDate>
+        <pubDate>Thu, 12 Feb 2026 10:31:24 +0000</pubDate>
         <atom:link href="https://sutterfootball.freeflarum.com/rss/t/garciafootball" rel="self" type="application/rss+xml" />
 
+                <item>
+            <title><![CDATA[2月12日6:30 测试RSS更新]]></title>
+            <link>https://sutterfootball.freeflarum.com/d/12179-2yue-12ri-630-ce-shi-rssgeng-xin/1</link>
+            <description><![CDATA[<p>测试RSS更新，并测试其他功能<br>
+<span class="spoiler" onclick="removeAttribute('class')">前进吧国安队</span></p>
+]]></description>
+            <guid isPermaLink="true">https://sutterfootball.freeflarum.com/d/12179/1</guid>
+            <pubDate>Thu, 12 Feb 2026 10:30:48 +0000</pubDate>
+        </item>
                 <item>
             <title><![CDATA[20260212 足协杯战报2]]></title>
             <link>https://sutterfootball.freeflarum.com/d/12178-20260212-zu-xie-bei-zhan-bao-2/1</link>
