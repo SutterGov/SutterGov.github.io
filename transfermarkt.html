@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>转会申报系统 | Transfer Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        success: '#22c55e',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 600; }
+        .dark .tab-active { border-bottom-color: #60a5fa; color: #60a5fa; }
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        .dark .glass {
+            background: rgba(17, 24, 39, 0.9);
+        }
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @media (max-width: 640px) {
+            .mobile-full { width: 100vw; margin-left: calc(-50vw + 50%); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+    <!-- 顶部导航 -->
+    <header class="sticky top-0 z-50 glass border-b border-gray-200 dark:border-gray-800">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="flex items-center justify-between h-14">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">TM</div>
+                    <h1 class="text-lg font-bold hidden sm:block">转会管理系统</h1>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <!-- 主题切换 -->
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                        <svg id="sun-icon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg id="moon-icon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    </button>
+                    
+                    <!-- 管理员入口 -->
+                    <button id="admin-btn" onclick="toggleAdminModal()" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span id="admin-text">管理员</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tab 导航 -->
+            <nav class="flex space-x-6 overflow-x-auto scrollbar-hide -mb-px">
+                <button onclick="switchTab('declaration')" id="tab-declaration" class="tab-active py-3 px-1 text-sm whitespace-nowrap transition-colors hover:text-blue-600 dark:hover:text-blue-400">
+                    转会申报
+                </button>
+                <button onclick="switchTab('internal')" id="tab-internal" class="py-3 px-1 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                    内部转会 <span id="internal-count" class="ml-1 text-xs bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full">0</span>
+                </button>
+                <button onclick="switchTab('external')" id="tab-external" class="py-3 px-1 text-sm whitespace-nowrap text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+                    外部转会 <span id="external-count" class="ml-1 text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-full">0</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+        
+        <!-- 管理员状态提示 -->
+        <div id="admin-banner" class="hidden mb-6 p-3 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 rounded-lg text-purple-800 dark:text-purple-200 text-sm flex items-center justify-between">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>管理员模式已开启 - 您可以审批外部转会和驳回内部转会</span>
+            </div>
+            <button onclick="logoutAdmin()" class="text-sm underline hover:no-underline">退出管理</button>
+        </div>
+
+        <!-- 转会申报页 -->
+        <div id="page-declaration" class="slide-in">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h2 class="text-xl font-bold mb-6 flex items-center">
+                    <span class="w-1 h-6 bg-blue-500 rounded mr-3"></span>
+                    新建转会申请
+                </h2>
+                
+                <form id="transfer-form" onsubmit="submitTransfer(event)" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">球员姓名 <span class="text-red-500">*</span></label>
+                        <input type="text" name="playerName" required placeholder="请输入球员姓名" 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">转出球队 <span class="text-red-500">*</span></label>
+                            <input type="text" name="fromTeam" required placeholder="原球队" 
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">转入球队 <span class="text-red-500">*</span></label>
+                            <input type="text" name="toTeam" required placeholder="新球队" 
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">转会性质 <span class="text-red-500">*</span></label>
+                            <select name="transferType" required onchange="toggleFeeInput(this.value)"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                <option value="">请选择</option>
+                                <option value="internal">内部转会（自动通过）</option>
+                                <option value="external">外部转会（需审批）</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">转会形式 <span class="text-red-500">*</span></label>
+                            <select name="transferForm" required onchange="updateFeePlaceholder(this.value)"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                                <option value="">请选择</option>
+                                <option value="transfer">永久转会</option>
+                                <option value="loan">租借</option>
+                                <option value="free">自由转会</option>
+                                <option value="exchange">解约金转会</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="fee-container">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">转会费用</label>
+                        <div class="relative">
+                            <input type="text" name="fee" id="fee-input" placeholder="例如：500万欧元" 
+                                class="w-full px-4 py-2 pl-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <span class="absolute left-3 top-2 text-gray-400">€</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">备注信息</label>
+                        <textarea name="remark" rows="3" placeholder="补充说明、合同细节、特殊条款等..." 
+                            class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"></textarea>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/30">
+                            <span>提交申请</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 内部转会页 -->
+        <div id="page-internal" class="hidden slide-in">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">内部转会记录</h2>
+                <button onclick="loadTransfers()" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">刷新数据</button>
+            </div>
+            <div id="internal-list" class="space-y-4">
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div class="loading mb-2"></div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 外部转会页 -->
+        <div id="page-external" class="hidden slide-in">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">外部转会记录</h2>
+                <button onclick="loadTransfers()" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">刷新数据</button>
+            </div>
+            
+            <!-- 筛选 -->
+            <div class="flex space-x-2 mb-4 overflow-x-auto pb-2">
+                <button onclick="filterExternal('all')" id="filter-all" class="px-4 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 whitespace-nowrap">全部</button>
+                <button onclick="filterExternal('pending')" id="filter-pending" class="px-4 py-1.5 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 whitespace-nowrap">待审批</button>
+                <button onclick="filterExternal('approved')" id="filter-approved" class="px-4 py-1.5 rounded-full text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 whitespace-nowrap">已通过</button>
+            </div>
+
+            <div id="external-list" class="space-y-4">
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                    <div class="loading mb-2"></div>
+                    <p>加载中...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 管理员验证模态框 -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-sm w-full p-6 shadow-2xl transform transition-all scale-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">管理员验证</h3>
+                <button onclick="toggleAdminModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">请输入验证码</label>
+                    <input type="password" id="admin-code" placeholder="验证码" 
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 text-center text-lg tracking-widest font-mono">
+                    <p class="mt-2 text-xs text-gray-500 text-center">提示：41394value0</p>
+                </div>
+
+                <button onclick="verifyAdmin()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-medium transition flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>验证身份</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示消息 -->
+    <div id="toast" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 dark:bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg transition-all duration-300 opacity-0 translate-y-4 z-50 flex items-center space-x-2">
+        <span id="toast-icon">✓</span>
+        <span id="toast-message">操作成功</span>
+    </div>
+
+    <script>
+        // 硬编码配置（已移除前台配置）
+        const CONFIG = {
+            token: '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',
+            owner: 'SutterGov',
+            repo: 'SutterGov.github.io'
+        };
+        
+        const ADMIN_CODE = 'OFC23658value8';
+        let isAdmin = localStorage.getItem('transfer_admin_auth') === 'true';
+        let currentFilter = 'all';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            updateAdminUI();
+            loadTransfers();
+        });
+
+        // 主题管理
+        function initTheme() {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        }
+
+        // Tab 切换
+        function switchTab(tab) {
+            ['declaration', 'internal', 'external'].forEach(t => {
+                document.getElementById(`page-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-500', 'dark:text-gray-400');
+            });
+            
+            document.getElementById(`page-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-500', 'dark:text-gray-400');
+            
+            if (tab !== 'declaration') {
+                loadTransfers();
+            }
+        }
+
+        // 管理员功能
+        function toggleAdminModal() {
+            if (isAdmin) {
+                // 已是管理员，点击则退出
+                logoutAdmin();
+                return;
+            }
+            const modal = document.getElementById('admin-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('admin-code').focus();
+            }
+        }
+
+        function verifyAdmin() {
+            const input = document.getElementById('admin-code').value.trim();
+            if (input === ADMIN_CODE) {
+                isAdmin = true;
+                localStorage.setItem('transfer_admin_auth', 'true');
+                document.getElementById('admin-modal').classList.add('hidden');
+                updateAdminUI();
+                showToast('管理员验证成功', '✅');
+                loadTransfers(); // 刷新列表以显示管理按钮
+            } else {
+                showToast('验证码错误', '❌');
+                document.getElementById('admin-code').value = '';
+                document.getElementById('admin-code').focus();
+            }
+        }
+
+        function logoutAdmin() {
+            if (confirm('确定要退出管理员模式吗？')) {
+                isAdmin = false;
+                localStorage.removeItem('transfer_admin_auth');
+                updateAdminUI();
+                loadTransfers(); // 刷新列表以隐藏管理按钮
+                showToast('已退出管理员模式', '⚠️');
+            }
+        }
+
+        function updateAdminUI() {
+            const banner = document.getElementById('admin-banner');
+            const btnText = document.getElementById('admin-text');
+            const adminBtn = document.getElementById('admin-btn');
+            
+            if (isAdmin) {
+                banner.classList.remove('hidden');
+                btnText.textContent = '退出管理';
+                adminBtn.classList.add('bg-purple-100', 'dark:bg-purple-900', 'text-purple-700', 'dark:text-purple-300', 'border-purple-300', 'dark:border-purple-700');
+                adminBtn.classList.remove('text-gray-700', 'dark:text-gray-300', 'border-gray-300', 'dark:border-gray-600');
+            } else {
+                banner.classList.add('hidden');
+                btnText.textContent = '管理员';
+                adminBtn.classList.remove('bg-purple-100', 'dark:bg-purple-900', 'text-purple-700', 'dark:text-purple-300', 'border-purple-300', 'dark:border-purple-700');
+                adminBtn.classList.add('text-gray-700', 'dark:text-gray-300', 'border-gray-300', 'dark:border-gray-600');
+            }
+        }
+
+        // 表单逻辑
+        function toggleFeeInput(type) {
+            const feeContainer = document.getElementById('fee-container');
+            feeContainer.style.opacity = type === 'internal' ? '0.7' : '1';
+        }
+
+        function updateFeePlaceholder(form) {
+            const input = document.getElementById('fee-input');
+            if (form === 'loan') {
+                input.placeholder = '租借费用（如无填0）';
+            } else if (form === 'free') {
+                input.placeholder = '免费转会';
+                input.value = '0';
+            } else {
+                input.placeholder = '例如：500万欧元';
+            }
+        }
+
+        // GitHub API 调用
+        async function githubAPI(endpoint, method = 'GET', body = null) {
+            const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}${endpoint}`;
+            const options = {
+                method,
+                headers: {
+                    'Authorization': `token ${CONFIG.token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (body) options.body = JSON.stringify(body);
+            
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || '请求失败');
+            }
+            return response.json();
+        }
+
+        // 提交转会申请
+        async function submitTransfer(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = {
+                playerName: formData.get('playerName'),
+                fromTeam: formData.get('fromTeam'),
+                toTeam: formData.get('toTeam'),
+                transferType: formData.get('transferType'),
+                transferForm: formData.get('transferForm'),
+                fee: formData.get('fee') || '0',
+                remark: formData.get('remark'),
+                createdAt: new Date().toISOString()
+            };
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading border-white border-t-transparent"></div><span class="ml-2">提交中...</span>';
+
+            try {
+                // 内部转会直接通过，外部转会待审批
+                const labels = [data.transferType === 'internal' ? 'internal-transfer' : 'external-transfer'];
+                if (data.transferType === 'internal') {
+                    labels.push('internal-approved');
+                } else {
+                    labels.push('pending');
+                }
+                
+                const formMap = {
+                    'transfer': '永久转会',
+                    'loan': '租借',
+                    'free': '自由转会',
+                    'exchange': '球员交换'
+                };
+
+                const body = `## 转会详情
+
+| 项目 | 内容 |
+|------|------|
+| 球员 | **${data.playerName}** |
+| 转出 | ${data.fromTeam} → ${data.toTeam} |
+| 形式 | ${formMap[data.transferForm]} |
+| 费用 | ${data.fee} |
+| 时间 | ${new Date().toLocaleString('zh-CN')} |
+
+### 备注
+${data.remark || '无'}
+
+---
+状态：${data.transferType === 'internal' ? '✅ 已生效（内部转会）' : '⏳ 等待审批'}`;
+
+                await githubAPI('/issues', 'POST', {
+                    title: `[${data.transferType === 'internal' ? '内部' : '外部'}] ${data.playerName}: ${data.fromTeam} → ${data.toTeam}`,
+                    body: body,
+                    labels: labels
+                });
+
+                showToast(data.transferType === 'internal' ? '内部转会已生效' : '外部转会已提交，等待审批', '✅');
+                e.target.reset();
+                
+                setTimeout(() => {
+                    switchTab(data.transferType);
+                }, 500);
+
+            } catch (error) {
+                showToast('提交失败：' + error.message, '❌');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>提交申请</span><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>';
+            }
+        }
+
+        // 加载转会数据
+        async function loadTransfers() {
+            try {
+                const issues = await githubAPI('/issues?state=all&per_page=100');
+                
+                const internal = issues.filter(i => 
+                    i.labels.some(l => l.name === 'internal-transfer' || l.name === 'internal-approved' || l.name === 'internal-rejected')
+                );
+                
+                // 外部转会包括 pending 和 approved
+                const external = issues.filter(i => 
+                    i.labels.some(l => l.name === 'external-transfer' || l.name === 'external-transfer-approved' || l.name === 'external-transfer-rejected')
+                );
+
+                document.getElementById('internal-count').textContent = internal.length;
+                document.getElementById('external-count').textContent = external.length;
+
+                renderInternalList(internal);
+                renderExternalList(external);
+
+            } catch (error) {
+                showToast('加载数据失败：' + error.message, '❌');
+                console.error(error);
+            }
+        }
+
+        function renderInternalList(issues) {
+            const container = document.getElementById('internal-list');
+            if (issues.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>暂无内部转会记录</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = issues.map(issue => {
+                const info = parseIssueBody(issue.body);
+                const isRejected = issue.labels.some(l => l.name === 'internal-rejected') || issue.state === 'closed' && !issue.labels.some(l => l.name === 'internal-approved');
+                const isApproved = issue.labels.some(l => l.name === 'internal-approved') || (issue.state === 'open' && !isRejected);
+                
+                let statusBadge = '';
+                if (isRejected) {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">已驳回</span>`;
+                } else {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">已生效</span>`;
+                }
+
+                // 管理员驳回按钮
+                let adminButtons = '';
+                if (isAdmin && isApproved) {
+                    adminButtons = `
+                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <button onclick="rejectInternal(${issue.number})" class="w-full bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center border border-red-200 dark:border-red-800">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                驳回此转会
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition ${isRejected ? 'opacity-60' : ''}">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">${info.player || '未知球员'}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${info.from} → ${info.to}</p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4">
+                            <span class="flex items-center"><span class="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>${info.form || '转会'}</span>
+                            <span>${info.fee || '费用未公开'}</span>
+                        </div>
+                        ${info.remark ? `<p class="mt-3 text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">${info.remark}</p>` : ''}
+                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400 flex justify-between items-center">
+                            <span>#${issue.number} · ${new Date(issue.created_at).toLocaleDateString('zh-CN')}</span>
+                            <a href="${issue.html_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">在 GitHub 查看</a>
+                        </div>
+                        ${adminButtons}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderExternalList(issues) {
+            const container = document.getElementById('external-list');
+            
+            let filtered = issues;
+            if (currentFilter === 'pending') {
+                filtered = issues.filter(i => i.state === 'open' && !i.labels.some(l => l.name === 'external-transfer-approved'));
+            } else if (currentFilter === 'approved') {
+                filtered = issues.filter(i => i.labels.some(l => l.name === 'external-transfer-approved') || i.state === 'closed');
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>${currentFilter === 'pending' ? '暂无待审批的转会' : '暂无外部转会记录'}</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(issue => {
+                const isApproved = issue.labels.some(l => l.name === 'external-transfer-approved') || (issue.state === 'closed' && !issue.labels.some(l => l.name === 'external-transfer-rejected'));
+                const isRejected = issue.labels.some(l => l.name === 'external-transfer-rejected');
+                const isPending = !isApproved && !isRejected && issue.state === 'open';
+                const info = parseIssueBody(issue.body);
+                
+                let statusBadge = '';
+                if (isPending) {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300">待审批</span>`;
+                } else if (isApproved) {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">已通过</span>`;
+                } else {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">已拒绝</span>`;
+                }
+
+                // 管理员操作按钮
+                let adminButtons = '';
+                if (isAdmin && isPending) {
+                    adminButtons = `
+                        <div class="flex space-x-2 mt-3">
+                            <button onclick="approveTransfer(${issue.number})" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm font-medium transition flex items-center justify-center">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                批准转会
+                            </button>
+                            <button onclick="rejectTransfer(${issue.number})" class="px-4 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg text-sm hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                                拒绝
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm ${isPending ? 'border-l-4 border-l-yellow-400' : isApproved ? 'border-l-4 border-l-green-400' : 'border-l-4 border-l-red-400'}">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">${info.player || '未知球员'}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${info.from} → ${info.to}</p>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 space-x-4 mb-3">
+                            <span class="flex items-center"><span class="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>${info.form || '转会'}</span>
+                            <span>${info.fee || '费用未公开'}</span>
+                        </div>
+                        
+                        ${adminButtons}
+                        
+                        <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-400 flex justify-between items-center">
+                            <span>#${issue.number} · ${new Date(issue.created_at).toLocaleDateString('zh-CN')}</span>
+                            <a href="${issue.html_url}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">在 GitHub 查看</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterExternal(type) {
+            currentFilter = type;
+            ['all', 'pending', 'approved'].forEach(t => {
+                const btn = document.getElementById(`filter-${t}`);
+                if (t === type) {
+                    btn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-600', 'dark:text-gray-400');
+                    btn.classList.add('bg-blue-100', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-300');
+                } else {
+                    btn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-600', 'dark:text-gray-400');
+                    btn.classList.remove('bg-blue-100', 'dark:bg-blue-900', 'text-blue-700', 'dark:text-blue-300');
+                }
+            });
+            loadTransfers();
+        }
+
+        // 解析 Issue Body
+        function parseIssueBody(body) {
+            if (!body) return {};
+            const lines = body.split('\n');
+            const info = {};
+            
+            lines.forEach(line => {
+                if (line.includes('球员') && line.includes('|')) info.player = line.split('|')[2].replace(/\*/g, '').trim();
+                if (line.includes('转出') && line.includes('|')) {
+                    const parts = line.split('|')[2].split('→');
+                    if (parts.length === 2) {
+                        info.from = parts[0].trim();
+                        info.to = parts[1].trim();
+                    }
+                }
+                if (line.includes('形式') && line.includes('|')) info.form = line.split('|')[2].trim();
+                if (line.includes('费用') && line.includes('|')) info.fee = line.split('|')[2].trim();
+            });
+            
+            // 提取备注
+            const remarkMatch = body.match(/### 备注\s*\n([^#]+)/);
+            if (remarkMatch) {
+                info.remark = remarkMatch[1].trim();
+                if (info.remark === '无') info.remark = '';
+            }
+            
+            return info;
+        }
+
+        // 审批操作（外部转会）
+        async function approveTransfer(issueNumber) {
+            if (!confirm('确定批准该转会申请吗？')) return;
+            
+            try {
+                await githubAPI(`/issues/${issueNumber}`, 'PATCH', {
+                    state: 'closed',
+                    labels: ['external-transfer', 'external-transfer-approved']
+                });
+                
+                showToast('转会已批准', '✅');
+                loadTransfers();
+            } catch (error) {
+                showToast('审批失败：' + error.message, '❌');
+            }
+        }
+
+        async function rejectTransfer(issueNumber) {
+            if (!confirm('确定拒绝该转会申请吗？此操作将关闭该申请。')) return;
+            
+            try {
+                await githubAPI(`/issues/${issueNumber}`, 'PATCH', {
+                    state: 'closed',
+                    labels: ['external-transfer', 'external-transfer-rejected']
+                });
+                
+                showToast('转会已拒绝', '⚠️');
+                loadTransfers();
+            } catch (error) {
+                showToast('操作失败：' + error.message, '❌');
+            }
+        }
+
+        // 驳回内部转会
+        async function rejectInternal(issueNumber) {
+            if (!confirm('确定要驳回这个内部转会吗？此操作不可撤销。')) return;
+            
+            try {
+                await githubAPI(`/issues/${issueNumber}`, 'PATCH', {
+                    state: 'closed',
+                    labels: ['internal-transfer', 'internal-rejected']
+                });
+                
+                showToast('内部转会已驳回', '⚠️');
+                loadTransfers();
+            } catch (error) {
+                showToast('操作失败：' + error.message, '❌');
+            }
+        }
+
+        // 提示框
+        function showToast(message, icon = '✓') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            document.getElementById('toast-icon').textContent = icon;
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 3000);
+        }
+
+        // 回车键提交验证码
+        document.getElementById('admin-code')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                verifyAdmin();
+            }
+        });
+    </script>
+</body>
+</html>
