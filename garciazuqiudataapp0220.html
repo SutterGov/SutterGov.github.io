@@ -1001,6 +1001,109 @@
             border: none;
             min-height: 400px;
         }
+
+        /* 球员技术特点标签 - 新增样式 */
+        .trait-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        .trait-tag.style {
+            background: #f3f4f6;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+        }
+        .dark .trait-tag.style {
+            background: #374151;
+            color: #f3f4f6;
+            border-color: #4b5563;
+        }
+        .trait-tag.personality {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+        }
+        .trait-tag.strength {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .dark .trait-tag.strength {
+            background: rgba(220, 38, 38, 0.15);
+            color: #fca5a5;
+            border-color: rgba(220, 38, 38, 0.3);
+        }
+        .trait-tag.weakness {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+        .dark .trait-tag.weakness {
+            background: rgba(37, 99, 235, 0.15);
+            color: #93c5fd;
+            border-color: rgba(37, 99, 235, 0.3);
+        }
+        
+        /* 伤病记录表格样式 - 新增 */
+        .injury-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .injury-table th {
+            background: #f9fafb;
+            color: #6b7280;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .dark .injury-table th {
+            background: #1f2937;
+            color: #9ca3af;
+        }
+        .injury-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+            font-size: 13px;
+        }
+        .dark .injury-table td {
+            border-color: #374151;
+            color: #e5e7eb;
+        }
+        .injury-table tr:last-child td {
+            border-bottom: none;
+        }
+        .injury-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .dark .injury-badge {
+            background: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+        }
+        .injury-time {
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .dark .injury-time {
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 transition-colors duration-300 pb-16">
@@ -1326,6 +1429,55 @@
                         <div class="flex justify-between py-2"><span class="text-gray-500">违约金</span><span class="font-bold text-red-500" id="playerDetailClause"></span></div>
                     </div>
                 </div>
+                
+                <!-- 球员详细信息（性格、强弱项） - 新增 -->
+                <div id="playerExtraInfo" class="hidden bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <!-- 性格 -->
+                    <div id="playerPersonalitySection" class="mb-4 hidden">
+                        <h3 class="font-bold mb-3 dark:text-gray-200 text-base">球员性格</h3>
+                        <div id="playerPersonality" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    
+                    <!-- 技术特点/强项/弱项 -->
+                    <div id="playerTraitsSection">
+                        <h3 class="font-bold mb-3 dark:text-gray-200 text-base">技术特点</h3>
+                        <div id="playerTraits" class="flex flex-wrap gap-2 mb-4"></div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <h4 class="text-sm font-bold text-red-500 mb-2 flex items-center gap-1">
+                                    <i class="fas fa-plus-circle"></i> 强项
+                                </h4>
+                                <div id="playerStrengths" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-blue-500 mb-2 flex items-center gap-1">
+                                    <i class="fas fa-minus-circle"></i> 弱项
+                                </h4>
+                                <div id="playerWeaknesses" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 伤病记录 - 新增 -->
+                <div id="playerInjurySection" class="hidden bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <h3 class="font-bold mb-3 dark:text-gray-200 text-base flex items-center gap-2">
+                        <i class="fas fa-notes-medical text-red-500"></i> 伤病记录
+                    </h3>
+                    <div class="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
+                        <table class="w-full text-sm injury-table">
+                            <thead>
+                                <tr>
+                                    <th class="px-3 py-2 text-left">伤病类型</th>
+                                    <th class="px-3 py-2 text-center">休养时间</th>
+                                    <th class="px-3 py-2 text-right">备注</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playerInjuryList"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -1444,14 +1596,14 @@
             excelUrl: 'https://suttergov.github.io/GarciaDatabase26.xlsx',
             teamHistoryUrl: 'https://suttergov.github.io/%E7%90%83%E9%98%9F%E6%95%B0%E6%8D%AE.txt',
             scheduleUrl: 'https://suttergov.github.io/%E8%B5%9B%E7%A8%8B.txt',
+            playerInfoUrl: 'https://suttergov.github.io/%E7%90%83%E5%91%98%E4%BF%A1%E6%81%AF.txt',
             defaultLogo: 'https://free.boltp.com/2026/02/11/698ca73e5a316.webp',
-            // Giscus 配置 - 请根据你的实际设置修改以下参数
             giscus: {
-                repo: 'SutterGov/SutterGov.github.io', // 你的仓库名
-                repoId: 'R_kgDON0Q6iQ', // 仓库ID，可从 giscus.app 获取
-                category: 'Announcements', // Discussions 分类名称
-                categoryId: 'DIC_kwDON0Q6ic4C2jQJ', // 分类ID，可从 giscus.app 获取
-                mapping: 'pathname', // 映射方式
+                repo: 'SutterGov/SutterGov.github.io',
+                repoId: 'R_kgDON0Q6iQ',
+                category: 'Announcements',
+                categoryId: 'DIC_kwDON0Q6ic4C2jQJ',
+                mapping: 'pathname',
                 reactionsEnabled: '1',
                 emitMetadata: '0',
                 inputPosition: 'bottom',
@@ -1486,6 +1638,7 @@
         let pkPlayer2 = null;
         let currentDiscussionTab = 'general';
         let giscusLoaded = false;
+        let playerExtraData = {}; // 存储球员额外信息（性格、强弱项、伤病记录）
 
         // 页面历史栈管理
         let pageHistory = [];
@@ -1503,101 +1656,295 @@
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
             initBackButtonHandler();
+            loadPlayerExtraData(); // 加载球员额外信息
         });
+
+        // 新增：加载球员额外信息（性格、强弱项、伤病记录）
+        async function loadPlayerExtraData() {
+            const cached = localStorage.getItem('player_extra_data');
+            const cacheTime = localStorage.getItem('player_extra_data_time');
+            const now = Date.now();
+            
+            // 1小时缓存
+            if (cached && cacheTime && (now - parseInt(cacheTime) < 3600000)) {
+                playerExtraData = JSON.parse(cached);
+                console.log('使用缓存的球员额外信息');
+                return;
+            }
+            
+            try {
+                const response = await fetch(CONFIG.playerInfoUrl + '?t=' + now);
+                if (!response.ok) throw new Error('无法加载球员信息');
+                
+                const text = await response.text();
+                playerExtraData = parsePlayerInfoText(text);
+                
+                localStorage.setItem('player_extra_data', JSON.stringify(playerExtraData));
+                localStorage.setItem('player_extra_data_time', now.toString());
+                console.log('已加载并缓存球员额外信息，共', Object.keys(playerExtraData).length, '人');
+            } catch (error) {
+                console.error('加载球员额外信息失败:', error);
+                if (cached) {
+                    playerExtraData = JSON.parse(cached);
+                }
+            }
+        }
+
+        // 新增：解析球员信息文本
+        function parsePlayerInfoText(text) {
+            const data = {};
+            const lines = text.split('\n');
+            let currentPlayer = null;
+            let currentField = null;
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                // 匹配球员名 ==球员名==
+                const playerMatch = line.match(/^==(.+)==$/);
+                if (playerMatch) {
+                    currentPlayer = playerMatch[1].trim();
+                    data[currentPlayer] = {};
+                    currentField = null;
+                    return;
+                }
+                
+                // 匹配字段 =字段名=
+                const fieldMatch = line.match(/^=(.+)=/);
+                if (fieldMatch) {
+                    currentField = fieldMatch[1].trim();
+                    if (currentPlayer) {
+                        data[currentPlayer][currentField] = [];
+                    }
+                    return;
+                }
+                
+                // 普通内容行
+                if (currentPlayer && currentField) {
+                    data[currentPlayer][currentField].push(line);
+                }
+            });
+            
+            // 将数组转为字符串
+            Object.keys(data).forEach(player => {
+                Object.keys(data[player]).forEach(field => {
+                    data[player][field] = data[player][field].join('\n');
+                });
+            });
+            
+            return data;
+        }
+
+        // 新增：渲染球员额外信息
+        function renderPlayerExtraInfo(playerName) {
+            const extraInfo = playerExtraData[playerName];
+            const container = document.getElementById('playerExtraInfo');
+            const personalitySection = document.getElementById('playerPersonalitySection');
+            const personalityEl = document.getElementById('playerPersonality');
+            const traitsSection = document.getElementById('playerTraitsSection');
+            const traitsEl = document.getElementById('playerTraits');
+            const strengthsEl = document.getElementById('playerStrengths');
+            const weaknessesEl = document.getElementById('playerWeaknesses');
+            const injurySection = document.getElementById('playerInjurySection');
+            const injuryList = document.getElementById('playerInjuryList');
+            
+            if (!extraInfo) {
+                container.classList.add('hidden');
+                injurySection.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            
+            // 性格
+            if (extraInfo['球员性格']) {
+                personalitySection.classList.remove('hidden');
+                const personalities = extraInfo['球员性格'].split(/[、,，]/).filter(p => p.trim());
+                personalityEl.innerHTML = personalities.map(p => 
+                    `<span class="trait-tag personality">${p.trim()}</span>`
+                ).join('');
+            } else {
+                personalitySection.classList.add('hidden');
+            }
+            
+            // 强项弱项使用示意图中的样式
+            let hasTraits = false;
+            
+            // 技术特点（如果有）
+            if (extraInfo['技术特点']) {
+                hasTraits = true;
+                const traits = extraInfo['技术特点'].split(/[、,，]/).filter(t => t.trim());
+                traitsEl.innerHTML = traits.map(t => 
+                    `<span class="trait-tag style">${t.trim()}</span>`
+                ).join('');
+            } else {
+                traitsEl.innerHTML = '';
+            }
+            
+            // 强项 - 红色标签
+            if (extraInfo['球员强项']) {
+                hasTraits = true;
+                const strengths = extraInfo['球员强项'].split(/[、,，]/).filter(s => s.trim());
+                strengthsEl.innerHTML = strengths.map(s => 
+                    `<span class="trait-tag strength"><i class="fas fa-arrow-up mr-1"></i>${s.trim()}</span>`
+                ).join('');
+            } else {
+                strengthsEl.innerHTML = '';
+            }
+            
+            // 弱项 - 蓝色标签
+            if (extraInfo['球员弱项']) {
+                hasTraits = true;
+                const weaknesses = extraInfo['球员弱项'].split(/[、,，]/).filter(w => w.trim());
+                weaknessesEl.innerHTML = weaknesses.map(w => 
+                    `<span class="trait-tag weakness"><i class="fas fa-arrow-down mr-1"></i>${w.trim()}</span>`
+                ).join('');
+            } else {
+                weaknessesEl.innerHTML = '';
+            }
+            
+            if (!hasTraits) {
+                traitsSection.classList.add('hidden');
+            } else {
+                traitsSection.classList.remove('hidden');
+            }
+            
+            // 伤病记录 - 表格形式
+            if (extraInfo['伤病记录']) {
+                injurySection.classList.remove('hidden');
+                const injuries = parseInjuries(extraInfo['伤病记录']);
+                if (injuries.length > 0) {
+                    injuryList.innerHTML = injuries.map(inj => `
+                        <tr>
+                            <td class="px-3 py-3">
+                                <span class="injury-badge">
+                                    <i class="fas fa-band-aid text-xs"></i>
+                                    ${inj.type}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-center injury-time">
+                                <i class="far fa-clock mr-1"></i>
+                                ${inj.time}
+                            </td>
+                            <td class="px-3 py-3 text-right text-gray-500 dark:text-gray-400 text-xs">
+                                ${inj.season || ''}
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    injuryList.innerHTML = '<tr><td colspan="3" class="px-3 py-4 text-center text-gray-400">暂无详细记录</td></tr>';
+                }
+            } else {
+                injurySection.classList.add('hidden');
+            }
+        }
+
+        // 新增：解析伤病记录
+        function parseInjuries(injuryText) {
+            const injuries = [];
+            const lines = injuryText.split('\n');
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                // 格式：第四赛季 腘绳肌撕裂 修养时间：12天
+                const match = line.match(/^(.+?)\s+(.+?)\s+修养时间[：:]\s*(.+)$/);
+                if (match) {
+                    injuries.push({
+                        season: match[1].trim(),
+                        type: match[2].trim(),
+                        time: match[3].trim()
+                    });
+                } else {
+                    // 简单格式，直接显示整行
+                    injuries.push({
+                        season: '',
+                        type: line,
+                        time: '-'
+                    });
+                }
+            });
+            
+            return injuries;
+        }
 
         // 初始化返回键处理
         function initBackButtonHandler() {
-            // 监听浏览器返回事件
             window.addEventListener('popstate', function(event) {
                 isPopState = true;
                 handleBackButton();
                 isPopState = false;
             });
 
-            // 记录初始状态
             history.replaceState({ page: 'home' }, '', location.href);
         }
 
-        // 添加页面到历史记录
         function pushPageState(pageName, data = {}) {
             const state = { page: pageName, data: data, timestamp: Date.now() };
             pageHistory.push(state);
             history.pushState(state, '', location.href);
         }
 
-        // 处理返回键
         function handleBackButton() {
-            // 按优先级关闭弹窗和页面
-            
-            // 1. 关闭搜索
             const searchPage = document.getElementById('searchPage');
             if (searchPage && searchPage.classList.contains('show')) {
                 closeSearch();
                 return;
             }
 
-            // 2. 关闭文章页
             const articlePage = document.getElementById('articlePage');
             if (articlePage && articlePage.classList.contains('show')) {
                 closeArticle();
                 return;
             }
 
-            // 3. 关闭PK结果页
             const pkResultPage = document.getElementById('pkResultPage');
             if (pkResultPage && pkResultPage.classList.contains('show')) {
                 closePKResult();
                 return;
             }
 
-            // 4. 关闭PK选择模态框
             const pkSelectModal = document.getElementById('pkSelectModal');
             if (pkSelectModal && pkSelectModal.classList.contains('show')) {
                 closePKSelectModal();
                 return;
             }
 
-            // 5. 关闭球员详情页
             const playerDetailPage = document.getElementById('playerDetailPage');
             if (playerDetailPage && !playerDetailPage.classList.contains('hidden')) {
                 backToTeamDetail();
                 return;
             }
 
-            // 6. 关闭教练详情页
             const coachDetailPage = document.getElementById('coachDetailPage');
             if (coachDetailPage && !coachDetailPage.classList.contains('hidden')) {
                 backToTeamDetailFromCoach();
                 return;
             }
 
-            // 7. 关闭球队详情页
             const teamDetailPage = document.getElementById('teamDetailPage');
             if (teamDetailPage && !teamDetailPage.classList.contains('hidden')) {
                 backToTeamList();
                 return;
             }
 
-            // 8. 关闭特殊球员页
             const specialPlayersPage = document.getElementById('specialPlayersPage');
             if (specialPlayersPage && !specialPlayersPage.classList.contains('hidden')) {
                 closeSpecialPlayersPage();
                 return;
             }
 
-            // 9. 如果在其他Tab，返回首页
             if (currentTab !== 'home') {
                 switchTab('home');
                 return;
             }
 
-            // 10. 如果已经在首页，且历史记录为空，则退出应用（由浏览器处理）
             if (pageHistory.length <= 1) {
-                // 允许浏览器默认行为（退出）
                 return;
             }
 
-            // 从历史记录中移除当前页并返回上一页
             pageHistory.pop();
             if (pageHistory.length > 0) {
                 const prevState = pageHistory[pageHistory.length - 1];
@@ -1712,13 +2059,10 @@
             if (overlay) overlay.classList.add('show');
             if (page) page.classList.add('show');
             
-            // 添加历史记录
             pushPageState('search');
             
-            // 确保显示搜索历史
             renderSearchInitial();
             
-            // 延迟聚焦，避免动画冲突
             setTimeout(() => {
                 if (input) input.focus();
             }, 100);
@@ -1989,7 +2333,6 @@
 
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
-            // 如果讨论区已加载，更新 Giscus 主题
             if (giscusLoaded) {
                 updateGiscusTheme();
             }
@@ -2059,7 +2402,8 @@
             
             Promise.all([
                 loadRSS().catch(e => console.error('RSS刷新失败:', e)),
-                loadTeamHistoryData().catch(e => console.error('历史数据刷新失败:', e))
+                loadTeamHistoryData().catch(e => console.error('历史数据刷新失败:', e)),
+                loadPlayerExtraData().catch(e => console.error('球员信息刷新失败:', e))
             ]).then(() => {
                 showRefreshToast();
             }).finally(() => {
@@ -2427,7 +2771,6 @@
             page.classList.add('show');
             document.body.style.overflow = 'hidden';
             
-            // 添加历史记录
             pushPageState('article', { id: post.id });
         }
 
@@ -2561,7 +2904,7 @@
                     
                     const position = playerObj['位置'] || '';
                     const mainPos = getPositionCategory(position);
-                    const posList = position.split(/[,，]/).map(p => p.trim()).filter(p => p);
+                    const posList = position.split(/[,،，、/]/).map(p => p.trim()).filter(p => p);
                     
                     const player = {
                         id: i - 1,
@@ -2691,7 +3034,6 @@
             page.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             
-            // 添加历史记录
             pushPageState('specialPlayers', { type: type });
         }
         
@@ -2859,7 +3201,6 @@
             }
             document.body.style.overflow = 'hidden';
             
-            // 添加历史记录
             pushPageState('teamDetail', { teamId: teamId });
         }
         
@@ -3256,7 +3597,6 @@
             const coachPage = document.getElementById('coachDetailPage');
             if (coachPage) coachPage.classList.remove('hidden');
             
-            // 添加历史记录
             pushPageState('coachDetail');
         }
         
@@ -3416,10 +3756,12 @@
                 }).join('');
             }
             
+            // 渲染额外信息（性格、强弱项、伤病记录）
+            renderPlayerExtraInfo(player.name);
+            
             const detailPage = document.getElementById('playerDetailPage');
             if (detailPage) detailPage.classList.remove('hidden');
             
-            // 添加历史记录
             pushPageState('playerDetail', { playerId: playerId });
         }
         
@@ -3429,7 +3771,6 @@
             if (modal) modal.classList.add('show');
             renderPKSelectList();
             
-            // 添加历史记录
             pushPageState('pkSelect');
         }
         
@@ -3570,7 +3911,6 @@
             page.classList.add('show');
             document.body.style.overflow = 'hidden';
             
-            // 添加历史记录
             pushPageState('pkResult');
         }
         
@@ -3648,7 +3988,6 @@
                 }
             } else if (tab === 'transfer') {
                 if (transferPage) transferPage.classList.remove('hidden');
-                // 刷新 iframe 以确保最新内容
                 const iframe = document.getElementById('transferIframe');
                 if (iframe && !iframe.src) {
                     iframe.src = 'https://suttergov.github.io/transfermarkt.html';
@@ -3657,23 +3996,19 @@
                 if (dataPage) dataPage.classList.remove('hidden');
             } else if (tab === 'discussion') {
                 if (discussionPage) discussionPage.classList.remove('hidden');
-                // 首次切换到讨论区时加载 Giscus
                 if (!giscusLoaded) {
                     loadGiscus();
                 }
             }
             
-            // 添加历史记录（仅在用户主动点击时）
             if (!isPopState) {
                 pushPageState(tab);
             }
         }
 
-        // Giscus 相关函数
         function switchDiscussionTab(tab) {
             currentDiscussionTab = tab;
             
-            // 更新标签样式
             document.querySelectorAll('.discussion-tab').forEach(el => {
                 el.classList.remove('active');
                 if (el.dataset.tab === tab) {
@@ -3681,18 +4016,15 @@
                 }
             });
             
-            // 重新加载 Giscus，使用不同的分类或标签
             reloadGiscusForTab(tab);
         }
         
         function reloadGiscusForTab(tab) {
-            // 销毁现有的 Giscus
             const container = document.getElementById('giscus-frame-container');
             if (container) {
                 container.innerHTML = '';
             }
             
-            // 根据不同标签使用不同的讨论标题
             let discussionTitle = '加西亚足球讨论区';
             switch(tab) {
                 case 'match':
@@ -3708,7 +4040,6 @@
                     discussionTitle = '综合讨论 - 加西亚足球';
             }
             
-            // 重新加载 Giscus
             setTimeout(() => {
                 loadGiscus(discussionTitle);
             }, 100);
@@ -3720,21 +4051,18 @@
             
             if (!container) return;
             
-            // 显示加载状态
             if (loadingEl) loadingEl.style.display = 'flex';
             
-            // 获取当前主题
             const isDark = document.documentElement.classList.contains('dark');
             const theme = isDark ? 'dark' : 'light';
             
-            // 创建 Giscus 脚本
             const script = document.createElement('script');
             script.src = 'https://giscus.app/client.js';
             script.setAttribute('data-repo', CONFIG.giscus.repo);
             script.setAttribute('data-repo-id', CONFIG.giscus.repoId);
             script.setAttribute('data-category', CONFIG.giscus.category);
             script.setAttribute('data-category-id', CONFIG.giscus.categoryId);
-            script.setAttribute('data-mapping', 'title'); // 使用 title 映射，这样不同标签会有不同的讨论
+            script.setAttribute('data-mapping', 'title');
             script.setAttribute('data-term', customTitle || '加西亚足球讨论区');
             script.setAttribute('data-reactions-enabled', CONFIG.giscus.reactionsEnabled);
             script.setAttribute('data-emit-metadata', CONFIG.giscus.emitMetadata);
@@ -3766,7 +4094,6 @@
             const isDark = document.documentElement.classList.contains('dark');
             const theme = isDark ? 'dark' : 'light';
             
-            // 向 Giscus iframe 发送主题变更消息
             const iframe = document.querySelector('iframe.giscus-frame');
             if (iframe) {
                 iframe.contentWindow.postMessage(
