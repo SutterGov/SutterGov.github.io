@@ -1,0 +1,3985 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>加西亚足球APP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e3a5f',
+                        accent: '#c9a227',
+                        dark: { bg: '#121212', surface: '#1e1e1e', border: '#2c2c2c' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+        html, body { font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+        body { scrollbar-width: none; -ms-overflow-style: none; }
+        body::-webkit-scrollbar { display: none; }
+        .news-card { transition: all 0.2s ease; }
+        .news-card:active { transform: scale(0.98); opacity: 0.9; }
+        .tag-active { position: relative; }
+        .tag-active::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; background-color: #10b981; border-radius: 2px; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .bottom-nav-item { transition: all 0.2s; }
+        .bottom-nav-item.active { color: #10b981; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pull-refresh { position: absolute; top: -60px; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s; }
+        .pull-refresh-spinner { width: 24px; height: 24px; border: 2px solid #e5e7eb; border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .refresh-toast { position: fixed; top: 100px; left: 50%; transform: translateX(-50%) translateY(-100px); background: rgba(16, 185, 129, 0.95); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 100; pointer-events: none; }
+        .refresh-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .scroll-container { overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+        .scroll-container::-webkit-scrollbar { display: none; }
+        .team-header { background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); }
+        .team-logo-large { filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .stat-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .player-card { transition: all 0.2s; }
+        .player-card:active { transform: scale(0.98); }
+        .position-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+        .position-gk { background: #fbbf24; color: #92400e; }
+        .position-df { background: #3b82f6; color: white; }
+        .position-mf { background: #10b981; color: white; }
+        .position-fw { background: #ef4444; color: white; }
+        .rating-badge { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: bold; }
+        .tab-active { color: #10b981; border-bottom: 2px solid #10b981; }
+        .team-logo-container { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .team-logo-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .team-logo-list { width: 64px; height: 64px; flex-shrink: 0; }
+        .team-logo-detail { width: 80px; height: 80px; flex-shrink: 0; }
+        .team-logo-small { width: 20px; height: 20px; flex-shrink: 0; }
+        .team-logo-match { width: 40px; height: 40px; flex-shrink: 0; }
+        .news-team-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; font-size: 11px; color: #10b981; cursor: pointer; transition: all 0.2s; }
+        .news-team-tag:hover { background: rgba(16, 185, 129, 0.2); }
+        .news-team-tag img { width: 16px; height: 16px; object-fit: contain; }
+        .financial-warning { background: linear-gradient(90deg, #fef2f2 0%, #fee2e2 100%); border-left: 4px solid #ef4444; color: #dc2626; padding: 10px 16px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .dark .financial-warning { background: linear-gradient(90deg, #450a0a 0%, #7f1d1d 100%); color: #fca5a5; }
+        .article-page { transform: translateX(100%); transition: transform 0.3s ease-out; }
+        .article-page.show { transform: translateX(0); }
+        .search-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .search-overlay.show { opacity: 1; visibility: visible; }
+        .search-page { position: fixed; inset: 0; background: #f3f4f6; z-index: 101; transform: translateY(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; }
+        .dark .search-page { background: #121212; }
+        .search-page.show { transform: translateY(0); }
+        .search-header { background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e5e7eb; }
+        .dark .search-header { background: #1e1e1e; border-color: #2c2c2c; }
+        .search-input-wrapper { flex: 1; position: relative; }
+        .search-input { width: 100%; background: #f3f4f6; border: none; border-radius: 20px; padding: 10px 40px 10px 16px; font-size: 15px; outline: none; transition: all 0.2s; }
+        .dark .search-input { background: #2c2c2c; color: white; }
+        .search-input:focus { background: #e5e7eb; }
+        .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background: #9ca3af; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s; font-size: 12px; }
+        .search-clear.show { opacity: 1; }
+        .search-cancel { color: #6b7280; font-size: 15px; padding: 4px 8px; cursor: pointer; }
+        .search-tabs { display: flex; background: white; border-bottom: 1px solid #e5e7eb; padding: 0 16px; }
+        .dark .search-tabs { background: #1e1e1e; border-color: #2c2c2c; }
+        .search-tab { padding: 12px 16px; font-size: 14px; color: #6b7280; cursor: pointer; position: relative; font-weight: 500; }
+        .dark .search-tab { color: #9ca3af; }
+        .search-tab.active { color: #10b981; }
+        .search-tab.active::after { content: ''; position: absolute; bottom: 0; left: 16px; right: 16px; height: 2px; background: #10b981; border-radius: 2px; }
+        .search-content { flex: 1; overflow-y: auto; padding: 16px; }
+        .search-section-title { font-size: 13px; color: #9ca3af; margin-bottom: 12px; font-weight: 500; }
+        .search-history-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+        .dark .search-history-item { border-color: #2c2c2c; }
+        .search-result-item { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
+        .dark .search-result-item { background: #1e1e1e; }
+        .search-result-item:active { transform: scale(0.98); opacity: 0.8; }
+        .search-hot-item { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: white; border-radius: 20px; margin: 0 8px 8px 0; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .dark .search-hot-item { background: #1e1e1e; }
+        .search-hot-item:active { background: #10b981; color: white; }
+        .search-highlight { color: #10b981; font-weight: 600; }
+        .data-section { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .dark .data-section { background: #1e1e1e; }
+        .data-section-title { font-size: 14px; font-weight: bold; color: #374151; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+        .dark .data-section-title { color: #e5e7eb; border-color: #374151; }
+        .ranking-chart-container { width: 100%; height: 200px; position: relative; }
+        .ranking-chart-container canvas { width: 100% !important; height: 100% !important; }
+        .scorer-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6; }
+        .dark .scorer-item { border-color: #374151; }
+        .scorer-item:last-child { border-bottom: none; }
+        .honor-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+        .honor-badge { background: #fbbf24; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .honor-badge.second { background: #9ca3af; color: #1f2937; }
+        .honor-badge.third { background: #b45309; color: white; }
+        .change-text { line-height: 1.6; color: #4b5563; }
+        .dark .change-text { color: #9ca3af; }
+        
+        .match-page-container { background: #f5f5f5; min-height: 100vh; }
+        .dark .match-page-container { background: #121212; }
+        .match-date-header { 
+            background: #e8e8e8; 
+            padding: 8px 16px; 
+            font-size: 13px; 
+            color: #666; 
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .dark .match-date-header { background: #1e1e1e; color: #999; }
+        .match-card { 
+            background: white; 
+            margin: 8px 12px; 
+            border-radius: 12px; 
+            padding: 16px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .dark .match-card { background: #1e1e1e; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .match-league-tag { 
+            display: inline-block; 
+            background: #10b981; 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .match-teams-row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        .match-team-info { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex: 1;
+        }
+        .match-team-info.home { align-items: flex-end; padding-right: 16px; }
+        .match-team-info.away { align-items: flex-start; padding-left: 16px; }
+        .match-team-logo { 
+            width: 48px; 
+            height: 48px; 
+            object-fit: contain; 
+            margin-bottom: 8px;
+        }
+        .match-team-name { 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #1f2937;
+            text-align: center;
+        }
+        .dark .match-team-name { color: #f3f4f6; }
+        .match-score-section { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-width: 80px;
+        }
+        .match-score { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #1f2937;
+            font-family: 'Arial', sans-serif;
+        }
+        .dark .match-score { color: #f3f4f6; }
+        .match-status-text { 
+            font-size: 12px; 
+            color: #999; 
+            margin-top: 4px;
+        }
+        .match-status-live { color: #ef4444; font-weight: 600; }
+        .match-round-info { 
+            text-align: center; 
+            font-size: 12px; 
+            color: #999; 
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .dark .match-round-info { color: #666; border-color: #2c2c2c; }
+        
+        .schedule-month-header { 
+            background: #f3f4f6; 
+            padding: 8px 16px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            color: #6b7280; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+        }
+        .dark .schedule-month-header { background: #1e1e1e; color: #9ca3af; }
+        .schedule-item { 
+            background: white; 
+            padding: 16px; 
+            border-bottom: 1px solid #f3f4f6; 
+            display: flex; 
+            align-items: center; 
+        }
+        .dark .schedule-item { background: #1e1e1e; border-color: #2c2c2c; }
+        .schedule-date { 
+            width: 60px; 
+            text-align: center; 
+            flex-shrink: 0; 
+        }
+        .schedule-date-day { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: #1f2937; 
+            line-height: 1; 
+        }
+        .dark .schedule-date-day { color: #f3f4f6; }
+        .schedule-date-week { 
+            font-size: 12px; 
+            color: #9ca3af; 
+            margin-top: 2px; 
+        }
+        .schedule-info { 
+            flex: 1; 
+            padding: 0 12px; 
+        }
+        .schedule-league { 
+            font-size: 12px; 
+            color: #10b981; 
+            margin-bottom: 4px; 
+            font-weight: 500;
+        }
+        .schedule-teams { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+        }
+        .schedule-team { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            flex: 1; 
+        }
+        .schedule-team.home { justify-content: flex-end; }
+        .schedule-team.away { justify-content: flex-start; }
+        .schedule-team-name { 
+            font-size: 14px; 
+            font-weight: 500; 
+            color: #1f2937; 
+        }
+        .dark .schedule-team-name { color: #f3f4f6; }
+        .schedule-score { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #1f2937; 
+            min-width: 60px; 
+            text-align: center; 
+        }
+        .dark .schedule-score { color: #f3f4f6; }
+        .schedule-result { 
+            font-size: 12px; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-weight: 500; 
+        }
+        .result-win { background: #dcfce7; color: #166534; }
+        .dark .result-win { background: #166534; color: #dcfce7; }
+        .result-draw { background: #f3f4f6; color: #6b7280; }
+        .dark .result-draw { background: #374151; color: #9ca3af; }
+        .result-loss { background: #fee2e2; color: #dc2626; }
+        .dark .result-loss { background: #7f1d1d; color: #fca5a5; }
+        .result-upcoming { color: #9ca3af; }
+        
+        .pagination { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 16px; 
+            padding: 16px; 
+        }
+        .pagination-btn { 
+            padding: 8px 16px; 
+            background: #10b981; 
+            color: white; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            cursor: pointer; 
+            border: none; 
+        }
+        .pagination-btn:disabled { 
+            background: #9ca3af; 
+            cursor: not-allowed; 
+        }
+        .pagination-info { 
+            font-size: 14px; 
+            color: #6b7280; 
+        }
+        .dark .pagination-info { color: #9ca3af; }
+
+        .db-nav-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .dark .db-nav-card {
+            background: #1e1e1e;
+        }
+        .db-nav-card:active {
+            transform: scale(0.98);
+        }
+        .db-nav-card.searchfm {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.1) 100%);
+        }
+        .db-nav-card.kdocs {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.1) 100%);
+        }
+        .db-nav-card.fminside {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.1) 100%);
+        }
+        .db-nav-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        .db-nav-card.searchfm .db-nav-icon {
+            background: #10b981;
+            color: white;
+        }
+        .db-nav-card.kdocs .db-nav-icon {
+            background: #3b82f6;
+            color: white;
+        }
+        .db-nav-card.fminside .db-nav-icon {
+            background: #f59e0b;
+            color: white;
+        }
+        .db-nav-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+        .dark .db-nav-title {
+            color: #f3f4f6;
+        }
+        .db-nav-desc {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        .dark .db-nav-desc {
+            color: #9ca3af;
+        }
+        .db-nav-arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 20px;
+        }
+        .db-nav-header {
+            padding: 20px 16px;
+            text-align: center;
+        }
+        .db-nav-header h2 {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        .dark .db-nav-header h2 {
+            color: #f3f4f6;
+        }
+        .db-nav-header p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .dark .db-nav-header p {
+            color: #9ca3af;
+        }
+
+        .coach-list-item {
+            background: white;
+            margin: 8px 12px;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .dark .coach-list-item {
+            background: #1e1e1e;
+        }
+        .coach-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+        .dark .coach-avatar {
+            background: #2c2c2c;
+            color: #9ca3af;
+        }
+        .coach-info { flex: 1; }
+        .coach-name { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+        .dark .coach-name { color: #f3f4f6; }
+        .coach-record { font-size: 13px; color: #6b7280; }
+        .dark .coach-record { color: #9ca3af; }
+        .coach-duration { 
+            text-align: right; 
+            font-size: 13px; 
+            color: #6b7280;
+        }
+        .dark .coach-duration { color: #9ca3af; }
+        .coach-current { color: #10b981; font-weight: 600; }
+        
+        .honor-wall {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 16px;
+        }
+        .honor-tile {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 8px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .dark .honor-tile {
+            background: #1e1e1e;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .honor-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .honor-count {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .dark .honor-count { color: #f3f4f6; }
+        .honor-name {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .dark .honor-name { color: #9ca3af; }
+        
+        .match-filter-bar {
+            background: white;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        .dark .match-filter-bar {
+            background: #1e1e1e;
+            border-color: #2c2c2c;
+        }
+        .match-filter-select {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+        .dark .match-filter-select {
+            background: #2c2c2c;
+            border-color: #374151;
+            color: white;
+        }
+        
+        .match-league-tabs {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 12px;
+            gap: 16px;
+            background: white;
+        }
+        .dark .match-league-tabs {
+            background: #1e1e1e;
+        }
+        .match-league-tab {
+            padding: 12px 4px;
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+            font-weight: 500;
+        }
+        .dark .match-league-tab {
+            color: #9ca3af;
+        }
+        .match-league-tab.active {
+            color: #10b981;
+        }
+        .match-league-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #10b981;
+            border-radius: 2px;
+        }
+        
+        .season-selector {
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .dark .season-selector {
+            background: #1e1e1e;
+            border-color: #2c2c2c;
+        }
+        .season-dropdown {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            font-size: 14px;
+            outline: none;
+        }
+        .dark .season-dropdown {
+            background: #2c2c2c;
+            border-color: #374151;
+            color: white;
+        }
+
+        .special-player-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .dark .special-player-card {
+            background: #1e1e1e;
+        }
+        .special-player-card.free-agent { border-left-color: #10b981; }
+        .special-player-card.retired { border-left-color: #6b7280; }
+        .special-player-card.transferred { border-left-color: #f59e0b; }
+        .special-player-card:active { transform: scale(0.98); }
+        .special-player-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .special-player-card.free-agent .special-player-icon { background: #d1fae5; color: #059669; }
+        .special-player-card.retired .special-player-icon { background: #f3f4f6; color: #4b5563; }
+        .special-player-card.transferred .special-player-icon { background: #fef3c7; color: #d97706; }
+        .special-player-info { flex: 1; }
+        .special-player-title { font-size: 16px; font-weight: 600; color: #1f2937; margin-bottom: 2px; }
+        .dark .special-player-title { color: #f3f4f6; }
+        .special-player-count { font-size: 13px; color: #6b7280; }
+        .dark .special-player-count { color: #9ca3af; }
+        
+        .pk-page { transform: translateX(100%); transition: transform 0.3s ease-out; }
+        .pk-page.show { transform: translateX(0); }
+        .pk-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            color: white;
+            padding: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .pk-vs-badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .pk-player-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .pk-player-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .pk-comparison-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            background: white;
+        }
+        .dark .pk-comparison-row {
+            background: #1e1e1e;
+            border-color: #2c2c2c;
+        }
+        .pk-comparison-row:last-child { border-bottom: none; }
+        .pk-stat-name {
+            width: 80px;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .dark .pk-stat-name { color: #9ca3af; }
+        .pk-stat-bar-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pk-stat-value {
+            min-width: 36px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .pk-stat-bar {
+            flex: 1;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .dark .pk-stat-bar { background: #374151; }
+        .pk-stat-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .pk-stat-bar-fill.left { background: #3b82f6; }
+        .pk-stat-bar-fill.right { background: #ef4444; }
+        .pk-winner { color: #10b981; font-weight: bold; }
+        .pk-loser { color: #6b7280; }
+        .pk-equal { color: #f59e0b; }
+        
+        .pk-select-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 80;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            display: flex;
+            align-items: flex-end;
+        }
+        .pk-select-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .pk-select-content {
+            background: white;
+            width: 100%;
+            max-height: 80vh;
+            border-radius: 20px 20px 0 0;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .dark .pk-select-content {
+            background: #1e1e1e;
+        }
+        .pk-select-modal.show .pk-select-content {
+            transform: translateY(0);
+        }
+        .pk-select-header {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dark .pk-select-header { border-color: #2c2c2c; }
+        .pk-select-list {
+            overflow-y: auto;
+            flex: 1;
+            padding: 8px 0;
+        }
+        .pk-select-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .pk-select-item:active { background: #f3f4f6; }
+        .dark .pk-select-item:active { background: #2c2c2c; }
+        .pk-select-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #6b7280;
+        }
+        .pk-btn-float {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            cursor: pointer;
+            z-index: 30;
+            transition: all 0.2s;
+        }
+        .pk-btn-float:active { transform: scale(0.95); }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .dark .info-row {
+            border-color: #374151;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .dark .info-label {
+            color: #9ca3af;
+        }
+        .info-value {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+            text-align: right;
+        }
+        .dark .info-value {
+            color: #f3f4f6;
+        }
+        .youth-rank-box {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .youth-rank-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .youth-rank-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .error-toast {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(239, 68, 68, 0.95);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+            pointer-events: none;
+            max-width: 80%;
+            text-align: center;
+        }
+        .error-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 转会页面样式 */
+        .transfer-container {
+            background: white;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .dark .transfer-container {
+            background: #121212;
+        }
+        .transfer-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            color: white;
+            padding: 20px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .transfer-iframe {
+            width: 100%;
+            height: calc(100vh - 140px);
+            border: none;
+        }
+        .transfer-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        /* Giscus 讨论区样式 */
+        .discussion-container {
+            background: white;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .dark .discussion-container {
+            background: #121212;
+        }
+        .discussion-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            color: white;
+            padding: 20px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .discussion-content {
+            padding: 16px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        .giscus-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        .giscus-error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #ef4444;
+        }
+        .discussion-info-card {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid #10b981;
+        }
+        .dark .discussion-info-card {
+            background: #1e1e1e;
+            border-color: #10b981;
+        }
+        .discussion-info-title {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dark .discussion-info-title {
+            color: #f3f4f6;
+        }
+        .discussion-info-text {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        .dark .discussion-info-text {
+            color: #9ca3af;
+        }
+        .discussion-tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+        .dark .discussion-tabs {
+            background: #1e1e1e;
+            border-color: #2c2c2c;
+        }
+        .discussion-tab {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #6b7280;
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .dark .discussion-tab {
+            color: #9ca3af;
+        }
+        .discussion-tab.active {
+            color: #10b981;
+        }
+        .discussion-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 16px;
+            right: 16px;
+            height: 2px;
+            background: #10b981;
+            border-radius: 2px;
+        }
+        .giscus-frame {
+            width: 100%;
+            border: none;
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-gray-100 transition-colors duration-300 pb-16">
+    <div id="refreshToast" class="refresh-toast"><i class="fas fa-check-circle mr-1"></i> 已更新</div>
+    <div id="errorToast" class="error-toast"></div>
+    <div id="searchOverlay" class="search-overlay" onclick="closeSearch()"></div>
+    <div id="searchPage" class="search-page">
+        <div class="search-header">
+            <div class="search-input-wrapper">
+                <input type="text" id="searchInput" class="search-input" placeholder="搜索球队、球员、新闻..." oninput="handleSearchInput(this.value)" onkeyup="handleSearchKeyup(event)">
+                <div id="searchClear" class="search-clear" onclick="clearSearch()"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="search-cancel" onclick="closeSearch()">取消</div>
+        </div>
+        <div class="search-tabs">
+            <div class="search-tab active" onclick="switchSearchTab('all')" data-tab="all">综合</div>
+            <div class="search-tab" onclick="switchSearchTab('team')" data-tab="team">球队</div>
+            <div class="search-tab" onclick="switchSearchTab('player')" data-tab="player">球员</div>
+            <div class="search-tab" onclick="switchSearchTab('news')" data-tab="news">新闻</div>
+        </div>
+        <div id="searchContent" class="search-content"></div>
+    </div>
+
+    <div class="sticky top-0 z-50 bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border transition-colors duration-300" id="mainHeader">
+        <div class="flex justify-between items-center px-4 py-1 text-xs text-gray-500 dark:text-gray-400">
+            <span id="clock">16:10</span>
+            <div class="flex items-center gap-1">
+                <span id="syncStatus" class="text-gray-400 dark:text-gray-500 text-[10px] mr-2">等待刷新</span>
+                <span>5G</span><i class="fas fa-signal"></i><i class="fas fa-wifi"></i><i class="fas fa-battery-full"></i>
+            </div>
+        </div>
+        <div class="px-4 py-2 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                <img src="https://suttergov.github.io/%E5%8D%81%E5%91%A8%E5%B9%B4%E7%BA%AA%E5%BF%B5.png" alt="avatar" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 relative" onclick="openSearch()">
+                <div class="w-full bg-gray-100 dark:bg-dark-border text-sm px-4 py-2 rounded-full flex items-center text-gray-400 cursor-pointer">
+                    <i class="fas fa-search mr-2"></i><span>搜索球队、球员、新闻...</span>
+                </div>
+            </div>
+            <button onclick="toggleTheme()" class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                <i class="fas fa-moon dark:hidden"></i><i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+            </button>
+        </div>
+        <div id="homeTabs" class="flex overflow-x-auto px-2 py-2 gap-6 text-sm font-medium border-t border-gray-100 dark:border-dark-border">
+            <button onclick="filterByTag('all')" class="tag-btn tag-active text-emerald-600 dark:text-emerald-400 whitespace-nowrap px-2" data-tag="all">全部</button>
+            <button onclick="filterByTag('match')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="match">战报</button>
+            <button onclick="filterByTag('transfer')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="transfer">转会</button>
+            <button onclick="filterByTag('official')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="official">公告</button>
+            <button onclick="filterByTag('analysis')" class="tag-btn text-gray-600 dark:text-gray-400 whitespace-nowrap px-2" data-tag="analysis">分析</button>
+        </div>
+    </div>
+
+    <div id="refreshContainer" class="relative">
+        <div id="pullIndicator" class="pull-refresh">
+            <div id="pullSpinner" class="pull-refresh-spinner hidden"></div>
+            <div id="pullText" class="text-gray-500 dark:text-gray-400 text-sm"><i class="fas fa-arrow-down mr-1"></i> 下拉刷新</div>
+        </div>
+        <main id="newsFeed" class="divide-y divide-gray-200 dark:divide-dark-border min-h-[60vh] scroll-container"></main>
+        
+        <!-- 转会页面（原积分榜位置） -->
+        <div id="transferPage" class="hidden min-h-[60vh] scroll-container bg-gray-100 dark:bg-dark-bg">
+            <div class="transfer-header">
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fas fa-exchange-alt"></i>
+                    转会市场
+                </h1>
+                <p class="text-sm opacity-80 mt-1">球员转会申报与查询系统</p>
+            </div>
+            <div class="transfer-container">
+                <iframe id="transferIframe" class="transfer-iframe" src="https://suttergov.github.io/transfermarkt.html" title="转会市场"></iframe>
+            </div>
+        </div>
+        
+        <div id="dataPage" class="hidden min-h-[60vh] scroll-container bg-gray-100 dark:bg-dark-bg">
+            <div class="db-nav-header">
+                <h2>球员数据库</h2>
+                <p>选择以下外部数据库查询球员信息</p>
+            </div>
+            <div id="dataContent" class="pb-4">
+                <div class="db-nav-card searchfm" onclick="openExternalDB('searchfm')">
+                    <div class="db-nav-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="db-nav-title">搜猪网</div>
+                    <div class="db-nav-desc">中文搜索球员FM能力，快速查找球员属性与潜力</div>
+                    <i class="fas fa-chevron-right db-nav-arrow"></i>
+                </div>
+                
+                <div class="db-nav-card kdocs" onclick="openExternalDB('kdocs')">
+                    <div class="db-nav-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <div class="db-nav-title">FM26球员信息表</div>
+                    <div class="db-nav-desc">包含十万球员信息的金山在线表格，数据全面详细</div>
+                    <i class="fas fa-chevron-right db-nav-arrow"></i>
+                </div>
+                
+                <div class="db-nav-card fminside" onclick="openExternalDB('fminside')">
+                    <div class="db-nav-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="db-nav-title">FMINSIDE</div>
+                    <div class="db-nav-desc">球员库数量最大的英文网站，适合查找海外球员</div>
+                    <i class="fas fa-chevron-right db-nav-arrow"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div id="teamPage" class="hidden min-h-[60vh] scroll-container bg-gray-100 dark:bg-dark-bg">
+            <div class="py-4">
+                <div class="px-4 mb-3">
+                    <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">特殊名单</h3>
+                </div>
+                <div class="special-player-card free-agent" onclick="showSpecialPlayers('free')">
+                    <div class="special-player-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="special-player-info">
+                        <div class="special-player-title">自由球员</div>
+                        <div class="special-player-count" id="freeAgentCount">加载中...</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600"></i>
+                </div>
+                <div class="special-player-card retired" onclick="showSpecialPlayers('retired')">
+                    <div class="special-player-icon">
+                        <i class="fas fa-user-slash"></i>
+                    </div>
+                    <div class="special-player-info">
+                        <div class="special-player-title">已退役球员</div>
+                        <div class="special-player-count" id="retiredCount">加载中...</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600"></i>
+                </div>
+                <div class="special-player-card transferred" onclick="showSpecialPlayers('transferred')">
+                    <div class="special-player-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="special-player-info">
+                        <div class="special-player-title">已转出球员</div>
+                        <div class="special-player-count" id="transferredCount">加载中...</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600"></i>
+                </div>
+            </div>
+            
+            <div class="px-4 mb-3">
+                <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">联赛球队</h3>
+            </div>
+            <div id="teamList" class="px-4 pb-4 grid grid-cols-1 gap-3"></div>
+        </div>
+        
+        <!-- 讨论区页面 -->
+        <div id="discussionPage" class="hidden min-h-[60vh] scroll-container bg-gray-100 dark:bg-dark-bg">
+            <div class="discussion-header">
+                <h1 class="text-xl font-bold flex items-center gap-2">
+                    <i class="fas fa-comments"></i>
+                    球迷讨论区
+                </h1>
+                <p class="text-sm opacity-80 mt-1">基于 GitHub Discussions 的评论区</p>
+            </div>
+            
+            <div class="discussion-tabs bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border sticky top-0 z-40">
+                <div class="discussion-tab active" onclick="switchDiscussionTab('general')" data-tab="general">综合讨论</div>
+                <div class="discussion-tab" onclick="switchDiscussionTab('match')" data-tab="match">比赛讨论</div>
+                <div class="discussion-tab" onclick="switchDiscussionTab('transfer')" data-tab="transfer">转会传闻</div>
+                <div class="discussion-tab" onclick="switchDiscussionTab('tactical')" data-tab="tactical">战术分析</div>
+            </div>
+            
+            <div class="discussion-content">
+                <!-- 提示信息卡片 -->
+                <div class="discussion-info-card">
+                    <div class="discussion-info-title">
+                        <i class="fas fa-info-circle text-emerald-600"></i>
+                        如何参与讨论
+                    </div>
+                    <div class="discussion-info-text">
+                        1. 你需要有 GitHub 账号才能发表评论<br>
+                        2. 点击下方的 "Sign in with GitHub" 登录<br>
+                        3. 支持 Markdown 格式和表情包 😊<br>
+                        4. 可以在不同分类下发起新话题
+                    </div>
+                </div>
+                
+                <!-- Giscus 容器 -->
+                <div id="giscus-container" class="bg-white dark:bg-dark-surface rounded-lg shadow-sm overflow-hidden">
+                    <div class="giscus-loading" id="giscusLoading">
+                        <i class="fas fa-spinner fa-spin text-3xl mb-3 text-emerald-600"></i>
+                        <p>正在加载讨论区...</p>
+                        <p class="text-xs mt-2">首次加载可能需要几秒钟</p>
+                    </div>
+                    <div id="giscus-frame-container"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="specialPlayersPage" class="hidden fixed inset-0 z-50 bg-gray-100 dark:bg-dark-bg scroll-container">
+            <div class="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-4 py-3 flex items-center sticky top-0 z-50">
+                <button onclick="closeSpecialPlayersPage()" class="w-10 h-10 flex items-center justify-center -ml-2">
+                    <i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i>
+                </button>
+                <span class="font-medium ml-2 dark:text-gray-100" id="specialPlayersTitle">特殊球员</span>
+            </div>
+            <div id="specialPlayersList" class="p-4 space-y-3"></div>
+        </div>
+        
+        <div id="teamDetailPage" class="hidden fixed inset-0 z-50 bg-gray-100 dark:bg-dark-bg scroll-container">
+            <div class="team-header text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div>
+                <div class="relative z-10 flex items-center justify-between px-4 py-3">
+                    <button onclick="backToTeamList()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur"><i class="fas fa-arrow-left"></i></button>
+                    <span class="font-medium">球队详情</span>
+                    <button onclick="shareTeam()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur"><i class="fas fa-share-alt"></i></button>
+                </div>
+                <div class="relative z-10 px-4 pb-6 pt-2">
+                    <div class="flex items-center gap-4">
+                        <div class="team-logo-container team-logo-detail bg-white/10 rounded-lg p-2">
+                            <img id="teamDetailLogo" src="" alt="" class="team-logo-large">
+                        </div>
+                        <div class="flex-1">
+                            <h1 id="teamDetailName" class="text-2xl font-bold mb-1"></h1>
+                            <p id="teamDetailNameEn" class="text-sm opacity-80 mb-2"></p>
+                            <div class="flex items-center gap-2 text-xs flex-wrap">
+                                <span class="bg-white/20 px-2 py-1 rounded">加超联</span>
+                                <span id="teamDetailCoach" class="bg-white/20 px-2 py-1 rounded"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-4">
+                        <div class="stat-card rounded-lg p-3 text-center"><div class="text-xs opacity-80">球队资金</div><div class="text-lg font-bold" id="teamDetailFunds"></div></div>
+                        <div class="stat-card rounded-lg p-3 text-center"><div class="text-xs opacity-80">场均上座</div><div class="text-lg font-bold" id="teamDetailAttendance"></div></div>
+                        <div class="stat-card rounded-lg p-3 text-center"><div class="text-xs opacity-80">上座率</div><div class="text-lg font-bold" id="teamDetailOccupancy"></div></div>
+                        <div class="stat-card rounded-lg p-3 text-center"><div class="text-xs opacity-80">球场容量</div><div class="text-lg font-bold" id="teamDetailCapacity"></div></div>
+                        <div class="stat-card rounded-lg p-3 text-center"><div class="text-xs opacity-80">球队总年薪</div><div class="text-lg font-bold" id="teamDetailWages"></div></div>
+                        <div class="stat-card rounded-lg p-3 text-center"><div class="text-xs opacity-80">预计季末资金</div><div class="text-lg font-bold" id="teamDetailProjected"></div></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="stat-card rounded-lg p-3 text-center bg-emerald-500/20 border border-emerald-400/30">
+                            <div class="text-xs opacity-80">平均CA</div>
+                            <div class="text-lg font-bold" id="teamDetailAvgCA">--</div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center bg-purple-500/20 border border-purple-400/30">
+                            <div class="text-xs opacity-80">平均PA</div>
+                            <div class="text-lg font-bold" id="teamDetailAvgPA">--</div>
+                        </div>
+                        <div class="stat-card rounded-lg p-3 text-center bg-blue-500/20 border border-blue-400/30">
+                            <div class="text-xs opacity-80">平均年龄</div>
+                            <div class="text-lg font-bold" id="teamDetailAvgAge">--</div>
+                        </div>
+                    </div>
+                    <div id="financialWarning" class="hidden mt-3 rounded-lg financial-warning"><i class="fas fa-exclamation-triangle"></i><span>球队资金情况危险，可能无法通过准入</span></div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border sticky top-0 z-40">
+                <div class="flex">
+                    <button onclick="switchTeamTab('squad')" class="team-tab flex-1 py-3 text-sm font-medium text-center tab-active" data-tab="squad">阵容</button>
+                    <button onclick="switchTeamTab('stats')" class="team-tab flex-1 py-3 text-sm font-medium text-center text-gray-500 dark:text-gray-400" data-tab="stats">资料</button>
+                    <button onclick="switchTeamTab('news')" class="team-tab flex-1 py-3 text-sm font-medium text-center text-gray-500 dark:text-gray-400" data-tab="news">动态</button>
+                </div>
+            </div>
+            <div id="squadContent" class="p-4">
+                <div class="mb-4">
+                    <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">主教练</h3>
+                    <div onclick="openCoachDetail()" class="bg-white dark:bg-dark-surface rounded-lg p-4 flex items-center justify-between shadow-sm cursor-pointer active:scale-95 transition-transform">
+                        <div id="coachCard" class="flex-1"></div><i class="fas fa-chevron-right text-gray-400 dark:text-gray-500 ml-2"></i>
+                    </div>
+                </div>
+                <div id="playersList"></div>
+            </div>
+            <div id="statsContent" class="hidden bg-gray-100 dark:bg-dark-bg min-h-full"></div>
+            <div id="newsContent" class="hidden p-4"><div id="teamNewsList" class="space-y-3"></div></div>
+        </div>
+        
+        <div id="coachDetailPage" class="hidden fixed inset-0 z-[60] bg-gray-100 dark:bg-dark-bg scroll-container">
+            <div class="bg-white dark:bg-dark-surface border-b border-gray-200 dark:border-dark-border px-4 py-3 flex items-center sticky top-0 z-50">
+                <button onclick="backToTeamDetailFromCoach()" class="w-10 h-10 flex items-center justify-center -ml-2"><i class="fas fa-arrow-left text-gray-600 dark:text-gray-300"></i></button>
+                <span class="font-medium ml-2 dark:text-gray-100">教练组名单</span>
+            </div>
+            <div id="coachList" class="py-4"></div>
+        </div>
+        
+        <div id="playerDetailPage" class="hidden fixed inset-0 z-[70] bg-gray-100 dark:bg-dark-bg scroll-container">
+            <div class="relative bg-gradient-to-br from-emerald-600 to-emerald-800 text-white">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <button onclick="backToTeamDetail()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur"><i class="fas fa-arrow-left"></i></button>
+                    <span class="font-medium">球员详情</span>
+                    <div class="flex gap-2">
+                        <button onclick="startPK()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur" title="PK对比">
+                            <i class="fas fa-bolt"></i>
+                        </button>
+                        <button onclick="sharePlayer()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur"><i class="fas fa-share-alt"></i></button>
+                    </div>
+                </div>
+                <div class="px-4 pb-6 flex items-end gap-4">
+                    <div class="w-24 h-24 rounded-lg bg-white/20 flex items-center justify-center text-4xl font-bold"><span id="playerInitial"></span></div>
+                    <div class="flex-1 pb-1">
+                        <div class="flex items-center gap-2 mb-1"><span id="playerDetailPosition" class="position-badge"></span></div>
+                        <h1 id="playerDetailName" class="text-2xl font-bold mb-1"></h1>
+                        <p id="playerDetailTeam" class="text-sm opacity-80"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 space-y-4">
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <h3 class="font-bold mb-3 dark:text-gray-200">能力评估</h3>
+                    <div class="flex items-center justify-center mb-4"><div class="w-24 h-24 rounded-full rating-badge flex items-center justify-center text-3xl" id="playerDetailRating"></div></div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">当前能力(CA)</span><span class="font-bold" id="playerDetailCA"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">潜力(PA)</span><span class="font-bold text-emerald-600" id="playerDetailPA"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">年龄</span><span class="font-bold" id="playerDetailAge"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">国籍</span><span class="font-bold" id="playerDetailNation"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">身高</span><span class="font-bold" id="playerDetailHeight"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">体重</span><span class="font-bold" id="playerDetailWeight"></span></div>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm"><h3 class="font-bold mb-3 dark:text-gray-200">可打位置</h3><div id="playerAllPositions" class="flex flex-wrap gap-2"></div></div>
+                <div class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm">
+                    <h3 class="font-bold mb-3 dark:text-gray-200">合同信息</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">所在球队</span><span class="font-bold" id="playerDetailTeam2"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">合约到期</span><span class="font-bold" id="playerDetailContract"></span></div>
+                        <div class="flex justify-between py-2 border-b border-gray-100 dark:border-dark-border"><span class="text-gray-500">年薪</span><span class="font-bold text-emerald-600" id="playerDetailWage"></span></div>
+                        <div class="flex justify-between py-2"><span class="text-gray-500">违约金</span><span class="font-bold text-red-500" id="playerDetailClause"></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="pkSelectModal" class="pk-select-modal" onclick="closePKSelectModal(event)">
+            <div class="pk-select-content" onclick="event.stopPropagation()">
+                <div class="pk-select-header">
+                    <span class="font-bold text-lg dark:text-gray-100">选择对比球员</span>
+                    <button onclick="closePKSelectModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-4 bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700">
+                    <input type="text" id="pkSearchInput" placeholder="搜索球员姓名..." class="w-full px-4 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-white outline-none focus:border-emerald-500" oninput="filterPKPlayers(this.value)">
+                </div>
+                <div id="pkSelectList" class="pk-select-list"></div>
+            </div>
+        </div>
+        
+        <div id="pkResultPage" class="pk-page fixed inset-0 z-[80] bg-gray-100 dark:bg-dark-bg scroll-container">
+            <div class="pk-header">
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="closePKResult()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span class="font-medium">球员对比</span>
+                    <button onclick="sharePKResult()" class="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="pk-player-header" id="pkPlayer1Header"></div>
+                    <div class="pk-vs-badge">VS</div>
+                    <div class="pk-player-header flex-row-reverse text-right" id="pkPlayer2Header"></div>
+                </div>
+            </div>
+            <div class="p-4 space-y-3" id="pkComparisonContent"></div>
+        </div>
+        
+        <div id="articlePage" class="article-page fixed inset-0 z-50 bg-white dark:bg-dark-bg scroll-container">
+            <div class="sticky top-0 bg-white/95 dark:bg-dark-surface/95 backdrop-blur border-b border-gray-200 dark:border-dark-border px-4 py-2 flex items-center justify-between">
+                <button onclick="closeArticle()" class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300"><i class="fas fa-arrow-left text-lg"></i></button>
+                <span class="font-medium text-sm dark:text-gray-200">加西亚足球APP</span>
+                <button onclick="shareArticle()" class="w-8 h-8 flex items-center justify-center text-gray-600 dark:text-gray-300"><i class="fas fa-share-alt"></i></button>
+            </div>
+            <article id="articleContent" class="p-4"></article>
+        </div>
+    </div>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-surface border-t border-gray-200 dark:border-dark-border px-4 py-2 flex justify-between items-center z-40 transition-colors duration-300">
+        <button onclick="switchTab('home')" class="bottom-nav-item active flex flex-col items-center gap-1 text-emerald-600 dark:text-emerald-400 flex-1" data-tab="home"><i class="fas fa-home text-xl"></i><span class="text-xs">首页</span></button>
+        <button onclick="switchTab('team')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 flex-1" data-tab="team"><i class="fas fa-shield-alt text-xl"></i><span class="text-xs">球队</span></button>
+        <button onclick="switchTab('transfer')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 flex-1" data-tab="transfer"><i class="fas fa-exchange-alt text-xl"></i><span class="text-xs">转会</span></button>
+        <button onclick="switchTab('data')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 flex-1" data-tab="data"><i class="fas fa-database text-xl"></i><span class="text-xs">数据</span></button>
+        <button onclick="switchTab('discussion')" class="bottom-nav-item flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 flex-1" data-tab="discussion"><i class="fas fa-comments text-xl"></i><span class="text-xs">讨论</span></button>
+    </nav>
+    <script>
+        const TEAM_LOGOS = {
+            '南太平洋大学色温校区': 'https://suttergov.github.io/%E5%8D%97%E5%A4%AA%E5%A4%A7%E6%96%B0%E6%B3%B0.png',
+            '三宝敦': 'https://suttergov.github.io/%E4%B8%89%E5%AE%9D%E6%95%A6.png',
+            '东平雄鹰': 'https://suttergov.github.io/%E4%B8%9C%E5%B9%B3%E9%9B%84%E9%B9%B0.png',
+            '伊丽莎白女王镇联合': 'https://suttergov.github.io/%E4%BC%8A%E4%B8%BD%E8%8E%8E%E7%99%BD%E8%81%94%E5%90%88.png',
+            '泰克马联合': 'https://suttergov.github.io/%E4%BC%8A%E6%96%AF%E7%89%B9%E4%BC%8D%E5%BE%B7%E8%81%94%E5%90%88%E6%96%B02.png',
+            '首都守护者': 'https://suttergov.github.io/%E5%93%88%E5%8D%A1%E6%8B%89%E6%89%98%E7%89%B9%E5%8D%A111.png',
+            '哈贾丹太平洋人': 'https://suttergov.github.io/%E5%93%88%E8%B4%BE%E4%B8%B9%E5%A4%AA%E5%B9%B3%E6%B4%8B%E4%BA%BA.png',
+            '坎布尔新吕伐登': 'https://suttergov.github.io/%E5%9D%8E%E5%B8%83%E5%B0%94%E6%96%B0%E5%90%95%E4%BC%90%E7%99%BB.png',
+            '大同拜仁皇家加西亚': 'https://suttergov.github.io/%E5%A4%A7%E5%90%8C%E6%8B%9C%E4%BB%81%E7%9A%87%E5%AE%B6%E5%8A%A0%E8%A5%BF%E4%BA%9A.png',
+            '奥顿兰富力': 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2Feb9a55f184d71696f341ee3f8cd0a3bbcc0efc56-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75',
+            '奥顿兰海鸥': 'https://suttergov.github.io/%E5%A5%A5%E9%A1%BF%E5%85%B0%E6%B5%B7%E6%B8%AF.png',
+            '东木市职业': 'https://suttergov.github.io/%E5%AD%94%E6%81%A9%E5%BA%A6%E5%8D%A2FC.png',
+            '安倍萨镇': 'https://suttergov.github.io/%E5%AE%89%E5%80%8D%E8%90%A8%E5%9F%8E.png',
+            '拉阿纳': 'https://suttergov.github.io/%E6%8B%89%E9%98%BF%E7%BA%B3%E5%9F%8E%E5%B8%82%E7%AB%9E%E6%8A%80.png',
+            '斯波托普城市': 'https://suttergov.github.io/%E6%96%AF%E6%B3%A2%E6%89%98%E6%99%AE%E5%9F%8E%E5%B8%82.png',
+            '新吕伐登猫头鹰镇': 'https://suttergov.github.io/%E6%96%B0%E5%90%95%E4%BC%90%E7%99%BB%E7%8C%AB%E5%A4%B4%E9%B9%B0.png',
+            '新南城': 'https://suttergov.github.io/%E6%96%B0%E6%B3%B0%E6%96%B03.png',
+            '坎布尔新吕伐登B': 'https://free.boltp.com/2026/02/18/699491722d260.webp',
+            '新达华哈海岸': 'https://suttergov.github.io/%E6%96%B0%E8%BE%BE%E5%8D%8E%E5%93%88%E6%B5%B7%E5%B2%B8.png',
+            '泰克马职业': 'https://suttergov.github.io/%E6%B3%B0%E5%85%8B%E9%A9%AC%E8%81%8C%E4%B8%9A.png',
+            '泰克马队': 'https://suttergov.github.io/%E6%B3%B0%E5%85%8B%E9%A9%AC%E9%98%9F.png',
+            '瓦巴萨朱树鸦': 'https://suttergov.github.io/%E7%93%A6%E5%B7%B4%E8%90%A8%E6%9C%B1%E6%A0%91%E9%B8%A6.png',
+            '新泰泰山': 'https://suttergov.github.io/%E7%93%A6%E5%B7%B4%E8%90%A8%E6%9C%B1%E8%89%BE%E5%A5%A5%E7%BA%B3%E5%B0%94.png',
+            '皇家萨乌萨乌': 'https://suttergov.github.io/%E7%9A%87%E5%AE%B6%E8%90%A8%E4%B9%8C%E8%90%A8%E4%B9%8C.png',
+            '穆拉哈西部': 'https://suttergov.github.io/%E7%A9%86%E6%8B%89%E5%93%88%E8%A5%BF%E9%83%A8.png',
+            '色温岱州东岳': 'https://suttergov.github.io/%E8%89%B2%E6%B8%A9%E5%B2%B1%E5%B7%9E%E4%B8%9C%E5%B2%B3.png',
+            '巴峰': 'https://suttergov.github.io/%E8%90%A8%E4%B9%8C%E8%90%A8%E4%B9%8C%E6%96%B0.png',
+            '诺维奇港': 'https://suttergov.github.io/%E8%AF%BA%E7%BB%B4%E5%A5%87%E6%B8%AF%E6%96%B0.png',
+            '北泰克马': 'https://suttergov.github.io/%E9%87%8C%E6%8B%89%E8%B5%AB%E9%A3%9E%E7%87%95.png',
+            '阿尔特弗雷奇流浪者': 'https://suttergov.github.io/%E9%98%BF%E5%B0%94%E7%89%B9%E5%BC%97%E9%9B%B7%E5%A5%87%E6%B5%81%E6%B5%AA%E8%80%85.png',
+            '马雷克青春之城': 'https://suttergov.github.io/%E9%A9%AC%E9%9B%B7%E5%85%8B%E6%96%B0.png',
+            '哈克竞技': 'https://suttergov.github.io/%E5%93%88%E5%8D%A1%E6%8B%89%E6%89%98%E7%89%B9%E5%8D%A1.png',
+            '比列竞技': 'https://suttergov.github.io/%E6%AF%94%E5%88%97%E7%AB%9E%E6%8A%80%E6%96%B0.png',
+            '朱马蓝色协进': 'https://suttergov.github.io/%E6%9C%B1%E9%A9%AC%E8%93%9D%E8%89%B2%E5%8D%8F%E8%BF%9B.png',
+            '伊斯特伍德竞技': 'https://suttergov.github.io/%E4%BC%8A%E6%96%AF%E7%89%B9%E4%BC%8D%E5%BE%B7%E4%BF%B1%E4%B9%90%E9%83%A8.png',
+            '比斯恰捍卫者': 'https://suttergov.github.io/%E6%AF%94%E6%96%AF%E6%81%B0%E6%8D%8D%E5%8D%AB%E8%80%85.png',
+            '新利雅得胜利': 'https://suttergov.github.io/%E6%99%AE%E6%8B%89%E5%B8%82%E6%B0%91.png',
+            '南比斯恰城市': 'https://suttergov.github.io/%E5%8D%97%E6%AF%94%E6%96%AF%E6%81%B0%E5%9F%8E%E5%B8%82.png',
+            '岱州东岳': 'https://suttergov.github.io/%E8%89%B2%E6%B8%A9%E5%B2%B1%E5%B7%9E%E4%B8%9C%E5%B2%B3.png',
+            '新利雅得新月': 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F8b173e002d366de185a0b51b67e71d230f63b72e-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75',
+            '马雷克海岸线': 'https://free.boltp.com/2026/02/17/6994906fb09c8.webp',
+            '伊斯特伍德海岸线': 'https://free.boltp.com/2026/02/18/6995d0f5765c8.webp',
+            '瓦巴萨朱城市': 'https://suttergov.github.io/%E7%93%A6%E5%B7%B4%E8%90%A8%E6%9C%B1%E8%89%BE%E5%A5%A5%E7%BA%B3%E5%B0%94.png',
+            '瓦巴萨朱树鸦B': 'https://suttergov.github.io/%E7%93%A6%E5%B7%B4%E8%90%A8%E6%9C%B1%E6%A0%91%E9%B8%A6.png',
+            '三宝敦乐邦战士': 'https://suttergov.github.io/%E7%BB%B4%E5%B0%94%E5%9B%BE%E9%92%A2%E7%AE%A1.png',
+            '首都-东木联合B': 'https://suttergov.github.io/%E5%93%88%E5%8D%A1%E6%8B%89%E6%89%98%E7%89%B9%E5%8D%A111.png',
+            '首都B': 'https://suttergov.github.io/%E5%93%88%E5%8D%A1%E6%8B%89%E6%89%98%E7%89%B9%E5%8D%A111.png',
+            '比列地平线': 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F2d2c10be4e5d9a91aada5021b9b551ebd88f3bdc-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75',
+            '新法鲁大里斯本联盟': 'https://suttergov.github.io/%E6%96%B0%E6%B3%95%E9%B2%81%E6%96%B0.png',
+            '新法鲁联盟': 'https://suttergov.github.io/%E6%96%B0%E6%B3%95%E9%B2%81%E6%96%B0.png',
+            '新利雅得阿尔希拉尔': 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F8b173e002d366de185a0b51b67e71d230f63b72e-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75',
+            '加西亚国青队': 'https://suttergov.github.io/1500px-Naval_Flag_of_the_Kingdom_of_France_(Civil_Ensign).svg.png'
+        };
+        
+        const CONFIG = {
+            owner: 'SutterGov',
+            repo: 'SutterGov.github.io',
+            branch: 'main',
+            rssPath: 'garciafootball.xml',
+            excelUrl: 'https://suttergov.github.io/GarciaDatabase26.xlsx',
+            teamHistoryUrl: 'https://suttergov.github.io/%E7%90%83%E9%98%9F%E6%95%B0%E6%8D%AE.txt',
+            scheduleUrl: 'https://suttergov.github.io/%E8%B5%9B%E7%A8%8B.txt',
+            defaultLogo: 'https://free.boltp.com/2026/02/11/698ca73e5a316.webp',
+            // Giscus 配置 - 请根据你的实际设置修改以下参数
+            giscus: {
+                repo: 'SutterGov/SutterGov.github.io', // 你的仓库名
+                repoId: 'R_kgDON0Q6iQ', // 仓库ID，可从 giscus.app 获取
+                category: 'Announcements', // Discussions 分类名称
+                categoryId: 'DIC_kwDON0Q6ic4C2jQJ', // 分类ID，可从 giscus.app 获取
+                mapping: 'pathname', // 映射方式
+                reactionsEnabled: '1',
+                emitMetadata: '0',
+                inputPosition: 'bottom',
+                lang: 'zh-CN',
+                loading: 'lazy'
+            }
+        };
+
+        const EXTERNAL_DBS = {
+            searchfm: { url: 'https://www.searchfm.cn/', name: '搜猪网' },
+            kdocs: { url: 'https://www.kdocs.cn/l/cjkq8pzp9Jqy', name: 'FM26球员信息表' },
+            fminside: { url: 'https://fminside.net/players', name: 'FMINSIDE' }
+        };
+
+        let currentTag = 'all', currentTab = 'home', rssData = [], teamData = [], playersData = [];
+        let currentTeam = null, currentCoaches = [], isRefreshing = false;
+        let touchStartY = 0, touchCurrentY = 0, isPulling = false;
+        const PULL_THRESHOLD = 80;
+        let searchHistory = [], currentSearchTab = 'all';
+        let searchHotWords = ['三宝敦', '泰克马联合', '转会', '战报', '大同拜仁', '哈贾丹'];
+        let teamHistoryData = {};
+        let scheduleData = [];
+        let playerSort = 'ca-desc';
+        let playerFilterSeason = 'all';
+        let playerFilterNation = 'all';
+        let playerPage = 1;
+        const PLAYERS_PER_PAGE = 30;
+        let standingsData = [];
+        let isLoadingTeamHistory = false;
+        let freeAgents = [], retiredPlayers = [], transferredPlayers = [];
+        let currentPKPlayer = null;
+        let pkPlayer2 = null;
+        let currentDiscussionTab = 'general';
+        let giscusLoaded = false;
+
+        // 页面历史栈管理
+        let pageHistory = [];
+        let isPopState = false;
+
+        const LEAGUE_ORDER = {
+            '加超联': 1,
+            '加甲联': 2,
+            '加乙联': 3,
+            '加冠联': 4,
+            '足协杯': 5,
+            '联赛杯': 6
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            initBackButtonHandler();
+        });
+
+        // 初始化返回键处理
+        function initBackButtonHandler() {
+            // 监听浏览器返回事件
+            window.addEventListener('popstate', function(event) {
+                isPopState = true;
+                handleBackButton();
+                isPopState = false;
+            });
+
+            // 记录初始状态
+            history.replaceState({ page: 'home' }, '', location.href);
+        }
+
+        // 添加页面到历史记录
+        function pushPageState(pageName, data = {}) {
+            const state = { page: pageName, data: data, timestamp: Date.now() };
+            pageHistory.push(state);
+            history.pushState(state, '', location.href);
+        }
+
+        // 处理返回键
+        function handleBackButton() {
+            // 按优先级关闭弹窗和页面
+            
+            // 1. 关闭搜索
+            const searchPage = document.getElementById('searchPage');
+            if (searchPage && searchPage.classList.contains('show')) {
+                closeSearch();
+                return;
+            }
+
+            // 2. 关闭文章页
+            const articlePage = document.getElementById('articlePage');
+            if (articlePage && articlePage.classList.contains('show')) {
+                closeArticle();
+                return;
+            }
+
+            // 3. 关闭PK结果页
+            const pkResultPage = document.getElementById('pkResultPage');
+            if (pkResultPage && pkResultPage.classList.contains('show')) {
+                closePKResult();
+                return;
+            }
+
+            // 4. 关闭PK选择模态框
+            const pkSelectModal = document.getElementById('pkSelectModal');
+            if (pkSelectModal && pkSelectModal.classList.contains('show')) {
+                closePKSelectModal();
+                return;
+            }
+
+            // 5. 关闭球员详情页
+            const playerDetailPage = document.getElementById('playerDetailPage');
+            if (playerDetailPage && !playerDetailPage.classList.contains('hidden')) {
+                backToTeamDetail();
+                return;
+            }
+
+            // 6. 关闭教练详情页
+            const coachDetailPage = document.getElementById('coachDetailPage');
+            if (coachDetailPage && !coachDetailPage.classList.contains('hidden')) {
+                backToTeamDetailFromCoach();
+                return;
+            }
+
+            // 7. 关闭球队详情页
+            const teamDetailPage = document.getElementById('teamDetailPage');
+            if (teamDetailPage && !teamDetailPage.classList.contains('hidden')) {
+                backToTeamList();
+                return;
+            }
+
+            // 8. 关闭特殊球员页
+            const specialPlayersPage = document.getElementById('specialPlayersPage');
+            if (specialPlayersPage && !specialPlayersPage.classList.contains('hidden')) {
+                closeSpecialPlayersPage();
+                return;
+            }
+
+            // 9. 如果在其他Tab，返回首页
+            if (currentTab !== 'home') {
+                switchTab('home');
+                return;
+            }
+
+            // 10. 如果已经在首页，且历史记录为空，则退出应用（由浏览器处理）
+            if (pageHistory.length <= 1) {
+                // 允许浏览器默认行为（退出）
+                return;
+            }
+
+            // 从历史记录中移除当前页并返回上一页
+            pageHistory.pop();
+            if (pageHistory.length > 0) {
+                const prevState = pageHistory[pageHistory.length - 1];
+                if (prevState.page === 'home') {
+                    switchTab('home');
+                } else if (prevState.page === 'team') {
+                    switchTab('team');
+                } else if (prevState.page === 'transfer') {
+                    switchTab('transfer');
+                } else if (prevState.page === 'data') {
+                    switchTab('data');
+                } else if (prevState.page === 'discussion') {
+                    switchTab('discussion');
+                }
+            }
+        }
+
+        function initApp() {
+            try {
+                const cached = localStorage.getItem('rss_cache');
+                if (cached) {
+                    try {
+                        const { data } = JSON.parse(cached);
+                        rssData = data || [];
+                        renderNews();
+                        updateSyncStatus('cached');
+                    } catch (e) {
+                        console.error('解析缓存失败:', e);
+                        showEmptyState();
+                    }
+                } else {
+                    showEmptyState();
+                }
+                
+                const savedHistory = localStorage.getItem('search_history');
+                if (savedHistory) {
+                    try {
+                        searchHistory = JSON.parse(savedHistory);
+                    } catch (e) {
+                        searchHistory = [];
+                    }
+                }
+                
+                const savedTeamHistory = localStorage.getItem('team_history_cache');
+                if (savedTeamHistory) {
+                    try {
+                        teamHistoryData = JSON.parse(savedTeamHistory);
+                    } catch (e) {
+                        teamHistoryData = {};
+                    }
+                }
+                
+                const savedSchedule = localStorage.getItem('schedule_cache');
+                if (savedSchedule) {
+                    try {
+                        scheduleData = JSON.parse(savedSchedule);
+                    } catch (e) {
+                        scheduleData = [];
+                    }
+                }
+
+                updateClock();
+                setInterval(updateClock, 1000);
+                
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                }
+                
+                initPullToRefresh();
+                
+                switchTab('home');
+                
+                setTimeout(() => {
+                    loadTeamHistoryData().catch(err => console.log('球队历史数据预加载失败:', err));
+                }, 1000);
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showErrorToast('应用初始化失败，请刷新页面重试');
+            }
+        }
+
+        function showErrorToast(message) {
+            const toast = document.getElementById('errorToast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function getLeagueSortOrder(leagueName) {
+            for (const key in LEAGUE_ORDER) {
+                if (leagueName && leagueName.includes(key)) {
+                    return LEAGUE_ORDER[key];
+                }
+            }
+            return 999;
+        }
+
+        function openExternalDB(dbKey) {
+            const db = EXTERNAL_DBS[dbKey];
+            if (db && db.url) {
+                window.open(db.url, '_blank');
+            }
+        }
+
+        function openSearch() {
+            const overlay = document.getElementById('searchOverlay');
+            const page = document.getElementById('searchPage');
+            const input = document.getElementById('searchInput');
+            
+            if (overlay) overlay.classList.add('show');
+            if (page) page.classList.add('show');
+            
+            // 添加历史记录
+            pushPageState('search');
+            
+            // 确保显示搜索历史
+            renderSearchInitial();
+            
+            // 延迟聚焦，避免动画冲突
+            setTimeout(() => {
+                if (input) input.focus();
+            }, 100);
+        }
+
+        function closeSearch() {
+            const overlay = document.getElementById('searchOverlay');
+            const page = document.getElementById('searchPage');
+            
+            if (overlay) overlay.classList.remove('show');
+            if (page) page.classList.remove('show');
+        }
+
+        function handleSearchInput(value) {
+            const clearBtn = document.getElementById('searchClear');
+            if (value) {
+                if (clearBtn) clearBtn.classList.add('show');
+                performSearch(value);
+            } else {
+                if (clearBtn) clearBtn.classList.remove('show');
+                renderSearchInitial();
+            }
+        }
+
+        function handleSearchKeyup(event) {
+            if (event.key === 'Enter') {
+                const value = event.target.value;
+                if (value) {
+                    addSearchHistory(value);
+                    performSearch(value);
+                }
+            }
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('searchClear');
+            
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            if (clearBtn) clearBtn.classList.remove('show');
+            renderSearchInitial();
+        }
+
+        function addSearchHistory(keyword) {
+            if (!keyword || searchHistory.includes(keyword)) return;
+            searchHistory.unshift(keyword);
+            if (searchHistory.length > 10) searchHistory.pop();
+            localStorage.setItem('search_history', JSON.stringify(searchHistory));
+        }
+
+        function removeSearchHistory(keyword, event) {
+            if (event) event.stopPropagation();
+            searchHistory = searchHistory.filter(h => h !== keyword);
+            localStorage.setItem('search_history', JSON.stringify(searchHistory));
+            renderSearchInitial();
+        }
+
+        function clearAllHistory() {
+            searchHistory = [];
+            localStorage.removeItem('search_history');
+            renderSearchInitial();
+        }
+
+        function switchSearchTab(tab) {
+            currentSearchTab = tab;
+            document.querySelectorAll('.search-tab').forEach(el => {
+                el.classList.toggle('active', el.dataset.tab === tab);
+            });
+            const value = document.getElementById('searchInput')?.value;
+            if (value) performSearch(value);
+        }
+        
+        function renderSearchInitial() {
+            const container = document.getElementById('searchContent');
+            if (!container) return;
+            
+            let html = '';
+            
+            if (searchHistory && searchHistory.length > 0) {
+                html += `
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="search-section-title" style="margin-bottom: 0;">搜索历史</span>
+                            <span class="text-xs text-gray-400 cursor-pointer" onclick="clearAllHistory()">清空</span>
+                        </div>
+                        <div>
+                            ${searchHistory.map(h => `
+                                <div class="search-history-item" onclick="quickSearch('${h}')">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-history text-gray-400"></i>
+                                        <span class="text-sm dark:text-gray-200">${h}</span>
+                                    </div>
+                                    <i class="fas fa-times text-gray-400 text-xs" onclick="removeSearchHistory('${h}', event)"></i>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div>
+                    <span class="search-section-title">热门搜索</span>
+                    <div class="flex flex-wrap">
+                        ${searchHotWords.map((word, idx) => `
+                            <div class="search-hot-item" onclick="quickSearch('${word}')">
+                                <span class="${idx < 3 ? 'text-red-500 font-bold' : 'text-gray-600 dark:text-gray-300'}">${idx + 1}</span>
+                                <span class="dark:text-gray-200">${word}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function quickSearch(keyword) {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('searchClear');
+            
+            if (input) input.value = keyword;
+            if (clearBtn) clearBtn.classList.add('show');
+            addSearchHistory(keyword);
+            performSearch(keyword);
+        }
+        
+        function performSearch(keyword) {
+            const container = document.getElementById('searchContent');
+            if (!container) return;
+            
+            const lowerKeyword = keyword.toLowerCase();
+            
+            const matchedTeams = teamData.filter(t => 
+                (t.name && t.name.toLowerCase().includes(lowerKeyword)) || 
+                (t.stadium && t.stadium.toLowerCase().includes(lowerKeyword))
+            );
+            
+            const matchedPlayers = playersData.filter(p => 
+                (p.name && p.name.toLowerCase().includes(lowerKeyword)) ||
+                (p.team && p.team.toLowerCase().includes(lowerKeyword)) ||
+                (p.position && p.position.toLowerCase().includes(lowerKeyword))
+            );
+            
+            const matchedNews = rssData.filter(n => 
+                (n.title && n.title.toLowerCase().includes(lowerKeyword)) || 
+                (n.description && n.description.toLowerCase().includes(lowerKeyword))
+            );
+            
+            let html = '';
+            let hasResult = false;
+            const tabs = currentSearchTab === 'all' ? ['team', 'player', 'news'] : [currentSearchTab];
+            
+            tabs.forEach(type => {
+                if (type === 'team' && matchedTeams.length > 0) {
+                    hasResult = true;
+                    html += `
+                        <div class="mb-4">
+                            <span class="search-section-title">球队 (${matchedTeams.length})</span>
+                            ${matchedTeams.map(t => `
+                                <div class="search-result-item" onclick="closeSearch(); openTeamDetail(${t.id})">
+                                    <div class="team-logo-container team-logo-small bg-gray-100 dark:bg-gray-800 rounded p-1">
+                                        <img src="${getTeamLogo(t.name)}" alt="${t.name || ''}" onerror="this.src='${CONFIG.defaultLogo}'">
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-bold dark:text-gray-100">${highlightText(t.name || '', keyword)}</div>
+                                        <div class="text-xs text-gray-500">${t.stadium || ''}</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                if (type === 'player' && matchedPlayers.length > 0) {
+                    hasResult = true;
+                    html += `
+                        <div class="mb-4">
+                            <span class="search-section-title">球员 (${matchedPlayers.length})</span>
+                            ${matchedPlayers.slice(0, 10).map(p => `
+                                <div class="search-result-item" onclick="closeSearch(); openPlayerDetail(${p.id})">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
+                                        ${p.name ? p.name.charAt(0) : '?'}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="font-bold dark:text-gray-100">${highlightText(p.name || '', keyword)}</div>
+                                        <div class="text-xs text-gray-500">${p.team || ''} · ${p.positionName || ''} · CA${p.ca || 0}</div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                            `).join('')}
+                            ${matchedPlayers.length > 10 ? `<div class="text-center text-xs text-gray-400 py-2">还有${matchedPlayers.length - 10}位球员</div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                if (type === 'news' && matchedNews.length > 0) {
+                    hasResult = true;
+                    html += `
+                        <div class="mb-4">
+                            <span class="search-section-title">新闻 (${matchedNews.length})</span>
+                            ${matchedNews.slice(0, 5).map(n => `
+                                <div class="search-result-item" onclick="closeSearch(); openArticleById('${n.id}')">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-sm dark:text-gray-100 line-clamp-2">${highlightText(n.title || '', keyword)}</div>
+                                        <div class="text-xs text-gray-500 mt-1">${formatTime(n.pubDate)}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            });
+            
+            if (!hasResult) {
+                html = `
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-search text-4xl mb-3 opacity-30"></i>
+                        <p>未找到"${keyword}"相关结果</p>
+                        <p class="text-xs mt-2">试试搜索球队名、球员名或新闻关键词</p>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function highlightText(text, keyword) {
+            if (!keyword || !text) return text || '';
+            try {
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                return text.replace(regex, '<span class="search-highlight">$1</span>');
+            } catch (e) {
+                return text;
+            }
+        }
+        
+        function openArticleById(id) {
+            const post = rssData.find(p => p.id == id);
+            if (post) openArticle(post);
+        }
+
+        function showEmptyState() {
+            const newsFeed = document.getElementById('newsFeed');
+            if (newsFeed) {
+                newsFeed.innerHTML = `
+                    <div class="p-8 text-center text-gray-400 dark:text-gray-500 mt-10">
+                        <div class="text-4xl mb-3">📡</div>
+                        <p class="mb-2">暂无数据</p>
+                        <p class="text-xs mb-4">下拉刷新或点击首页按钮获取最新内容</p>
+                        <button onclick="loadRSS()" class="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition">立即刷新</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = `${hours}:${minutes}`;
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            // 如果讨论区已加载，更新 Giscus 主题
+            if (giscusLoaded) {
+                updateGiscusTheme();
+            }
+        }
+
+        function initPullToRefresh() {
+            const container = document.getElementById('refreshContainer');
+            if (!container) return;
+            
+            const indicator = document.getElementById('pullIndicator');
+            
+            container.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0 && !isRefreshing && currentTab === 'home') {
+                    touchStartY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            }, { passive: true });
+            
+            container.addEventListener('touchmove', (e) => {
+                if (!isPulling || isRefreshing || currentTab !== 'home') return;
+                
+                touchCurrentY = e.touches[0].clientY;
+                const diff = touchCurrentY - touchStartY;
+                
+                if (diff > 0) {
+                    e.preventDefault();
+                    const pullDistance = Math.min(diff * 0.5, 120);
+                    if (indicator) indicator.style.transform = `translateY(${pullDistance}px)`;
+                    
+                    const text = document.getElementById('pullText');
+                    if (text) {
+                        if (pullDistance > PULL_THRESHOLD) {
+                            text.innerHTML = '<i class="fas fa-arrow-up mr-1"></i> 释放刷新';
+                        } else {
+                            text.innerHTML = '<i class="fas fa-arrow-down mr-1"></i> 下拉刷新';
+                        }
+                    }
+                }
+            }, { passive: false });
+            
+            container.addEventListener('touchend', () => {
+                if (!isPulling || isRefreshing) return;
+                
+                const diff = touchCurrentY - touchStartY;
+                
+                if (diff > PULL_THRESHOLD && !isRefreshing) {
+                    startRefresh();
+                } else {
+                    resetPullIndicator();
+                }
+                
+                isPulling = false;
+                touchStartY = 0;
+                touchCurrentY = 0;
+            });
+        }
+
+        function startRefresh() {
+            isRefreshing = true;
+            const indicator = document.getElementById('pullIndicator');
+            const spinner = document.getElementById('pullSpinner');
+            const text = document.getElementById('pullText');
+            
+            if (spinner) spinner.classList.remove('hidden');
+            if (text) text.innerHTML = '<span class="ml-2">刷新中...</span>';
+            if (indicator) indicator.style.transform = `translateY(60px)`;
+            
+            Promise.all([
+                loadRSS().catch(e => console.error('RSS刷新失败:', e)),
+                loadTeamHistoryData().catch(e => console.error('历史数据刷新失败:', e))
+            ]).then(() => {
+                showRefreshToast();
+            }).finally(() => {
+                setTimeout(() => {
+                    resetPullIndicator();
+                    isRefreshing = false;
+                }, 500);
+            });
+        }
+
+        function resetPullIndicator() {
+            const indicator = document.getElementById('pullIndicator');
+            const spinner = document.getElementById('pullSpinner');
+            const text = document.getElementById('pullText');
+            
+            if (indicator) {
+                indicator.style.transition = 'transform 0.3s';
+                indicator.style.transform = 'translateY(0)';
+            }
+            if (spinner) spinner.classList.add('hidden');
+            if (text) text.innerHTML = '<i class="fas fa-arrow-down mr-1"></i> 下拉刷新';
+            
+            setTimeout(() => {
+                if (indicator) indicator.style.transition = '';
+            }, 300);
+        }
+
+        function showRefreshToast() {
+            const toast = document.getElementById('refreshToast');
+            if (toast) {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        async function loadRSS() {
+            updateSyncStatus('syncing');
+            
+            try {
+                const githubUrl = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.rssPath}?t=${new Date().getTime()}`;
+                
+                let response;
+                try {
+                    response = await fetch(githubUrl, {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/xml, text/xml, */*' },
+                        signal: AbortSignal.timeout(10000)
+                    });
+                } catch (e) {
+                    console.log('GitHub请求失败，尝试代理');
+                }
+
+                if (!response || !response.ok) {
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://sutterfootball.freeflarum.com/rss/t/garciafootball');
+                    response = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+                }
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const xmlText = await response.text();
+                if (!xmlText.includes('<?xml') && !xmlText.includes('<rss')) {
+                    throw new Error('返回内容不是有效的 RSS');
+                }
+
+                const items = parseRSS(xmlText);
+                if (!items || items.length === 0) throw new Error('RSS 解析结果为空');
+                
+                rssData = items;
+                renderNews();
+                updateSyncStatus('success', items.length);
+                
+                localStorage.setItem('rss_cache', JSON.stringify({
+                    data: items,
+                    time: new Date().toISOString()
+                }));
+
+            } catch (error) {
+                console.error('RSS 加载失败:', error);
+                const cached = localStorage.getItem('rss_cache');
+                if (cached) {
+                    try {
+                        const { data, time } = JSON.parse(cached);
+                        rssData = data;
+                        renderNews();
+                        updateSyncStatus('cached', data.length, time);
+                    } catch (e) {
+                        showEmptyState();
+                    }
+                } else {
+                    showEmptyState();
+                }
+            }
+        }
+
+        function parseRSS(xmlText) {
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, 'text/xml');
+            const parseError = xml.querySelector('parsererror');
+            if (parseError) throw new Error('XML 解析错误');
+
+            const items = xml.querySelectorAll('item');
+            
+            return Array.from(items).map((item, index) => {
+                let title = item.querySelector('title')?.textContent || '无标题';
+                title = title.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1').trim();
+                
+                const link = item.querySelector('link')?.textContent || '';
+                
+                let description = item.querySelector('description')?.textContent || '';
+                description = description.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1').trim();
+                
+                let content = item.querySelector('content\\:encoded')?.textContent || 
+                             item.querySelector('encoded')?.textContent || 
+                             description;
+                content = content.replace(/<!\[CDATA\[(.*?)\]\]>/s, '$1').trim();
+                
+                const pubDate = item.querySelector('pubDate')?.textContent || 
+                               item.querySelector('dc\\:date')?.textContent || 
+                               new Date().toISOString();
+                
+                const author = item.querySelector('author')?.textContent || 
+                              item.querySelector('dc\\:creator')?.textContent || 
+                              item.querySelector('creator')?.textContent || 
+                              '加西亚足球APP';
+                
+                const categories = Array.from(item.querySelectorAll('category')).map(c => c.textContent);
+                const category = categories[0] || detectCategory(title);
+                
+                const id = item.querySelector('guid')?.textContent || 
+                          item.querySelector('link')?.textContent || 
+                          index;
+                
+                const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+                const image = imgMatch ? imgMatch[1] : getDefaultImage(category, index);
+                
+                return { 
+                    id, 
+                    title, 
+                    link, 
+                    description: stripHtml(description).substring(0, 200) + '...', 
+                    content, 
+                    pubDate, 
+                    author, 
+                    category, 
+                    image, 
+                    comments: Math.floor(Math.random() * 100), 
+                    views: Math.floor(Math.random() * 1000) + 100 
+                };
+            });
+        }
+
+        function detectCategory(title) {
+            if (!title) return 'news';
+            const lower = title.toLowerCase();
+            if (lower.includes('战报') || lower.includes('vs') || lower.includes('-') || lower.includes('比赛')) return 'match';
+            if (lower.includes('转会') || lower.includes('签约') || lower.includes('续约') || lower.includes('加盟')) return 'transfer';
+            if (lower.includes('公告') || lower.includes('官方') || lower.includes('通知')) return 'official';
+            if (lower.includes('分析') || lower.includes('战术') || lower.includes('数据')) return 'analysis';
+            return 'news';
+        }
+
+        function getDefaultImage(category, seed) {
+            const images = {
+                match: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=300&fit=crop',
+                transfer: 'https://images.unsplash.com/photo-1522778119026-d647f0565c6a?w=400&h=300&fit=crop',
+                official: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=400&h=300&fit=crop',
+                analysis: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=400&h=300&fit=crop',
+                news: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=400&h=300&fit=crop'
+            };
+            return images[category] || images.news;
+        }
+
+        function updateSyncStatus(status, count, cacheTime) {
+            const el = document.getElementById('syncStatus');
+            if (!el) return;
+            
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            
+            switch(status) {
+                case 'syncing':
+                    el.innerHTML = '<i class="fas fa-sync-alt animate-spin mr-1"></i>更新中';
+                    el.className = 'text-emerald-600 dark:text-emerald-400 text-[10px] mr-2';
+                    break;
+                case 'success':
+                    el.innerHTML = `<i class="fas fa-check mr-1"></i>${count}条 ${timeStr}`;
+                    el.className = 'text-emerald-600 dark:text-emerald-400 text-[10px] mr-2';
+                    break;
+                case 'cached':
+                    const cacheDate = cacheTime ? new Date(cacheTime) : new Date();
+                    const cacheTimeStr = `${String(cacheDate.getHours()).padStart(2,'0')}:${String(cacheDate.getMinutes()).padStart(2,'0')}`;
+                    el.innerHTML = `<i class="fas fa-clock mr-1"></i>缓存 ${cacheTimeStr}`;
+                    el.className = 'text-amber-600 dark:text-amber-400 text-[10px] mr-2';
+                    break;
+            }
+        }
+
+        function filterByTag(tag) {
+            currentTag = tag;
+            
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.classList.remove('tag-active', 'text-emerald-600', 'dark:text-emerald-400');
+                btn.classList.add('text-gray-600', 'dark:text-gray-400');
+                if (btn.dataset.tag === tag) {
+                    btn.classList.add('tag-active', 'text-emerald-600', 'dark:text-emerald-400');
+                    btn.classList.remove('text-gray-600', 'dark:text-gray-400');
+                }
+            });
+            
+            renderNews();
+        }
+
+        function detectTeamsInNews(title, description) {
+            const teams = [];
+            const text = ((title || '') + ' ' + (description || '')).toLowerCase();
+            
+            for (const teamName in TEAM_LOGOS) {
+                if (text.includes(teamName.toLowerCase())) {
+                    teams.push(teamName);
+                }
+            }
+            
+            return teams;
+        }
+
+        function renderNews() {
+            const feed = document.getElementById('newsFeed');
+            if (!feed) return;
+            
+            feed.innerHTML = '';
+            
+            if (!rssData || rssData.length === 0) {
+                showEmptyState();
+                return;
+            }
+            
+            const filtered = currentTag === 'all' ? rssData : rssData.filter(p => p.category === currentTag);
+            
+            if (!filtered || filtered.length === 0) {
+                feed.innerHTML = `
+                    <div class="p-8 text-center text-gray-400 dark:text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-3"></i>
+                        <p>暂无相关文章</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            filtered.forEach((post, index) => {
+                const card = document.createElement('div');
+                card.className = 'news-card bg-white dark:bg-dark-surface p-4 flex gap-4 cursor-pointer fade-in';
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.onclick = () => openArticle(post);
+                
+                const tagColors = {
+                    match: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+                    transfer: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+                    official: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
+                    analysis: 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
+                    news: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                };
+                
+                const tagNames = { match: '战报', transfer: '转会', official: '公告', analysis: '分析', news: '新闻' };
+                
+                const tagClass = tagColors[post.category] || tagColors.news;
+                const tagName = tagNames[post.category] || '新闻';
+                
+                const relatedTeams = detectTeamsInNews(post.title, post.description);
+                let teamTagsHtml = '';
+                if (relatedTeams.length > 0) {
+                    teamTagsHtml = `
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            ${relatedTeams.map(team => `
+                                <span class="news-team-tag" onclick="event.stopPropagation(); goToTeamByName('${team}')">
+                                    <img src="${getTeamLogo(team)}" alt="${team}" onerror="this.src='${CONFIG.defaultLogo}'">
+                                    ${team}
+                                </span>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 leading-snug mb-2 line-clamp-2">${escapeHtml(post.title)}</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">${escapeHtml(post.description)}</p>
+                        <div class="flex items-center text-xs text-gray-400 dark:text-gray-500 gap-3">
+                            <span class="${tagClass} px-2 py-0.5 rounded font-medium">${tagName}</span>
+                            <span class="flex items-center gap-1"><i class="far fa-comment-alt"></i>${post.comments || 0}</span>
+                            <span>${formatTime(post.pubDate)}</span>
+                        </div>
+                        ${teamTagsHtml}
+                    </div>
+                    <div class="w-24 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
+                        <img src="${post.image}" alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+                    </div>
+                `;
+                
+                feed.appendChild(card);
+            });
+        }
+
+        function goToTeamByName(teamName) {
+            if (!teamName) return;
+            const team = teamData.find(t => t.name === teamName);
+            if (team) {
+                switchTab('team');
+                setTimeout(() => openTeamDetail(team.id), 100);
+            } else {
+                showErrorToast('球队数据尚未加载，请先访问球队页面');
+            }
+        }
+
+        function openArticle(post) {
+            if (!post) return;
+            const page = document.getElementById('articlePage');
+            const content = document.getElementById('articleContent');
+            
+            if (!page || !content) return;
+            
+            const tagNames = { match: '比赛战报', transfer: '转会动态', official: '官方公告', analysis: '战术分析', news: '新闻报道' };
+            
+            const relatedTeams = detectTeamsInNews(post.title, post.description);
+            let teamTagsHtml = '';
+            if (relatedTeams.length > 0) {
+                teamTagsHtml = `
+                    <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-dark-border">
+                        <span class="text-sm text-gray-500 dark:text-gray-400 mr-2">相关球队：</span>
+                        ${relatedTeams.map(team => `
+                            <span class="news-team-tag" onclick="event.stopPropagation(); goToTeamByName('${team}')">
+                                <img src="${getTeamLogo(team)}" alt="${team}" onerror="this.src='${CONFIG.defaultLogo}'">
+                                ${team}
+                            </span>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = `
+                <div class="mb-4">
+                    <span class="inline-block px-2 py-1 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs rounded mb-2 font-medium">
+                        ${tagNames[post.category] || '新闻'}
+                    </span>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight mb-3">${escapeHtml(post.title)}</h1>
+                    <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-dark-border pb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-medium text-gray-700 dark:text-gray-300">${escapeHtml(post.author)}</span>
+                            <span>•</span>
+                            <span>${formatTime(post.pubDate)}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center gap-1"><i class="far fa-eye"></i>${post.views || 0}</span>
+                            <span class="flex items-center gap-1"><i class="far fa-comment"></i>${post.comments || 0}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 leading-relaxed text-base">
+                    ${post.content || ''}
+                </div>
+                ${teamTagsHtml}
+            `;
+            
+            page.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // 添加历史记录
+            pushPageState('article', { id: post.id });
+        }
+
+        function closeArticle() {
+            const page = document.getElementById('articlePage');
+            if (page) page.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        function shareArticle() {
+            const title = document.querySelector('#articleContent h1')?.textContent || '加西亚足球APP';
+            if (navigator.share) {
+                navigator.share({ title: title, text: '来自加西亚足球APP', url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => alert('链接已复制到剪贴板'));
+            }
+        }
+
+        function getTeamLogo(teamName) {
+            if (!teamName) return CONFIG.defaultLogo;
+            if (teamName === '首都东木联合B') {
+                return TEAM_LOGOS['首都-东木联合B'] || CONFIG.defaultLogo;
+            }
+            return TEAM_LOGOS[teamName] || CONFIG.defaultLogo;
+        }
+        
+        function getPositionCategory(position) {
+            if (!position) return 'MF';
+            
+            const posList = position.split(/[,，]/).map(p => p.trim());
+            const firstPos = posList[0];
+            
+            if (firstPos.includes('门将') || firstPos.includes('守门')) return 'GK';
+            if (firstPos.includes('后卫') || firstPos.endsWith('卫')) return 'DF';
+            if (firstPos.includes('前锋') || firstPos.includes('中锋') || firstPos.includes('影锋') || firstPos.includes('边锋') || firstPos.endsWith('锋')) return 'FW';
+            if (firstPos.includes('中场') || firstPos.includes('前卫') || firstPos.includes('后腰') || firstPos.includes('前腰') || firstPos.includes('中前卫') || firstPos.includes('组织') || firstPos.includes('进攻') || firstPos.endsWith('场') || firstPos.endsWith('腰')) return 'MF';
+            
+            return 'MF';
+        }
+        
+        function getPositionColorClass(pos) {
+            const map = { 'GK': 'position-gk', 'DF': 'position-df', 'MF': 'position-mf', 'FW': 'position-fw' };
+            return map[pos] || 'position-mf';
+        }
+        
+        function parseCoaches(coachStr) {
+            if (!coachStr) return [];
+            return coachStr.split(/[、,，/]/).map(c => c.trim()).filter(c => c);
+        }
+        
+        function formatNumberRaw(num) {
+            if (!num) return '0';
+            return num.toString();
+        }
+        
+        async function loadTeamData() {
+            const teamList = document.getElementById('teamList');
+            if (!teamList) return;
+            
+            teamList.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-emerald-600"></i><p class="text-sm text-gray-500 mt-2">加载球队数据...</p></div>';
+            
+            try {
+                const response = await fetch(CONFIG.excelUrl, { signal: AbortSignal.timeout(15000) });
+                if (!response.ok) throw new Error('无法加载数据文件');
+                
+                const arrayBuffer = await response.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+                    throw new Error('Excel文件为空或格式错误');
+                }
+                
+                const teamSheetName = workbook.SheetNames.find(name => name.includes('球队')) || workbook.SheetNames[1] || workbook.SheetNames[0];
+                const teamSheet = workbook.Sheets[teamSheetName];
+                if (!teamSheet) throw new Error('找不到球队工作表');
+                
+                const teamJson = XLSX.utils.sheet_to_json(teamSheet, { header: 1 });
+                if (!teamJson || teamJson.length === 0) throw new Error('球队数据为空');
+                
+                const playerSheetName = workbook.SheetNames.find(name => name.includes('球员')) || workbook.SheetNames[0];
+                const playerSheet = workbook.Sheets[playerSheetName];
+                if (!playerSheet) throw new Error('找不到球员工作表');
+                
+                const playerJson = XLSX.utils.sheet_to_json(playerSheet, { header: 1 });
+                if (!playerJson || playerJson.length === 0) throw new Error('球员数据为空');
+                
+                const teamHeaders = teamJson[0] || [];
+                teamData = [];
+                for (let i = 1; i < teamJson.length; i++) {
+                    const row = teamJson[i];
+                    if (!row || !row[0]) continue;
+                    
+                    const teamObj = {};
+                    teamHeaders.forEach((header, idx) => {
+                        if (header) teamObj[header] = row[idx];
+                    });
+                    
+                    teamData.push({
+                        id: i - 1,
+                        name: teamObj['球队名'] || '',
+                        manager: teamObj['玩家'] || '',
+                        coach: teamObj['教练组'] || '',
+                        stadium: teamObj['主场'] || '',
+                        capacity: teamObj['座席数'] || 0,
+                        avgAttendance: teamObj['场均上座'] || 0,
+                        occupancyRate: teamObj['上座率'] || 0,
+                        revenue: teamObj['收入'] || 0,
+                        funds: teamObj['球队资金'] || 0,
+                        sponsor1: teamObj['赞助商1'] || '',
+                        sponsor2: teamObj['赞助商2'] || '',
+                        youth: teamObj['青训'] || '',
+                        other: teamObj['其他'] || ''
+                    });
+                }
+                
+                const playerHeaders = playerJson[0] || [];
+                playersData = [];
+                freeAgents = [];
+                retiredPlayers = [];
+                transferredPlayers = [];
+                
+                for (let i = 1; i < playerJson.length; i++) {
+                    const row = playerJson[i];
+                    if (!row || !row[0]) continue;
+                    
+                    const playerObj = {};
+                    playerHeaders.forEach((header, idx) => {
+                        if (header) playerObj[header] = row[idx];
+                    });
+                    
+                    const position = playerObj['位置'] || '';
+                    const mainPos = getPositionCategory(position);
+                    const posList = position.split(/[,，]/).map(p => p.trim()).filter(p => p);
+                    
+                    const player = {
+                        id: i - 1,
+                        name: playerObj['球员名称'] || '',
+                        age: playerObj['年龄'] || 0,
+                        nation: playerObj['国家/地区籍'] || '',
+                        height: playerObj['身高'] || 0,
+                        weight: playerObj['体重'] || 0,
+                        ca: playerObj['CA'] || 0,
+                        pa: playerObj['PA'] || 0,
+                        position: position,
+                        mainPosition: mainPos,
+                        positionName: posList[0] || '未知',
+                        allPositions: posList,
+                        wage: playerObj['年薪'] || 0,
+                        team: playerObj['所在球队'] || '',
+                        contractEnd: playerObj['合约到期'] || '',
+                        clause: playerObj['违约金'] || '',
+                        contractType: playerObj['合同类型'] || '',
+                        contractNote: playerObj['合同备注'] || ''
+                    };
+                    
+                    playersData.push(player);
+                    
+                    const team = player.team || '';
+                    if (team.includes('自由') || team.includes('unattached') || team.includes('Unattached')) {
+                        freeAgents.push(player);
+                    } else if (team.includes('退役') || team.includes('retired') || team.includes('Retired')) {
+                        retiredPlayers.push(player);
+                    } else if (team.includes('转出') || team.includes('transferred') || team.includes('Transferred') || team.includes('离队')) {
+                        transferredPlayers.push(player);
+                    }
+                }
+                
+                updateSpecialPlayerCounts();
+                
+                if (Object.keys(teamHistoryData).length === 0 && !isLoadingTeamHistory) {
+                    await loadTeamHistoryData().catch(e => console.error('加载历史数据失败:', e));
+                }
+                
+                renderTeamList();
+                
+            } catch (error) {
+                console.error('加载球队数据失败:', error);
+                if (teamList) {
+                    teamList.innerHTML = `
+                        <div class="text-center text-red-500 py-8">
+                            <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                            <p class="text-sm">加载失败: ${error.message}</p>
+                            <button onclick="loadTeamData()" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm">重试</button>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function updateSpecialPlayerCounts() {
+            const freeEl = document.getElementById('freeAgentCount');
+            const retiredEl = document.getElementById('retiredCount');
+            const transferredEl = document.getElementById('transferredCount');
+            
+            if (freeEl) freeEl.textContent = `${freeAgents.length} 位球员`;
+            if (retiredEl) retiredEl.textContent = `${retiredPlayers.length} 位球员`;
+            if (transferredEl) transferredEl.textContent = `${transferredPlayers.length} 位球员`;
+        }
+        
+        function showSpecialPlayers(type) {
+            const page = document.getElementById('specialPlayersPage');
+            const title = document.getElementById('specialPlayersTitle');
+            const list = document.getElementById('specialPlayersList');
+            
+            if (!page || !title || !list) return;
+            
+            let players = [];
+            let titleText = '';
+            
+            switch(type) {
+                case 'free':
+                    players = freeAgents;
+                    titleText = '自由球员';
+                    break;
+                case 'retired':
+                    players = retiredPlayers;
+                    titleText = '已退役球员';
+                    break;
+                case 'transferred':
+                    players = transferredPlayers;
+                    titleText = '已转出球员';
+                    break;
+            }
+            
+            title.textContent = titleText;
+            
+            if (!players || players.length === 0) {
+                list.innerHTML = `
+                    <div class="bg-white dark:bg-dark-surface rounded-lg p-8 text-center text-gray-400">
+                        <i class="fas fa-user-slash text-4xl mb-3"></i>
+                        <p>暂无${titleText}</p>
+                    </div>
+                `;
+            } else {
+                players.sort((a, b) => (b.ca || 0) - (a.ca || 0));
+                
+                list.innerHTML = `
+                    <div class="bg-white dark:bg-dark-surface rounded-lg overflow-hidden">
+                        ${players.map((player, idx) => `
+                            <div onclick="openPlayerDetail(${player.id})" class="player-card flex items-center gap-3 p-4 ${idx !== players.length - 1 ? 'border-b border-gray-100 dark:border-dark-border' : ''} cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-sm dark:text-gray-100">${player.name || ''}</span>
+                                        <span class="position-badge ${getPositionColorClass(player.mainPosition)}">${player.positionName || ''}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                        ${player.age || 0}岁 · ${player.nation || ''} · 原球队：${player.team || ''}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-emerald-600">${player.ca || 0}</div>
+                                    <div class="text-xs text-gray-400">CA</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            page.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // 添加历史记录
+            pushPageState('specialPlayers', { type: type });
+        }
+        
+        function closeSpecialPlayersPage() {
+            const page = document.getElementById('specialPlayersPage');
+            if (page) page.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        
+        function renderTeamList() {
+            const container = document.getElementById('teamList');
+            if (!container) return;
+            
+            if (!teamData || teamData.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无球队数据</div>';
+                return;
+            }
+            
+            container.innerHTML = teamData.map((team, idx) => `
+                <div onclick="openTeamDetail(${team.id})" class="bg-white dark:bg-dark-surface rounded-lg p-4 flex items-center gap-4 shadow-sm cursor-pointer active:scale-95 transition-transform">
+                    <div class="team-logo-container team-logo-list bg-gray-50 dark:bg-gray-800 rounded-lg p-1">
+                        <img src="${getTeamLogo(team.name)}" alt="${team.name || ''}" onerror="this.src='${CONFIG.defaultLogo}'">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-bold text-lg dark:text-gray-100 truncate">${team.name || ''}</h3>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span class="truncate">${team.stadium || ''}</span>
+                        </div>
+                        <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                            <span>资金: ${formatNumber(team.funds)}万</span>
+                            <span>上座: ${formatNumber(team.avgAttendance)}</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300 dark:text-gray-600"></i>
+                </div>
+            `).join('');
+        }
+        
+        function formatNumber(num) {
+            if (!num) return '0';
+            if (num >= 10000) return (num / 10000).toFixed(1) + '亿';
+            if (num >= 1000) return (num / 1000).toFixed(1) + '千万';
+            return num.toString();
+        }
+        
+        async function openTeamDetail(teamId) {
+            if (teamData.length === 0) {
+                showErrorToast('球队数据尚未加载');
+                return;
+            }
+            
+            currentTeam = teamData.find(t => t.id === teamId);
+            if (!currentTeam) {
+                showErrorToast('未找到球队信息');
+                return;
+            }
+            
+            const statsContent = document.getElementById('statsContent');
+            if (statsContent) {
+                statsContent.innerHTML = `
+                    <div class="data-loading">
+                        <div class="data-loading-spinner"></div>
+                        <p>加载球队历史数据...</p>
+                    </div>
+                `;
+            }
+            
+            if (Object.keys(teamHistoryData).length === 0 && !isLoadingTeamHistory) {
+                console.log('历史数据为空，重新加载...');
+                await loadTeamHistoryData().catch(e => console.error('加载历史数据失败:', e));
+            }
+            
+            let historyData = getTeamHistoryData(currentTeam.name);
+            
+            if (!historyData) {
+                const normalizedName = normalizeTeamName(currentTeam.name);
+                for (const key in teamHistoryData) {
+                    if (normalizeTeamName(key) === normalizedName) {
+                        console.log('模糊匹配成功:', currentTeam.name, '->', key);
+                        historyData = teamHistoryData[key];
+                        break;
+                    }
+                }
+            }
+            
+            console.log('打开球队详情:', currentTeam.name, '历史数据:', historyData ? '有' : '无');
+            
+            currentCoaches = parseCoaches(currentTeam.coach);
+            const headCoach = currentCoaches[0] || '暂无';
+            
+            const teamPlayers = playersData.filter(p => p.team === currentTeam.name);
+            const totalWages = teamPlayers.reduce((sum, p) => sum + (parseFloat(p.wage) || 0), 0);
+            const projectedFunds = (parseFloat(currentTeam.funds) || 0) - totalWages;
+            
+            let avgCA = 0, avgPA = 0, avgAge = 0;
+            if (teamPlayers.length > 0) {
+                const totalCA = teamPlayers.reduce((sum, p) => sum + (parseFloat(p.ca) || 0), 0);
+                const totalPA = teamPlayers.reduce((sum, p) => sum + (parseFloat(p.pa) || 0), 0);
+                const totalAge = teamPlayers.reduce((sum, p) => sum + (parseFloat(p.age) || 0), 0);
+                avgCA = (totalCA / teamPlayers.length).toFixed(1);
+                avgPA = (totalPA / teamPlayers.length).toFixed(1);
+                avgAge = (totalAge / teamPlayers.length).toFixed(1);
+            }
+            
+            const nameEl = document.getElementById('teamDetailName');
+            const nameEnEl = document.getElementById('teamDetailNameEn');
+            const coachEl = document.getElementById('teamDetailCoach');
+            const fundsEl = document.getElementById('teamDetailFunds');
+            const attendanceEl = document.getElementById('teamDetailAttendance');
+            const occupancyEl = document.getElementById('teamDetailOccupancy');
+            const capacityEl = document.getElementById('teamDetailCapacity');
+            const wagesEl = document.getElementById('teamDetailWages');
+            const projectedEl = document.getElementById('teamDetailProjected');
+            const avgCAEl = document.getElementById('teamDetailAvgCA');
+            const avgPAEl = document.getElementById('teamDetailAvgPA');
+            const avgAgeEl = document.getElementById('teamDetailAvgAge');
+            const warningEl = document.getElementById('financialWarning');
+            const logoEl = document.getElementById('teamDetailLogo');
+            const coachCardEl = document.getElementById('coachCard');
+            
+            if (nameEl) nameEl.textContent = currentTeam.name || '';
+            if (nameEnEl) nameEnEl.textContent = currentTeam.stadium || '';
+            if (coachEl) coachEl.textContent = headCoach;
+            
+            if (fundsEl) fundsEl.textContent = formatNumberRaw(currentTeam.funds);
+            if (attendanceEl) attendanceEl.textContent = formatNumberRaw(currentTeam.avgAttendance);
+            if (occupancyEl) occupancyEl.textContent = ((currentTeam.occupancyRate || 0) * 100).toFixed(1) + '%';
+            if (capacityEl) capacityEl.textContent = formatNumberRaw(currentTeam.capacity);
+            
+            if (wagesEl) wagesEl.textContent = formatNumberRaw(totalWages);
+            if (projectedEl) projectedEl.textContent = formatNumberRaw(projectedFunds);
+            
+            if (avgCAEl) avgCAEl.textContent = avgCA > 0 ? avgCA : '--';
+            if (avgPAEl) avgPAEl.textContent = avgPA > 0 ? avgPA : '--';
+            if (avgAgeEl) avgAgeEl.textContent = avgAge > 0 ? avgAge : '--';
+            
+            if (warningEl) {
+                if (projectedFunds < 0) {
+                    warningEl.classList.remove('hidden');
+                } else {
+                    warningEl.classList.add('hidden');
+                }
+            }
+            
+            if (logoEl) logoEl.src = getTeamLogo(currentTeam.name);
+            
+            if (coachCardEl) {
+                coachCardEl.innerHTML = `
+                    <div class="font-bold dark:text-gray-100 text-lg">${headCoach}</div>
+                    <div class="text-sm text-gray-500">主教练</div>
+                `;
+            }
+            
+            renderSquad();
+            renderTeamNews();
+            renderTeamStats();
+            
+            switchTeamTab('squad');
+            
+            const detailPage = document.getElementById('teamDetailPage');
+            if (detailPage) {
+                detailPage.classList.remove('hidden');
+            }
+            document.body.style.overflow = 'hidden';
+            
+            // 添加历史记录
+            pushPageState('teamDetail', { teamId: teamId });
+        }
+        
+        function normalizeTeamName(name) {
+            if (!name) return '';
+            return name.toLowerCase()
+                .replace(/[\s\-\_\(\)（）\[\]]/g, '')
+                .replace(/fc|俱乐部|队|城/g, '');
+        }
+        
+        function renderTeamStats() {
+            const container = document.getElementById('statsContent');
+            if (!container || !currentTeam) return;
+            
+            let historyData = getTeamHistoryData(currentTeam.name);
+            
+            if (!historyData) {
+                const normalizedName = normalizeTeamName(currentTeam.name);
+                for (const key in teamHistoryData) {
+                    if (normalizeTeamName(key) === normalizedName) {
+                        historyData = teamHistoryData[key];
+                        break;
+                    }
+                }
+            }
+            
+            let html = '';
+            
+            html += `
+                <div class="data-section">
+                    <div class="data-section-title">球队资料</div>
+                    <div class="info-row">
+                        <span class="info-label">赞助商1</span>
+                        <span class="info-value">${currentTeam.sponsor1 || '暂无'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">赞助商2</span>
+                        <span class="info-value">${currentTeam.sponsor2 || '暂无'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">青训级别</span>
+                        <span class="info-value">${currentTeam.youth || '暂无'}</span>
+                    </div>
+                    ${currentTeam.youth ? calculateYouthRankHtml(currentTeam.youth) : ''}
+                </div>
+            `;
+            
+            if (historyData) {
+                if (historyData.nameChanges && historyData.nameChanges.trim()) {
+                    html += `
+                        <div class="data-section">
+                            <div class="data-section-title">球队变迁</div>
+                            <div class="change-text text-sm leading-relaxed">${historyData.nameChanges}</div>
+                        </div>
+                    `;
+                }
+                
+                if (historyData.rankings && Object.keys(historyData.rankings).length > 0) {
+                    const sortedRankings = Object.entries(historyData.rankings)
+                        .sort((a, b) => {
+                            const numA = parseInt(a[0].replace(/[^0-9]/g, ''));
+                            const numB = parseInt(b[0].replace(/[^0-9]/g, ''));
+                            return numA - numB;
+                        });
+                    
+                    html += `
+                        <div class="data-section">
+                            <div class="data-section-title">近年联赛排名</div>
+                            <div class="ranking-chart-container">
+                                <canvas id="rankingChart"></canvas>
+                            </div>
+                        </div>
+                    `;
+                    
+                    requestAnimationFrame(() => {
+                        setTimeout(() => drawRankingChart(sortedRankings), 100);
+                    });
+                }
+                
+                if (historyData.topScorers && historyData.topScorers.length > 0) {
+                    html += `
+                        <div class="data-section">
+                            <div class="data-section-title">历史射手榜</div>
+                            <div>
+                                ${historyData.topScorers.map((scorer, idx) => `
+                                    <div class="scorer-item">
+                                        <div class="flex items-center gap-3">
+                                            <span class="w-6 text-center text-xs font-bold ${idx < 3 ? 'text-emerald-600' : 'text-gray-400'}">${idx + 1}</span>
+                                            <span class="text-sm font-medium flex-1">${scorer.name || ''}</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-emerald-600">${scorer.goals || 0}球</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (historyData.honors && historyData.honors.length > 0) {
+                    const honorStats = {};
+                    historyData.honors.forEach(h => {
+                        if (h.rank === '冠军') {
+                            const key = h.competition;
+                            if (!honorStats[key]) {
+                                honorStats[key] = { count: 0, seasons: [] };
+                            }
+                            honorStats[key].count++;
+                            if (h.season) honorStats[key].seasons.push(h.season);
+                        }
+                    });
+                    
+                    const honorWallHtml = Object.entries(honorStats).length > 0 ? `
+                        <div class="honor-wall">
+                            ${Object.entries(honorStats).map(([competition, data]) => `
+                                <div class="honor-tile">
+                                    <div class="honor-icon">🏆</div>
+                                    <div class="honor-count">${data.count}</div>
+                                    <div class="honor-name">${competition}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '';
+                    
+                    html += `
+                        <div class="data-section">
+                            <div class="data-section-title">球队荣誉</div>
+                            ${honorWallHtml}
+                            <div class="mt-4 space-y-2">
+                                ${historyData.honors.map(honor => {
+                                    let badgeClass = 'honor-badge';
+                                    if (honor.rank === '亚军') badgeClass += ' second';
+                                    else if (honor.rank === '季军') badgeClass += ' third';
+                                    
+                                    return `
+                                        <div class="honor-item">
+                                            ${honor.rank ? `<span class="${badgeClass}">${honor.rank}</span>` : ''}
+                                            <span class="text-sm flex-1">${honor.competition || ''}</span>
+                                            ${honor.season ? `<span class="text-xs text-gray-500">${honor.season}</span>` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            if (!historyData || (!historyData.nameChanges && !Object.keys(historyData.rankings || {}).length && !historyData.topScorers?.length && !historyData.honors?.length)) {
+                if (!html.includes('data-section')) {
+                    html = `
+                        <div class="bg-white dark:bg-dark-surface rounded-lg p-8 text-center text-gray-400 m-4">
+                            <i class="fas fa-chart-bar text-4xl mb-3"></i>
+                            <p>暂无历史数据</p>
+                            <p class="text-xs mt-2">该球队可能没有在 txt 文件中记录历史数据</p>
+                            <button onclick="forceReloadTeamHistory()" class="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm">强制刷新数据</button>
+                        </div>
+                    `;
+                }
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function calculateYouthRankHtml(currentYouthLevel) {
+            if (!currentYouthLevel || !teamData || teamData.length === 0) return '';
+            
+            const parseYouthValue = (youth) => {
+                if (!youth) return 0;
+                const numMatch = youth.toString().match(/\d+/);
+                if (numMatch) return parseInt(numMatch[0]);
+                const youthStr = youth.toString().toUpperCase();
+                if (youthStr.includes('A')) return 100;
+                if (youthStr.includes('B')) return 80;
+                if (youthStr.includes('C')) return 60;
+                if (youthStr.includes('D')) return 40;
+                return 0;
+            };
+            
+            const currentValue = parseYouthValue(currentYouthLevel);
+            
+            let rank = 1;
+            teamData.forEach(team => {
+                if (team.id !== currentTeam.id) {
+                    const teamValue = parseYouthValue(team.youth);
+                    if (teamValue > currentValue) {
+                        rank++;
+                    }
+                }
+            });
+            
+            const totalTeams = teamData.length;
+            
+            return `
+                <div class="youth-rank-box">
+                    <span class="youth-rank-label">全联赛青训排名</span>
+                    <span class="youth-rank-value">第 ${rank} / ${totalTeams} 名</span>
+                </div>
+            `;
+        }
+        
+        async function forceReloadTeamHistory() {
+            const container = document.getElementById('statsContent');
+            if (container) {
+                container.innerHTML = `
+                    <div class="data-loading">
+                        <div class="data-loading-spinner"></div>
+                        <p>正在重新加载数据...</p>
+                    </div>
+                `;
+            }
+            
+            teamHistoryData = {};
+            await loadTeamHistoryData();
+            renderTeamStats();
+        }
+        
+        function drawRankingChart(rankings) {
+            const canvas = document.getElementById('rankingChart');
+            if (!canvas) return;
+            
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = container.getBoundingClientRect();
+            
+            if (!rect || rect.width === 0 || rect.height === 0) return;
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            const width = rect.width;
+            const height = rect.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            if (!rankings || rankings.length === 0) return;
+            
+            const data = rankings.map(r => r[1] ? r[1].rank : 0);
+            const labels = rankings.map(r => r[1] ? r[1].season : '');
+            
+            if (data.length === 0) return;
+            
+            const padding = { top: 30, right: 30, bottom: 30, left: 40 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            
+            const maxRank = Math.max(...data, 20);
+            const minRank = 1;
+            
+            ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+                
+                const rankValue = Math.round(maxRank - (maxRank - minRank) * (i / 5));
+                ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                ctx.font = '10px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(rankValue.toString(), padding.left - 5, y + 3);
+            }
+            
+            if (data.length > 1) {
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                data.forEach((rank, idx) => {
+                    const x = padding.left + (chartWidth / (data.length - 1)) * idx;
+                    const y = padding.top + ((rank - minRank) / (maxRank - minRank)) * chartHeight;
+                    
+                    if (idx === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+            }
+            
+            data.forEach((rank, idx) => {
+                const x = padding.left + (chartWidth / Math.max(data.length - 1, 1)) * idx;
+                const y = padding.top + ((rank - minRank) / (maxRank - minRank)) * chartHeight;
+                
+                ctx.fillStyle = '#f97316';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#fff' : '#1f2937';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(rank.toString(), x, y - 10);
+                
+                ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(labels[idx] || '', x, height - 10);
+            });
+        }
+        
+        function renderTeamNews() {
+            const container = document.getElementById('teamNewsList');
+            if (!container || !currentTeam) return;
+            
+            const teamNews = rssData.filter(post => {
+                const text = ((post.title || '') + ' ' + (post.description || '')).toLowerCase();
+                return text.includes((currentTeam.name || '').toLowerCase());
+            });
+            
+            if (teamNews.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-dark-surface rounded-lg p-8 text-center text-gray-400">
+                        <i class="fas fa-newspaper text-4xl mb-2"></i>
+                        <p>暂无相关动态</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = teamNews.map((post, idx) => {
+                const tagColors = {
+                    match: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+                    transfer: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+                    official: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
+                    analysis: 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
+                    news: 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                };
+                const tagNames = { match: '战报', transfer: '转会', official: '公告', analysis: '分析', news: '新闻' };
+                const tagClass = tagColors[post.category] || tagColors.news;
+                const tagName = tagNames[post.category] || '新闻';
+                
+                return `
+                    <div onclick="openArticleFromTeam('${post.id}')" class="bg-white dark:bg-dark-surface rounded-lg p-4 shadow-sm cursor-pointer active:scale-95 transition-transform">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="${tagClass} px-2 py-0.5 rounded text-xs font-medium">${tagName}</span>
+                            <span class="text-xs text-gray-400">${formatTime(post.pubDate)}</span>
+                        </div>
+                        <h4 class="font-bold text-sm dark:text-gray-100 line-clamp-2">${escapeHtml(post.title)}</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1">${escapeHtml(post.description)}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function openArticleFromTeam(postId) {
+            const post = rssData.find(p => String(p.id) === String(postId));
+            if (post) {
+                openArticle(post);
+            } else {
+                console.error('未找到新闻:', postId);
+            }
+        }
+        
+        function openCoachDetail() {
+            const container = document.getElementById('coachList');
+            if (!container) return;
+            
+            if (!currentCoaches || currentCoaches.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无教练信息</div>';
+            } else {
+                container.innerHTML = currentCoaches.map((coach, idx) => `
+                    <div class="coach-list-item">
+                        <div class="coach-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="coach-info">
+                            <div class="coach-name">${coach || ''}</div>
+                            <div class="coach-record">随机数 ${Math.floor(Math.random() * 30 + 40)}%</div>
+                        </div>
+                        <div class="coach-duration">
+                            <div class="${idx === 0 ? 'coach-current' : ''}">${idx === 0 ? '主教练' : '助理教练'}</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 2px;">
+                                ${idx === 0 ? '现任教练组成员' : '现任教练组成员'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            const coachPage = document.getElementById('coachDetailPage');
+            if (coachPage) coachPage.classList.remove('hidden');
+            
+            // 添加历史记录
+            pushPageState('coachDetail');
+        }
+        
+        function backToTeamDetailFromCoach() {
+            const coachPage = document.getElementById('coachDetailPage');
+            if (coachPage) coachPage.classList.add('hidden');
+        }
+        
+        function renderSquad() {
+            const container = document.getElementById('playersList');
+            if (!container || !currentTeam) return;
+            
+            const teamPlayers = playersData.filter(p => p.team === currentTeam.name);
+            
+            if (!teamPlayers || teamPlayers.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 py-8">暂无球员数据</div>';
+                return;
+            }
+            
+            const positionOrder = ['GK', 'DF', 'MF', 'FW'];
+            const positionTitles = {'GK': '门将', 'DF': '后卫', 'MF': '中场', 'FW': '前锋'};
+            
+            container.innerHTML = positionOrder.map(pos => {
+                const posPlayers = teamPlayers.filter(p => p.mainPosition === pos);
+                if (!posPlayers || posPlayers.length === 0) return '';
+                
+                return `
+                    <div class="mb-4">
+                        <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">${positionTitles[pos]} (${posPlayers.length}人)</h3>
+                        <div class="bg-white dark:bg-dark-surface rounded-lg overflow-hidden shadow-sm">
+                            ${posPlayers.map((player, idx) => `
+                                <div onclick="openPlayerDetail(${player.id})" class="player-card flex items-center gap-3 p-3 ${idx !== posPlayers.length - 1 ? 'border-b border-gray-100 dark:border-dark-border' : ''} cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-bold text-sm dark:text-gray-100">${player.name || ''}</span>
+                                            <span class="position-badge ${getPositionColorClass(pos)}">${player.positionName || ''}</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                            ${player.age || 0}岁 · ${player.nation || ''} · 年薪${player.wage || 0}万
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-bold text-emerald-600">${player.ca || 0}</div>
+                                        <div class="text-xs text-gray-400">CA</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function switchTeamTab(tab) {
+            document.querySelectorAll('.team-tab').forEach(btn => {
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('text-gray-500', 'dark:text-gray-400');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('text-gray-500', 'dark:text-gray-400');
+                }
+            });
+            
+            ['squad', 'stats', 'news'].forEach(t => {
+                const el = document.getElementById(t + 'Content');
+                if (el) el.classList.toggle('hidden', t !== tab);
+            });
+            
+            if (tab === 'stats') {
+                setTimeout(() => {
+                    const historyData = getTeamHistoryData(currentTeam.name) || 
+                        Object.entries(teamHistoryData).find(([key]) => normalizeTeamName(key) === normalizeTeamName(currentTeam.name))?.[1];
+                    
+                    if (historyData && historyData.rankings && Object.keys(historyData.rankings).length > 0) {
+                        const sortedRankings = Object.entries(historyData.rankings)
+                            .sort((a, b) => {
+                                const numA = parseInt(a[0].replace(/[^0-9]/g, ''));
+                                const numB = parseInt(b[0].replace(/[^0-9]/g, ''));
+                                return numA - numB;
+                            });
+                        drawRankingChart(sortedRankings);
+                    }
+                }, 50);
+            }
+        }
+        
+        function backToTeamList() {
+            const detailPage = document.getElementById('teamDetailPage');
+            const coachPage = document.getElementById('coachDetailPage');
+            if (detailPage) detailPage.classList.add('hidden');
+            if (coachPage) coachPage.classList.add('hidden');
+            document.body.style.overflow = '';
+            currentTeam = null;
+            currentCoaches = [];
+        }
+        
+        function shareTeam() {
+            if (navigator.share && currentTeam) {
+                navigator.share({
+                    title: currentTeam.name || '',
+                    text: `查看${currentTeam.name || ''}的详细资料`,
+                    url: window.location.href
+                });
+            }
+        }
+        
+        function openPlayerDetail(playerId) {
+            const player = playersData.find(p => p.id === playerId);
+            if (!player) return;
+            
+            currentPKPlayer = player;
+            
+            const initialEl = document.getElementById('playerInitial');
+            const positionEl = document.getElementById('playerDetailPosition');
+            const nameEl = document.getElementById('playerDetailName');
+            const teamEl = document.getElementById('playerDetailTeam');
+            const ratingEl = document.getElementById('playerDetailRating');
+            const caEl = document.getElementById('playerDetailCA');
+            const paEl = document.getElementById('playerDetailPA');
+            const ageEl = document.getElementById('playerDetailAge');
+            const nationEl = document.getElementById('playerDetailNation');
+            const heightEl = document.getElementById('playerDetailHeight');
+            const weightEl = document.getElementById('playerDetailWeight');
+            const team2El = document.getElementById('playerDetailTeam2');
+            const contractEl = document.getElementById('playerDetailContract');
+            const wageEl = document.getElementById('playerDetailWage');
+            const clauseEl = document.getElementById('playerDetailClause');
+            const positionsEl = document.getElementById('playerAllPositions');
+            
+            if (initialEl) initialEl.textContent = player.name ? player.name.charAt(0) : '';
+            if (positionEl) {
+                positionEl.textContent = player.positionName || '';
+                positionEl.className = 'position-badge ' + getPositionColorClass(player.mainPosition);
+            }
+            if (nameEl) nameEl.textContent = player.name || '';
+            if (teamEl) teamEl.textContent = player.team || '';
+            
+            const rating = Math.min(10, ((player.ca || 0) / 200) * 10).toFixed(1);
+            if (ratingEl) ratingEl.textContent = rating;
+            
+            if (caEl) caEl.textContent = player.ca || 0;
+            if (paEl) paEl.textContent = player.pa || 0;
+            if (ageEl) ageEl.textContent = (player.age || 0) + '岁';
+            if (nationEl) nationEl.textContent = player.nation || '';
+            if (heightEl) heightEl.textContent = (player.height || 0) + 'cm';
+            if (weightEl) weightEl.textContent = (player.weight || 0) + 'kg';
+            if (team2El) team2El.textContent = player.team || '';
+            if (contractEl) contractEl.textContent = player.contractEnd || '未到期';
+            if (wageEl) wageEl.textContent = (player.wage || 0) + '万';
+            if (clauseEl) clauseEl.textContent = player.clause ? player.clause + '万' : '无';
+            
+            if (positionsEl) {
+                positionsEl.innerHTML = (player.allPositions || []).map((pos, idx) => {
+                    const posCat = getPositionCategory(pos);
+                    return `<span class="position-badge ${getPositionColorClass(posCat)}">${pos}</span>`;
+                }).join('');
+            }
+            
+            const detailPage = document.getElementById('playerDetailPage');
+            if (detailPage) detailPage.classList.remove('hidden');
+            
+            // 添加历史记录
+            pushPageState('playerDetail', { playerId: playerId });
+        }
+        
+        function startPK() {
+            if (!currentPKPlayer) return;
+            const modal = document.getElementById('pkSelectModal');
+            if (modal) modal.classList.add('show');
+            renderPKSelectList();
+            
+            // 添加历史记录
+            pushPageState('pkSelect');
+        }
+        
+        function renderPKSelectList(filterText = '') {
+            const container = document.getElementById('pkSelectList');
+            if (!container) return;
+            
+            let candidates = playersData
+                .filter(p => p.id !== currentPKPlayer.id)
+                .sort((a, b) => (b.ca || 0) - (a.ca || 0))
+                .slice(0, 50);
+            
+            if (filterText) {
+                const lower = filterText.toLowerCase();
+                candidates = playersData.filter(p => 
+                    p.id !== currentPKPlayer.id && 
+                    p.name && p.name.toLowerCase().includes(lower)
+                );
+            }
+            
+            container.innerHTML = candidates.map(player => `
+                <div class="pk-select-item" onclick="selectPKPlayer(${player.id})">
+                    <div class="pk-select-avatar">${player.name ? player.name.charAt(0) : '?'}</div>
+                    <div class="flex-1">
+                        <div class="font-medium text-sm dark:text-gray-100">${player.name || ''}</div>
+                        <div class="text-xs text-gray-500">${player.team || ''} · CA${player.ca || 0} · ${player.positionName || ''}</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-300"></i>
+                </div>
+            `).join('');
+        }
+        
+        function filterPKPlayers(text) {
+            renderPKSelectList(text);
+        }
+        
+        function selectPKPlayer(playerId) {
+            pkPlayer2 = playersData.find(p => p.id === playerId);
+            if (!pkPlayer2) return;
+            
+            closePKSelectModal();
+            showPKResult();
+        }
+        
+        function closePKSelectModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('pkSelectModal');
+            if (modal) modal.classList.remove('show');
+        }
+        
+        function showPKResult() {
+            const page = document.getElementById('pkResultPage');
+            const header1 = document.getElementById('pkPlayer1Header');
+            const header2 = document.getElementById('pkPlayer2Header');
+            const content = document.getElementById('pkComparisonContent');
+            
+            if (!page || !header1 || !header2 || !content) return;
+            
+            header1.innerHTML = `
+                <div class="pk-player-avatar">${currentPKPlayer.name ? currentPKPlayer.name.charAt(0) : '?'}</div>
+                <div>
+                    <div class="font-bold text-lg">${currentPKPlayer.name || ''}</div>
+                    <div class="text-sm opacity-80">${currentPKPlayer.team || ''}</div>
+                    <div class="text-xs opacity-60 mt-1">CA: ${currentPKPlayer.ca || 0} | PA: ${currentPKPlayer.pa || 0}</div>
+                </div>
+            `;
+            
+            header2.innerHTML = `
+                <div class="pk-player-avatar">${pkPlayer2.name ? pkPlayer2.name.charAt(0) : '?'}</div>
+                <div>
+                    <div class="font-bold text-lg">${pkPlayer2.name || ''}</div>
+                    <div class="text-sm opacity-80">${pkPlayer2.team || ''}</div>
+                    <div class="text-xs opacity-60 mt-1">CA: ${pkPlayer2.ca || 0} | PA: ${pkPlayer2.pa || 0}</div>
+                </div>
+            `;
+            
+            const comparisons = [
+                { name: '当前能力(CA)', key: 'ca', max: 200 },
+                { name: '潜力(PA)', key: 'pa', max: 200 },
+                { name: '年龄', key: 'age', max: 40, reverse: true },
+                { name: '身高', key: 'height', max: 210 },
+                { name: '体重', key: 'weight', max: 100 },
+                { name: '年薪', key: 'wage', max: 50 }
+            ];
+            
+            content.innerHTML = comparisons.map(stat => {
+                const val1 = parseFloat(currentPKPlayer[stat.key]) || 0;
+                const val2 = parseFloat(pkPlayer2[stat.key]) || 0;
+                
+                let winner = '';
+                if (stat.reverse) {
+                    winner = val1 < val2 ? 'left' : (val2 < val1 ? 'right' : 'equal');
+                } else {
+                    winner = val1 > val2 ? 'left' : (val2 > val1 ? 'right' : 'equal');
+                }
+                
+                const percent1 = Math.min(100, (val1 / stat.max) * 100);
+                const percent2 = Math.min(100, (val2 / stat.max) * 100);
+                
+                const class1 = winner === 'left' ? 'pk-winner' : (winner === 'equal' ? 'pk-equal' : 'pk-loser');
+                const class2 = winner === 'right' ? 'pk-winner' : (winner === 'equal' ? 'pk-equal' : 'pk-loser');
+                
+                return `
+                    <div class="pk-comparison-row">
+                        <div class="pk-stat-value ${class1}">${val1}</div>
+                        <div class="pk-stat-bar-container">
+                            <div class="pk-stat-bar">
+                                <div class="pk-stat-bar-fill left" style="width: ${percent1}%; float: right; margin-right: 50%; border-radius: 4px 0 0 4px;"></div>
+                            </div>
+                            <div class="pk-stat-name">${stat.name}</div>
+                            <div class="pk-stat-bar">
+                                <div class="pk-stat-bar-fill right" style="width: ${percent2}%; border-radius: 0 4px 4px 0;"></div>
+                            </div>
+                        </div>
+                        <div class="pk-stat-value ${class2}">${val2}</div>
+                    </div>
+                `;
+            }).join('') + `
+                <div class="mt-4 bg-white dark:bg-dark-surface rounded-lg p-4">
+                    <h4 class="font-bold mb-3 dark:text-gray-100">位置对比</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-sm text-gray-500 mb-1">${currentPKPlayer.name || ''}</div>
+                            <div class="flex flex-wrap gap-1">
+                                ${(currentPKPlayer.allPositions || []).map(pos => `<span class="position-badge ${getPositionColorClass(getPositionCategory(pos))} text-xs">${pos}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500 mb-1">${pkPlayer2.name || ''}</div>
+                            <div class="flex flex-wrap gap-1 justify-end">
+                                ${(pkPlayer2.allPositions || []).map(pos => `<span class="position-badge ${getPositionColorClass(getPositionCategory(pos))} text-xs">${pos}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            page.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            
+            // 添加历史记录
+            pushPageState('pkResult');
+        }
+        
+        function closePKResult() {
+            const page = document.getElementById('pkResultPage');
+            if (page) page.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+        
+        function sharePKResult() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '球员对比',
+                    text: `${currentPKPlayer.name || ''} vs ${pkPlayer2.name || ''}`,
+                    url: window.location.href
+                });
+            } else {
+                alert('对比结果已生成！');
+            }
+        }
+        
+        function backToTeamDetail() {
+            const detailPage = document.getElementById('playerDetailPage');
+            if (detailPage) detailPage.classList.add('hidden');
+        }
+        
+        function sharePlayer() {
+            const playerName = document.getElementById('playerDetailName')?.textContent || '';
+            if (navigator.share) {
+                navigator.share({
+                    title: playerName,
+                    text: `查看${playerName}的详细资料`,
+                    url: window.location.href
+                });
+            }
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+                btn.classList.remove('active', 'text-emerald-600', 'dark:text-emerald-400');
+                btn.classList.add('text-gray-400', 'dark:text-gray-500');
+                if (btn.dataset.tab === tab) {
+                    btn.classList.add('active', 'text-emerald-600', 'dark:text-emerald-400');
+                    btn.classList.remove('text-gray-400', 'dark:text-gray-500');
+                }
+            });
+            
+            const newsFeed = document.getElementById('newsFeed');
+            const teamPage = document.getElementById('teamPage');
+            const transferPage = document.getElementById('transferPage');
+            const dataPage = document.getElementById('dataPage');
+            const discussionPage = document.getElementById('discussionPage');
+            const homeTabs = document.getElementById('homeTabs');
+            const pullIndicator = document.getElementById('pullIndicator');
+            
+            if (newsFeed) newsFeed.classList.add('hidden');
+            if (teamPage) teamPage.classList.add('hidden');
+            if (transferPage) transferPage.classList.add('hidden');
+            if (dataPage) dataPage.classList.add('hidden');
+            if (discussionPage) discussionPage.classList.add('hidden');
+            if (homeTabs) homeTabs.classList.add('hidden');
+            if (pullIndicator) pullIndicator.classList.add('hidden');
+            
+            if (tab === 'home') {
+                if (newsFeed) newsFeed.classList.remove('hidden');
+                if (homeTabs) homeTabs.classList.remove('hidden');
+                if (pullIndicator) pullIndicator.classList.remove('hidden');
+                loadRSS().catch(e => console.error('加载RSS失败:', e));
+            } else if (tab === 'team') {
+                if (teamPage) teamPage.classList.remove('hidden');
+                if (teamData.length === 0) {
+                    loadTeamData().catch(e => console.error('加载球队数据失败:', e));
+                }
+            } else if (tab === 'transfer') {
+                if (transferPage) transferPage.classList.remove('hidden');
+                // 刷新 iframe 以确保最新内容
+                const iframe = document.getElementById('transferIframe');
+                if (iframe && !iframe.src) {
+                    iframe.src = 'https://suttergov.github.io/transfermarkt.html';
+                }
+            } else if (tab === 'data') {
+                if (dataPage) dataPage.classList.remove('hidden');
+            } else if (tab === 'discussion') {
+                if (discussionPage) discussionPage.classList.remove('hidden');
+                // 首次切换到讨论区时加载 Giscus
+                if (!giscusLoaded) {
+                    loadGiscus();
+                }
+            }
+            
+            // 添加历史记录（仅在用户主动点击时）
+            if (!isPopState) {
+                pushPageState(tab);
+            }
+        }
+
+        // Giscus 相关函数
+        function switchDiscussionTab(tab) {
+            currentDiscussionTab = tab;
+            
+            // 更新标签样式
+            document.querySelectorAll('.discussion-tab').forEach(el => {
+                el.classList.remove('active');
+                if (el.dataset.tab === tab) {
+                    el.classList.add('active');
+                }
+            });
+            
+            // 重新加载 Giscus，使用不同的分类或标签
+            reloadGiscusForTab(tab);
+        }
+        
+        function reloadGiscusForTab(tab) {
+            // 销毁现有的 Giscus
+            const container = document.getElementById('giscus-frame-container');
+            if (container) {
+                container.innerHTML = '';
+            }
+            
+            // 根据不同标签使用不同的讨论标题
+            let discussionTitle = '加西亚足球讨论区';
+            switch(tab) {
+                case 'match':
+                    discussionTitle = '比赛讨论 - 加西亚足球';
+                    break;
+                case 'transfer':
+                    discussionTitle = '转会传闻 - 加西亚足球';
+                    break;
+                case 'tactical':
+                    discussionTitle = '战术分析 - 加西亚足球';
+                    break;
+                default:
+                    discussionTitle = '综合讨论 - 加西亚足球';
+            }
+            
+            // 重新加载 Giscus
+            setTimeout(() => {
+                loadGiscus(discussionTitle);
+            }, 100);
+        }
+        
+        function loadGiscus(customTitle) {
+            const container = document.getElementById('giscus-frame-container');
+            const loadingEl = document.getElementById('giscusLoading');
+            
+            if (!container) return;
+            
+            // 显示加载状态
+            if (loadingEl) loadingEl.style.display = 'flex';
+            
+            // 获取当前主题
+            const isDark = document.documentElement.classList.contains('dark');
+            const theme = isDark ? 'dark' : 'light';
+            
+            // 创建 Giscus 脚本
+            const script = document.createElement('script');
+            script.src = 'https://giscus.app/client.js';
+            script.setAttribute('data-repo', CONFIG.giscus.repo);
+            script.setAttribute('data-repo-id', CONFIG.giscus.repoId);
+            script.setAttribute('data-category', CONFIG.giscus.category);
+            script.setAttribute('data-category-id', CONFIG.giscus.categoryId);
+            script.setAttribute('data-mapping', 'title'); // 使用 title 映射，这样不同标签会有不同的讨论
+            script.setAttribute('data-term', customTitle || '加西亚足球讨论区');
+            script.setAttribute('data-reactions-enabled', CONFIG.giscus.reactionsEnabled);
+            script.setAttribute('data-emit-metadata', CONFIG.giscus.emitMetadata);
+            script.setAttribute('data-input-position', CONFIG.giscus.inputPosition);
+            script.setAttribute('data-theme', theme);
+            script.setAttribute('data-lang', CONFIG.giscus.lang);
+            script.setAttribute('crossorigin', 'anonymous');
+            script.async = true;
+            
+            script.onload = () => {
+                giscusLoaded = true;
+                if (loadingEl) loadingEl.style.display = 'none';
+            };
+            
+            script.onerror = () => {
+                if (loadingEl) {
+                    loadingEl.innerHTML = `
+                        <i class="fas fa-exclamation-circle text-3xl mb-3 text-red-500"></i>
+                        <p>加载失败</p>
+                        <p class="text-xs mt-2">请检查网络连接或 Giscus 配置</p>
+                    `;
+                }
+            };
+            
+            container.appendChild(script);
+        }
+        
+        function updateGiscusTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const theme = isDark ? 'dark' : 'light';
+            
+            // 向 Giscus iframe 发送主题变更消息
+            const iframe = document.querySelector('iframe.giscus-frame');
+            if (iframe) {
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig: { theme: theme } } },
+                    'https://giscus.app'
+                );
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function stripHtml(html) {
+            if (!html) return '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+            
+            if (diff < 60) return '刚刚';
+            if (diff < 3600) return `${Math.floor(diff/60)}分钟前`;
+            if (diff < 86400) return `${Math.floor(diff/3600)}小时前`;
+            if (diff < 604800) return `${Math.floor(diff/86400)}天前`;
+            return date.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'});
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeArticle();
+                backToTeamDetail();
+                backToTeamList();
+                closeSearch();
+                closePKSelectModal();
+                closePKResult();
+                closeSpecialPlayersPage();
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            if (currentTeam) {
+                const statsContent = document.getElementById('statsContent');
+                if (statsContent && !statsContent.classList.contains('hidden')) {
+                    const historyData = getTeamHistoryData(currentTeam.name);
+                    if (historyData && historyData.rankings) {
+                        const sortedRankings = Object.entries(historyData.rankings)
+                            .sort((a, b) => {
+                                const numA = parseInt(a[0].replace(/[^0-9]/g, ''));
+                                const numB = parseInt(b[0].replace(/[^0-9]/g, ''));
+                                return numA - numB;
+                            });
+                        drawRankingChart(sortedRankings);
+                    }
+                }
+            }
+        });
+
+        async function loadTeamHistoryData() {
+            if (isLoadingTeamHistory) return;
+            isLoadingTeamHistory = true;
+            
+            try {
+                console.log('开始加载球队历史数据...');
+                const response = await fetch(CONFIG.teamHistoryUrl + '?t=' + new Date().getTime(), {
+                    signal: AbortSignal.timeout(10000)
+                });
+                
+                if (!response.ok) throw new Error('无法加载历史数据: ' + response.status);
+                
+                const text = await response.text();
+                console.log('获取到历史数据文本长度:', text.length);
+                
+                parseTeamHistoryData(text);
+                localStorage.setItem('team_history_cache', JSON.stringify(teamHistoryData));
+                console.log('解析完成，球队数量:', Object.keys(teamHistoryData).length);
+                
+            } catch (error) {
+                console.error('加载球队历史数据失败:', error);
+                const savedTeamHistory = localStorage.getItem('team_history_cache');
+                if (savedTeamHistory) {
+                    try {
+                        teamHistoryData = JSON.parse(savedTeamHistory);
+                    } catch (e) {
+                        teamHistoryData = {};
+                    }
+                }
+            } finally {
+                isLoadingTeamHistory = false;
+            }
+        }
+
+        function parseTeamHistoryData(text) {
+            const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const lines = normalizedText.split('\n');
+            let currentTeamName = null;
+            let currentSection = null;
+            let currentScorerBuffer = [];
+            
+            teamHistoryData = {};
+            
+            lines.forEach((line, index) => {
+                line = line.trim();
+                if (!line) return;
+                
+                if (line.startsWith('==') && line.endsWith('==')) {
+                    if (currentTeamName && currentScorerBuffer.length > 0 && teamHistoryData[currentTeamName]) {
+                        teamHistoryData[currentTeamName].topScorers = [...currentScorerBuffer];
+                        currentScorerBuffer = [];
+                    }
+                    
+                    currentTeamName = line.slice(2, -2).trim();
+                    if (currentTeamName && !teamHistoryData[currentTeamName]) {
+                        teamHistoryData[currentTeamName] = {
+                            nameChanges: '',
+                            rankings: {},
+                            topScorers: [],
+                            honors: []
+                        };
+                    }
+                    currentSection = null;
+                    console.log('解析到球队:', currentTeamName);
+                } else if (currentTeamName && teamHistoryData[currentTeamName]) {
+                    if (line.startsWith('=') && line.endsWith('=') && !line.startsWith('==')) {
+                        if (currentSection === 'scorers' && currentScorerBuffer.length > 0) {
+                            teamHistoryData[currentTeamName].topScorers = [...currentScorerBuffer];
+                            currentScorerBuffer = [];
+                        }
+                        
+                        const sectionName = line.slice(1, -1).trim();
+                        if (sectionName.includes('变迁') || sectionName.includes('历史') || sectionName === '球队变迁') {
+                            currentSection = 'changes';
+                        } else if (sectionName.includes('排名') || sectionName === '近年联赛排名') {
+                            currentSection = 'rankings';
+                        } else if (sectionName.includes('射手') || sectionName === '历史射手榜') {
+                            currentSection = 'scorers';
+                        } else if (sectionName.includes('荣誉') || sectionName === '球队荣誉') {
+                            currentSection = 'honors';
+                        } else {
+                            currentSection = null;
+                        }
+                    } else if (currentSection === 'changes') {
+                        teamHistoryData[currentTeamName].nameChanges += line + '<br>';
+                    } else if (currentSection === 'rankings') {
+                        const match = line.match(/(S\d+)[:：]\s*(\d+)/);
+                        if (match) {
+                            teamHistoryData[currentTeamName].rankings[match[1]] = {
+                                season: match[1],
+                                rank: parseInt(match[2])
+                            };
+                        }
+                    } else if (currentSection === 'scorers') {
+                        const parts = line.split(/\s+/);
+                        if (parts.length >= 2) {
+                            const goals = parseInt(parts[parts.length - 1]);
+                            const name = parts.slice(0, parts.length - 1).join(' ');
+                            if (!isNaN(goals) && name) {
+                                currentScorerBuffer.push({
+                                    name: name,
+                                    goals: goals
+                                });
+                            }
+                        }
+                    } else if (currentSection === 'honors') {
+                        const honorMatch = line.match(/^(.+?)\s+(冠军|亚军|季军)\s*(S\d+)?$/);
+                        if (honorMatch) {
+                            teamHistoryData[currentTeamName].honors.push({
+                                competition: honorMatch[1].trim(),
+                                rank: honorMatch[2],
+                                season: honorMatch[3] || ''
+                            });
+                        } else {
+                            const simpleMatch = line.match(/^(.+?)\s+(冠军|亚军|季军)$/);
+                            if (simpleMatch) {
+                                teamHistoryData[currentTeamName].honors.push({
+                                    competition: simpleMatch[1].trim(),
+                                    rank: simpleMatch[2],
+                                    season: ''
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+            
+            if (currentTeamName && currentScorerBuffer.length > 0 && teamHistoryData[currentTeamName]) {
+                teamHistoryData[currentTeamName].topScorers = [...currentScorerBuffer];
+            }
+        }
+
+        function getTeamHistoryData(teamName) {
+            if (!teamName) return null;
+            if (teamHistoryData[teamName]) {
+                return teamHistoryData[teamName];
+            }
+            
+            const normalizedInput = normalizeTeamName(teamName);
+            for (const key in teamHistoryData) {
+                if (normalizeTeamName(key) === normalizedInput) {
+                    return teamHistoryData[key];
+                }
+            }
+            
+            return null;
+        }
+    </script>
+</body>
+</html>
