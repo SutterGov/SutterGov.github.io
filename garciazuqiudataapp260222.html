@@ -2533,6 +2533,8 @@
             'LAANA': { username: 'LA\'ANAFC79-拉阿纳队', type: '球队', avatar: 'https://suttergov.github.io/%E6%8B%89%E9%98%BF%E7%BA%B3%E5%9F%8E%E5%B8%82%E7%AB%9E%E6%8A%80.png' },
             'SBOTOP': { username: '斯波托普城市足球俱乐部', type: '球队', avatar: 'https://suttergov.github.io/%E6%96%AF%E6%B3%A2%E6%89%98%E6%99%AE%E5%9F%8E%E5%B8%82.png' },
             'XINNANCHENG': { username: '新南城足球俱乐部', type: '球队', avatar: 'https://suttergov.github.io/%E6%96%B0%E6%B3%B0%E6%96%B03.png' },
+            'HILAL': { username: 'ALHILAL加西亚新月队', type: '球队', avatar: 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F8b173e002d366de185a0b51b67e71d230f63b72e-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75' },
+            'RFFC': { username: '奥顿兰富力R&F', type: '球队', avatar: 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2F054ad4196adacff7c6d42d35764c892cf950ef0f-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75' },
             'DAHWAHA': { username: '新达华哈海岸官方', type: '球队', avatar: 'https://suttergov.github.io/%E6%96%B0%E8%BE%BE%E5%8D%8E%E5%93%88%E6%B5%B7%E5%B2%B8.png' },
             'CAGOUS': { username: '瓦巴萨朱树鸦CAGOUSFC', type: '球队', avatar: 'https://suttergov.github.io/%E7%93%A6%E5%B7%B4%E8%90%A8%E6%9C%B1%E6%A0%91%E9%B8%A6.png' },
             'ROYALS': { username: '皇家萨乌萨乌足球俱乐部', type: '球队', avatar: 'https://suttergov.github.io/%E7%9A%87%E5%AE%B6%E8%90%A8%E4%B9%8C%E8%90%A8%E4%B9%8C.png' },
@@ -2548,15 +2550,22 @@
             'MAHAOYU': { username: '马浩宇', type: '个人', avatar: 'https://www.pesmaster.com/efootball-2022/graphics/players/Variation2022/52887690550188_.png' },
             'CARLO': { username: '卡罗', type: '个人', avatar: 'https://www.pesmaster.com/efootball-2022/graphics/players/Variation2022/52875610863799_.png' },
             'JUDE': { username: '裘德·乔克雷斯', type: '个人', avatar: 'https://www.pesmaster.com/efootball-2022/graphics/players/Variation2022/52892253943504_.png' },
-            'MEDIA': { username: '媒体账号', type: '媒体', avatar: 'https://cdn.brandfetch.io/footmercato.net/fallback/lettermark/theme/dark/h/256/w/256/icon?c=1bfwsmEH20zzEfSNTed', isMediaGroup: true }
+            'MEDIA': { username: 'GACFA加西亚足协', type: '媒体', avatar: 'https://fclogo.top/_next/image?url=https%3A%2F%2Fcdn.sanity.io%2Fimages%2F11hmdf08%2Fproduction%2Fc97e5b70a494eb39da0152ef031bda998e49b455-800x800.png%3Fw%3D800%26fm%3Dwebp%26q%3D80&w=828&q=75', isMediaGroup: true }
         };
 
         // 媒体子账号配置
         const MEDIA_ACCOUNTS = [
             { username: '足球市场网', type: '媒体', avatar: 'https://cdn.brandfetch.io/footmercato.net/fallback/lettermark/theme/dark/h/256/w/256/icon?c=1bfwsmEH20zzEfSNTed' },
             { username: '队报', type: '媒体', avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOiDuzVeBrpk8XzlT--IPXX67Vj6MRxBzTYw&s' },
-            { username: 'DavidOrnstein', type: '媒体', avatar: 'https://i.namu.wiki/i/XC4wy5GaIVBbUDyH6RzFvd_Brfj8K3V0CfShFPTlhEO4IpwVuqKBv5SIK8FUjqGXyMCQ9DB1UjMGituufctDaA.webp' },
-            { username: 'FabrizioRomano', type: '媒体', avatar: 'https://cachedimages.podchaser.com/256x256/aHR0cHM6Ly9jb250ZW50LnByb2R1Y3Rpb24uY2RuLmFydDE5LmNvbS9pbWFnZXMvZTUvNTQvMTYvMTgvZTU1NDE2MTgtNzc1Ni00ZmY1LWE5MTgtZDhiOGIwZTlhZTU2L2MwN2Q5OWFiNmVmZGEwY2Y1ZWViOWQwZmNmMTQ1NDY5YjcxNTljYjUwMmM4Yzg0NjMyNWZmNzJiMjhlZDczYmNiM2Y3ZmJiYTJlMzQyZjNkMjE1YmJmNzg1OGU0YWZkNmMxNmQyNDYxYjhhYTdiZTViY2IyMDc5YmRmMDE2NmIzLmpwZWc%3D/aHR0cHM6Ly93d3cucG9kY2hhc2VyLmNvbS9pbWFnZXMvbWlzc2luZy1pbWFnZS5wbmc%3D' },
+            { username: 'DavidOrnstein', type: '媒体', avatar: 'https://wx3.sinaimg.cn/mw690/71f5628dly1i9gudiokumj21230tpaco.jpg' },
+            { username: 'AlfredoPedulla', type: '媒体', avatar: 'https://icdn.football-italia.net/wp-content/uploads/2025/06/Alfredo_Pedulla_HeadShot.jpg' },
+            { username: 'Bild.de', type: '媒体', avatar: 'https://images.seeklogo.com/logo-png/51/3/bildwoche-logo-png_seeklogo-513761.png' },
+            { username: '直播吧', type: '媒体', avatar: 'https://w7.pngwing.com/pngs/147/615/png-transparent-zhibo8-hindi-gk-app-store-apple-apple-blue-text-trademark-thumbnail.png' },
+            { username: '进球网', type: '媒体', avatar: 'https://images.seeklogo.com/logo-png/6/1/goal-com-logo-png_seeklogo-61642.png' },
+            { username: '新吕伐登时报', type: '媒体', avatar: 'https://bpic.51yuansu.com/pic3/cover/03/53/87/65d9fb19dfa35_260.jpg?x-oss-process=image/resize,w_260/sharpen,100' },
+            { username: 'NikoloSchira', type: '媒体', avatar: 'https://elitefootballcenter.com/wp-content/uploads/2025/10/nicolo_schira.jpg' },
+            { username: 'DiMarzio', type: '媒体', avatar: 'https://gianlucadimarzio.com/wp-content/themes/victoria-child/img/gdm-twitter.png' },
+            { username: 'FabrizioRomano', type: '媒体', avatar: 'https://inews.gtimg.com/om_bt/OiChRk85zSvDyPhV7aFOkQX-3JSinLMohZKo8vxhYUEAMAA/641' },
             { username: '加西亚邮报', type: '媒体', avatar: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7A2UlVPRErxcM3xCJNLkCyAfPUUAGI1sKuw&s' },
             { username: 'ESPN', type: '媒体', avatar: 'https://cdn.iconscout.com/icon/free/png-256/free-espn-logo-icon-svg-download-png-461787.png' },
             { username: '大巴姆岛先驱者早报', type: '媒体', avatar: 'https://d3g9pb5nvr3u7.cloudfront.net/sites/529657a5bc4626126841af46/2078558977/256.png' },
